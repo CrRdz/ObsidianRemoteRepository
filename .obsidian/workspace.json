@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "b80a3db9bd44ac08",
+        "id": "bd66ba1d43fbe6e5",
         "type": "tabs",
         "children": [
           {
-            "id": "e093386cdb3b8434",
+            "id": "b52077687ad7174f",
             "type": "leaf",
             "state": {
-              "type": "split-diff-view",
+              "type": "markdown",
               "state": {
-                "aFile": ".obsidian/workspace.json",
-                "bFile": ".obsidian/workspace.json",
-                "aRef": ""
+                "file": "Readme.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "diff",
-              "title": "Diff: workspace.json  (Working Tree)"
+              "icon": "lucide-file",
+              "title": "Readme"
             }
           }
         ]
@@ -94,6 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Readme.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "反向链接"
+              "title": "Readme 的反向链接列表"
             }
           },
           {
@@ -155,12 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "Readme.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "大纲"
+              "title": "Readme 的大纲"
             }
           },
           {
@@ -192,8 +194,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "f293784ea0350695",
+  "active": "b52077687ad7174f",
   "lastOpenFiles": [
+    "Readme.md",
     "Y3S1 Notes",
     "Y3S1 Notes/INT201/INT201 Final.md",
     "asserts.zip",
@@ -218,7 +221,6 @@
     "未命名文件夹",
     "Y3S1 Notes/CPT203",
     "Y3S1 Notes/INT201/asserts",
-    "Y3S1 Notes/INT201",
     "未命名.canvas",
     "欢迎.md"
   ]
