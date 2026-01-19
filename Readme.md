@@ -47,6 +47,7 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     
 3. **检查 Obsidian Git 插件配置**（见下文 "插件核心设置"），确保每台设备配置一致。
 
+---
 ## 二、Obsidian Git 插件核心设置 
 
 在clone完成之后 请先检查obsidian插件是否成功同步 如未按照预期 执行以下步骤
@@ -225,67 +226,37 @@ git push
 
 ## 六、常见问题与处理方案
 
-  
+### 1. 推送时提示 rejected / diverged (插件无法推送)
 
-### 1. 推送时提示 rejected / diverged
-
-  
-
-原因：本地分支与远程分支历史不一致。
-
-  
-
+**场景**：远程版本比本地新，且历史分叉。 **修复**（强制以远程为准，注意备份本地未保存内容）：
 若确认以远程仓库为准，可直接重置本地：
-
-  
-
 ```bash
-
 git reset --hard
 git clean -fd
 git fetch origin
 git reset --hard origin/master
 ```
-
-  
-
 > 若你的主分支不是 `master`，请替换为实际分支名
-
-  
-
 ---
+### 4. 插件提示 "Pull failed" 或冲突
 
-### 2. Obsidian Git 插件频繁报错
+**场景**：本地和远程修改了同一个文件的同一行。 **修复**：
 
-  
 
-常见原因：
+```Bash
+# 1. 尝试手动拉取（可能会提示合并）
+git pull
 
-- 自动 pull / push 与手动操作冲突
+# 2. 如果提示冲突 (Conflict)，打开对应的 .md 文件
+# 手动搜索 "<<<<<<<" 标记，修改内容后保存。
 
-- 与命令行 Git 混用
-
-  
-
-建议插件设置：
-
-- 关闭 Auto pull
-
-- 关闭 Auto commit
-
-- 关闭 Auto push
-
-  
-
-仅在需要时手动执行 Commit 与 Push。  
-
+# 3. 提交修复
+git add .
+git commit -m "manual fix: resolve merge conflict"
+git push
+```
 ---
-
-  
-
 ## 七、推荐仓库结构
-
-  
 
 ```text
 
