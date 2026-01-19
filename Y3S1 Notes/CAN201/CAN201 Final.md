@@ -1072,7 +1072,7 @@ $\rightarrow$ Higher delay, lower throughput, wasted banwidth
 				- can renew its lease on address in use
 				- allows reuse of addresses(only hold address while connected / on)
 				- support for mobile users who join / leave network
-			- DHCP Client-Server Scenario![[DHCP c:s.jpeg]]
+			- DHCP Client-Server Scenario![[DHCP c_s.jpeg]]
 				- 如果客户端记得并希望重用先前分配的网络地址，最开始的两部可以跳过
 			- More than IP address
 				- can return more than just allocated IP address on subnet:

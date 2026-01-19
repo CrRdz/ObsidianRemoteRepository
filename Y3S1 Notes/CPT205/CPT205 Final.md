@@ -966,7 +966,7 @@ In each of these cases, the placement of objects is described more easily when w
 - Most of the material properties are conceptually similar to those used to create light sources
 - The mechanism for setting them is similar, except that the 
 - command used is called `glMaterial*()`, 
-	e.g.`void glMaterial{if}[v](GLenum face, GLenum pname,TYPEparam)` ![[glMaterial*.jpeg]]
+	e.g.`void glMaterial{if}[v](GLenum face, GLenum pname,TYPEparam)` ![[glMaterial.jpeg]]
 - The particular material property being set is identified by `pname` and its desired values are given by `TYPEparam`, which is either a pointer to a group of values (if the vector version is used) or the actual value (if the non-vector version is used, only for setting `GL_SHININESS`)
 - `GL_EMISSION` 指定RGBA颜色 可以使对象看出来发出该颜色的光 模拟场景中的灯和其他发光物体
 - face参数可以是`GL_FRONT`,`GL_BACK` OR `GL_FRONT_BACK`以指示材质应用于对象的那个面

@@ -1,6 +1,7 @@
 # macOS
 .DS_Store
 
-# Obsidian
+# Obsidian local state
 .obsidian/workspace*
+.obsidian/graph.json
 .obsidian/cache
