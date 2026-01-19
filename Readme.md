@@ -121,18 +121,13 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 
   
 
-# Obsidian 本地状态文件
+# Obsidian local state
 
 .obsidian/workspace*
 
-.obsidian/cache/
-
 .obsidian/graph.json
-  
 
-# 如不希望同步插件配置，可取消注释
-
-# .obsidian/plugins/
+.obsidian/cache
 
 ```
 
@@ -144,13 +139,12 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 
 - `cache`：缓存文件，不具备同步意义
 
-  
 
 ---
 
   
 
-## 三、已经误提交上述文件的修复方法
+## 五、已经误提交上述文件的修复方法
 
   
 
@@ -184,45 +178,12 @@ git push
 
 ```
 
-  
 
 ---
 
   
 
-## 四、日常标准推送流程
-
-  
-
-每一次修改并推送时，严格遵循以下顺序：
-
-  
-
-```bash
-
-git pull
-
-# 编辑或新增笔记
-
-git add .
-
-git commit -m "docs: update notes"
-
-git push
-
-```
-
-  
-
-该流程可以最大限度避免远程与本地历史分叉。
-
-  
-
----
-
-  
-
-## 五、常见问题与处理方案
+## 六、常见问题与处理方案
 
   
 
@@ -258,8 +219,6 @@ git reset --hard origin/master
 
 ---
 
-  
-
 ### 2. Obsidian Git 插件频繁报错
 
   
@@ -282,61 +241,7 @@ git reset --hard origin/master
 
   
 
-仅在需要时手动执行 Commit 与 Push。
-
-  
-
----
-
-  
-
-## 六、彻底清理方案（不建议频繁使用）
-
-  
-
-当仓库历史已不可维护时，可选择以下方案之一。
-
-  
-
-### 方案 A：删除本地仓库并重新克隆（推荐）
-
-  
-
-```bash
-
-cd ..
-
-rm -rf <repo-directory>
-
-git clone <repo-url>
-
-```
-
-  
-
-### 方案 B：重建 Git 历史（会覆盖远程）
-
-  
-
-```bash
-
-rm -rf .git
-
-git init
-
-git remote add origin <repo-url>
-
-git add .
-
-git commit -m "chore: reinitialize repository"
-
-git branch -M main
-
-git push -f origin main
-
-```
-
-  
+仅在需要时手动执行 Commit 与 Push。  
 
 ---
 
@@ -361,6 +266,8 @@ Vault/
 │ ├─ course2.md
 
 │ └─ ...
+
+├─ .../
 
 └─ .obsidian/
 
