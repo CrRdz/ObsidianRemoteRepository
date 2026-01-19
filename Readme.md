@@ -11,7 +11,7 @@
 
 3. **同步策略**：10分钟无操作自动同步 + 启动时自动拉取。
 
-4. . Git 只用于管理**笔记内容和必要配置**，不管理本地状态; Obsidian 的部分配置文件**不适合纳入版本控制**
+4. Git 只用于管理**笔记内容和必要配置**，不管理本地状态; Obsidian 的部分配置文件**不适合纳入版本控制**
   
 ---
 
@@ -36,7 +36,6 @@ cd ~/Documents  # 或其他你想要的位置
 
 # 2. 克隆远程仓库
 git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
-
 ```
 
 ### 3. 打开与插件配置
@@ -47,7 +46,76 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     
 3. **检查 Obsidian Git 插件配置**（见下文 "插件核心设置"），确保每台设备配置一致。
 
-## 二、推荐的 `.gitignore`
+## 二、Obsidian Git 插件核心设置 
+
+为了实现自动化和统一的日志格式，请在 **Settings -> Obsidian Git** 中进行如下设置：
+
+### 1. 自动化策略
+
+- **Backup interval (minutes):** `10`
+    
+    - _(设置 10 分钟自动备份)_
+        
+- **Auto Backup after changes:** `开启` (建议)
+    
+    - _(配合上一条，确保是有变动才备份)_
+        
+- **Pull updates on startup:** `开启`
+    
+    - _(**关键**：每次打开软件自动拉取，防止冲突)_
+        
+- **Push on backup:** `开启`
+    
+    - _(备份同时推送到远程)_
+        
+
+### 2. 提交信息格式 (Commit Message)
+
+请严格复制以下内容填入对应设置项，以保持日志整洁：
+
+- **Commit Message:**
+    
+    Plaintext
+    
+    ```
+    vault sync: {{date}} | {{hostname}} | {{numFiles}} files
+    ```
+    
+- **List changed files in commit body:** `开启`
+    
+    - _(这会自动在 commit message 下一行附带 affected files 列表)_
+        
+- **Date format:** `YYYY-MM-DD HH:mm:ss`
+    
+
+---
+
+## 三、日常使用指南
+
+### 正常工作流
+
+1. **打开 Obsidian**：插件自动运行 `Pull`。
+    
+2. **写作/编辑**：正常使用。
+    
+3. **自动同步**：每隔 10 分钟，如果有变动，插件会自动 `Commit` 并 `Push`。
+    
+4. **手动同步 (可选)**：
+    
+    - 如果你写完想立刻关机，按 `Cmd/Ctrl + P` 调出命令面板。
+        
+    - 输入并执行：`Git: Create backup`。
+        
+
+### 状态检查
+
+- 查看底部状态栏：
+    
+    - `git: ready` 表示无变动。
+        
+    - `git: pushing...` 表示正在上传。
+        
+    - `git: synced` 表示同步完成。
 
 ## 二、推荐的 `.gitignore`
 
