@@ -11,7 +11,9 @@
 
 3. **同步策略**：10分钟无操作自动同步 + 启动时自动拉取。
 
-4. Git 只用于管理**笔记内容和必要配置**，不管理本地状态; Obsidian 的部分配置文件**不适合纳入版本控制**
+4. Git 只用于管理**笔记内容和必要配置**，不管理本地状态
+
+5. Obsidian 的部分配置文件**不适合纳入版本控制**
   
 ---
 
@@ -25,7 +27,6 @@
     
 - 安装 [Obsidian](https://obsidian.md/)。
     
-
 ### 2. 克隆仓库 (使用命令行)
 
 打开终端 (Mac Terminal 或 Win PowerShell)，进入你想存放笔记的目录：
@@ -56,7 +57,7 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     
     - _(设置 10 分钟自动备份)_
         
-- **Auto Backup after changes:** `开启` (建议)
+- **Auto Backup after changes:** `开启` 
     
     - _(配合上一条，确保是有变动才备份)_
         
