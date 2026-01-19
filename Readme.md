@@ -7,14 +7,14 @@
 
 1. **初始化阶段**：使用命令行（CLI）进行仓库克隆。
 
-2. **日常使用**：完全依赖 **Obsidian Git 插件** 自动化管理。
+2. **日常使用**：完全依赖 **Obsidian Git 插件** 自动化管理 避免同时多个设备编辑同一文档。
 
 3. **同步策略**：10分钟无操作自动同步 + 启动时自动拉取。
 
 4. Git 只用于管理**笔记内容和必要配置**，不管理本地状态
 
 5. Obsidian 的部分配置文件**不适合纳入版本控制**
-  
+
 ---
 
 ## 一、新设备初始化流程 
@@ -49,45 +49,46 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 
 ## 二、Obsidian Git 插件核心设置 
 
+在clone完成之后 请先检查obsidian插件是否成功同步 如未按照预期 执行以下步骤
+
 为了实现自动化和统一的日志格式，请在 **Settings -> Obsidian Git** 中进行如下设置：
 
 ### 1. 自动化策略
 
-- **Backup interval (minutes):** `10`
+- **Auto commit-and-sync interval (minutes):** `10`
     
     - _(设置 10 分钟自动备份)_
         
-- **Auto Backup after changes:** `开启` 
+- **Auto commit-and-sync after stop file edits:** `ON` 
     
     - _(配合上一条，确保是有变动才备份)_
         
-- **Pull updates on startup:** `开启`
+- **Auto pull interval(minutes):** `30`
     
-    - _(**关键**：每次打开软件自动拉取，防止冲突)_
+    - _(设置30分钟拉取远程仓库)_
         
-- **Push on backup:** `开启`
+- **Specify custom commit message on auto commit-and-sync**:`ON`
     
-    - _(备份同时推送到远程)_
-        
+    - _(指定commit的message)_
+	      
+- **Pull on startup:**`ON`
 
 ### 2. 提交信息格式 (Commit Message)
 
 请严格复制以下内容填入对应设置项，以保持日志整洁：
 
 - **Commit Message:**
-    
-    Plaintext
-    
-    ```
-    vault sync: {{date}} | {{hostname}} | {{numFiles}} files
+  ```Plaintext
+   vault sync: {{date}} | {{hostname}} | {{numFiles}} files
     ```
     
-- **List changed files in commit body:** `开启`
+    Hostname: mac | windows
+    
+- **List filenames affected by commit in commit body:** `开启`
     
     - _(这会自动在 commit message 下一行附带 affected files 列表)_
         
-- **Date format:** `YYYY-MM-DD HH:mm:ss`
-    
+- **Date format:** `YYYY-MM-DD HH:mm
 
 ---
 
@@ -108,23 +109,9 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     - 输入并执行：`Git: Create backup`。
         
 
-### 状态检查
-
-- 查看底部状态栏：
-    
-    - `git: ready` 表示无变动。
-        
-    - `git: pushing...` 表示正在上传。
-        
-    - `git: synced` 表示同步完成。
-
-## 二、推荐的 `.gitignore`
-
-  
+## 四、推荐的 `.gitignore`
 
 在仓库根目录创建或编辑 `.gitignore`：
-
-  
 
 ```gitignore
 
