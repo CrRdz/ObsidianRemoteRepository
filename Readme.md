@@ -116,19 +116,14 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 ```gitignore
 
 # macOS
-
 .DS_Store
 
   
 
 # Obsidian local state
-
 .obsidian/workspace*
-
 .obsidian/graph.json
-
 .obsidian/cache
-
 ```
 
   
@@ -153,13 +148,9 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
   
 
 ```bash
-
 git rm -r --cached .DS_Store
-
 git rm -r --cached .obsidian/workspace*
-
 git rm -r --cached .obsidian/cache
-
 ```
 
   
@@ -171,9 +162,7 @@ git rm -r --cached .obsidian/cache
 ```bash
 
 git add .gitignore
-
 git commit -m "chore: remove local Obsidian and OS files"
-
 git push
 
 ```
@@ -202,13 +191,9 @@ git push
 ```bash
 
 git reset --hard
-
 git clean -fd
-
 git fetch origin
-
 git reset --hard origin/master
-
 ```
 
   
