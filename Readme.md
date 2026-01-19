@@ -53,11 +53,6 @@
 .obsidian/cache/
 
 .obsidian/graph.json
-
-.obsidian/hotkeys.json
-
-.obsidian/appearance.json
-
   
 
 # 如不希望同步插件配置，可取消注释
