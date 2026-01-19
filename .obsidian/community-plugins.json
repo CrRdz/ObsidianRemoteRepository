@@ -1,4 +1,7 @@
 [
   "better-export-pdf",
-  "obsidian-git"
+  "obsidian-git",
+  "obsidian-icon-folder",
+  "mindmap",
+  "obsidian-excalidraw-plugin"
 ]
