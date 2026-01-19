@@ -3,7 +3,7 @@
   "autoCommitMessage": "vault sync: {{date}} | {{hostname}} | {{numFiles}} files",
   "commitMessageScript": "",
   "commitDateFormat": "YYYY-MM-DD HH:mm:ss",
-  "autoSaveInterval": 10,
+  "autoSaveInterval": 1,
   "autoPushInterval": 0,
   "autoPullInterval": 30,
   "autoPullOnBoot": true,
