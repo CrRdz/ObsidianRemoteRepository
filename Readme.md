@@ -238,7 +238,7 @@ git reset --hard origin/master
 ```
 > 若你的主分支不是 `master`，请替换为实际分支名
 ---
-### 4. 插件提示 "Pull failed" 或冲突
+### 2. 插件提示 "Pull failed" 或冲突
 
 **场景**：本地和远程修改了同一个文件的同一行。 **修复**：
 
