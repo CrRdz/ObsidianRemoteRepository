@@ -83,6 +83,7 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     ```
     
     Hostname: mac | windows
+    后续如有扩展 另行规范
     
 - **List filenames affected by commit in commit body:** `开启`
     
@@ -98,7 +99,7 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 
 1. **打开 Obsidian**：插件自动运行 `Pull`。
     
-2. **写作/编辑**：正常使用。
+2. **写作/编辑**：正常使用 注意遵守命名规范。
     
 3. **自动同步**：每隔 10 分钟，如果有变动，插件会自动 `Commit` 并 `Push`。
     
@@ -107,8 +108,44 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
     - 如果你写完想立刻关机，按 `Cmd/Ctrl + P` 调出命令面板。
         
     - 输入并执行：`Git: Create backup`。
+5. **推荐的工作流**        
+四
+由于 macOS 和 Windows 文件系统底层逻辑不同，在 Mac 上操作时必须遵守以下规则，否则会导致 Windows 端同步失败或文件无法打开。
+
+### 1. 严禁使用的特殊字符
+
+Windows 文件名不支持以下字符。**在 Mac 上创建笔记或附件时，绝对不能包含：**
+
+|**字符**|**名称**|**替代方案**|
+|---|---|---|
+|`/`|斜杠|使用 `-` 或空格|
+|`\`|反斜杠|使用 `-` 或空格|
+|`:`|冒号 (最常犯错)|使用中文冒号 `：` 或 `-`|
+|`*`|星号|(无)|
+|`?`|问号|使用中文问号 `？`|
+|`"`|双引号|使用单引号 `'`|
+|`<`|小于号|(无)|
+|`>`|大于号|(无)|
+|`|`|竖线|
+
+> **例子**：在 Mac 上命名 `2024/01/01:会议记录` 是合法的，但在 Windows 上会直接报错。请改为 `2024-01-01-会议记录`。
+
+### 2. 文件名大小写敏感问题
+
+- **Windows**: 不区分大小写 (`Note.md` 和 `note.md` 是同一个文件)。
+    
+- **Git/Linux**: 区分大小写。
+    
+- **操作禁忌**：不要在 Obsidian 中直接**仅修改文件名的大小写**（例如把 `Work.md` 重命名为 `work.md`）。
+    
+    - **后果**：这极易导致 Git 识别错误，产生两个看起来一样的文件，或者导致 Windows 端同步死循环。
+        
+    - **正确做法**：如果必须修改大小写，先重命名为其他名字（如 `Work_tmp.md`），提交一次，再改回 `work.md`。
         
 
+### 3. 避免超长路径
+
+Windows 对文件路径长度有限制（默认 260 字符）。尽量避免创建过深的文件夹层级（例如超过 5-6 层嵌套），防止同步失败。
 ## 四、推荐的 `.gitignore`
 
 在仓库根目录创建或编辑 `.gitignore`：
