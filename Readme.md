@@ -114,11 +114,8 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 在仓库根目录创建或编辑 `.gitignore`：
 
 ```gitignore
-
 # macOS
 .DS_Store
-
-  
 
 # Obsidian local state
 .obsidian/workspace*
