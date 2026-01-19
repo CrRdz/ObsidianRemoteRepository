@@ -79,13 +79,11 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 请严格复制以下内容填入对应设置项，以保持日志整洁：
 
 - **Commit Message:**
-  ```Plaintext
-   vault sync: {{date}} | {{hostname}} | {{numFiles}} files
-    ```
-    
-    Hostname: mac | windows
-    后续如有扩展 另行规范
-    
+	```Plaintext
+	vault sync: {{date}} | {{hostname}} | {{numFiles}} files
+	```
+	- _(Hostname: mac | windows 后续如有扩展 另行规范)_
+	
 - **List filenames affected by commit in commit body:** `开启`
     
     - _(这会自动在 commit message 下一行附带 affected files 列表)_
