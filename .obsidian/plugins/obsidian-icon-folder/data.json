@@ -6,6 +6,7 @@
     "emojiStyle": "native",
     "iconColor": null,
     "recentlyUsedIcons": [
+      "LiCoffee",
       "LiAnvil",
       "LiApple",
       "LiActivitySquare",
@@ -34,5 +35,5 @@
     "useInternalPlugins": false
   },
   "Y3S1 Notes": "LiApple",
-  "JavaNotes": "LiAnvil"
+  "JavaNotes": "LiCoffee"
 }
