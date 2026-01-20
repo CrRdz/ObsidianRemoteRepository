@@ -157,15 +157,11 @@ Redis是一个key-value的数据库，key一般是String类型，value的额类�
 
 通用指令是部分数据类型的，都可以使用的指令，常见的有：
 
-KEYS：查看符合模板的所有key 不建议在生产环境设备上使用
-
-DEL：删除一个指定的key
-
-EXISTS：判断key是否存在
-
-EXPIRE：给一个key设置有效期，有效期到期时该key会被自动删除
-
-TTL：查看一个key的剩余有效期
+- KEYS：查看符合模板的所有key 不建议在生产环境设备上使用
+- DEL：删除一个指定的key
+- EXISTS：判断key是否存在
+- EXPIRE：给一个key设置有效期，有效期到期时该key会被自动删除
+- TTL：查看一个key的剩余有效期
 
 通过help\[command\] 可以查看一个命令的具体用法
 
@@ -177,9 +173,9 @@ TTL：查看一个key的剩余有效期
 - int：整数类型，可以做自增，自减操作
 - Float：浮点类型，可以做自增，自减操作
 
-不管是那种格式，底层都是字节数组形式存储，只不过编码方式不同，字符串类型的最大空间不超过512m
+不管是那种格式，底层都是字节数组形式存储，只不过编码方式不同，字符串类型的最大空间不超过512mb
 
-- String常见的命令
+String常见的命令
 - SET：添加或者修改已经存在的一个String类型的键值对
 - GET：根据key获取String类型的value
 - MSET：批量添加多个String类型的键值对
@@ -195,9 +191,7 @@ TTL：查看一个key的剩余有效期
 
 #### Key的层级格式
 
-Redis中没有类似MySQL中的table概念，如何区分不同类型的key
-
-——key结构
+Redis中没有类似MySQL中的table概念，如何区分不同类型的key—key结构
 
 - Redis的key允许有多个单词形成层级结构，多个单词之间用：隔开，可用：
 
@@ -205,23 +199,21 @@ Redis中没有类似MySQL中的table概念，如何区分不同类型的key
 
 如果Value是一个java对象，例如一个User对象，则可以将对象序列化为JSON字符串存储
 
-Heima:user:1 {“id”:1, ”name”: ”Jack”, “age”: 21}
+`Heima:user:1 {“id”:1, ”name”: ”Jack”, “age”: 21}`
 
 #### Hash类型
 
 Hash类型也叫散列，其value是一个无序字典，类似于Java中HashMap结构，String结构是对象序列化为json字符串存储，当需要修改对象某个字段是很不方便
 
-|              |                            |
-| ------------ | -------------------------- |
 | KEY          | VALUE                      |
+| ------------ | -------------------------- |
 | heima：user：1 | {name”: ”Jack”, “age”: 21} |
 | heima：user：2 | {name”: ”Rose”, “age”: 18} |
 
 Hash结构可以将对象中的每个字段独立存储，可以对单个字段做CRUD
 
-|              |       |      |
-| ------------ | ----- | ---- |
 | KEY          | VALUE |      |
+| ------------ | ----- | ---- |
 | Field        | Value |      |
 | heima：user：1 | Name  | Rose |
 | Age          | 21    |      |
