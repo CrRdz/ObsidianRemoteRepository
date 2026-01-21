@@ -1,7 +1,7 @@
 - JDBC（Java DataBase Connectivity）是使用JAVA语言操作关系型数据库的一套API
 - 本质：一套操作所有关系型数据库的规则（接口），各个数据库厂商去实现这个接口，提供数据库驱动jar包 MySQL/Oracle... 实现类-驱动
 
-# JDBC快速入门
+# 1. JDBC快速入门
 
 ```Java
 // 创建工程，导入jar包 添加到lib文件中
@@ -33,7 +33,7 @@ public static void main(String\[\] args) throws Exception {   
 }
 ```
 
-# JDBC API
+# 2.JDBC API
 
 ## DriverManger（驱动管理类）
 
@@ -60,7 +60,7 @@ jdbc：mysql：//ip地址：端口号/数据库名称？参考键值对1&参考�
 
 如果连接的是本机mysql并且端口是默认的3306 可省略
 
-## Connection（数据库连接对象）
+## 3. Connection（数据库连接对象）
 
 2.  获取执行SQL的对象
 

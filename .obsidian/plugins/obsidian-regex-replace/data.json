@@ -1,6 +1,6 @@
 {
-  "findText": "&gt;",
-  "replaceText": ">",
+  "findText": "^#(?=#)",
+  "replaceText": "",
   "useRegEx": true,
   "selOnly": false,
   "caseInsensitive": false,
