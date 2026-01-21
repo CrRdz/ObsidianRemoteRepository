@@ -1,6 +1,6 @@
 # 技术栈
 
-- Javaweb：[[MySQL]]，[[JDBC]]，Maven，MyBatis，HTML，CSS，JavaScript，JSP，AJAX，Axios，VUE，ElementUI，Git
+- Javaweb：[[MySQL]]，[[JDBC]]，[[Maven]]，MyBatis，HTML，CSS，JavaScript，JSP，AJAX，Axios，VUE，ElementUI，Git
 - SSM：Spring，SpringMVC，Maven advanced，SpringBoot，MyBatisPlus
 - [[Linux]]
 - [[Redis]]：redis，redission，LuaScript，Lombok

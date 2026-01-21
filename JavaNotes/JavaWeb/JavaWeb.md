@@ -1,131 +1,19 @@
 
-# Maven
-
-- Maven是专门用于管理和构建Java项目的工具
-- 提供一套标准化的项目结构
-- 提供一套标准化的构建流程（编译，测试，打包，发布）
-- 提供一套依赖（第三方资源 插件 jar包）管理机制
-
-## Maven简介
-
-项目管理和构建工具，基于项目对象模型的概念，通过一小段描述信息来管理项目的构建，报告和文档
-
-### 仓库（repository）分类
-
-本地仓库：自己计算机上的一个目录
-
-中央仓库：有Maven团队维护的全球唯一的仓库
-
-远程仓库（私服）：一般由公司团队搭建的私有仓库
-
-当项目中使用坐标引入对应依赖jar包，首先会查找本地仓库中是否有对应的jar包：
-
-如果有，则在项目中直接引用
-
-如果没有，则去中央仓库中下载对应的jar包到本地仓库
-
-## Maven基本使用
-
-### Maven常用命令
-
-mvn compile 编译
-
-mvn clean 清理
-
-mvn test 测试
-
-mvn package 打包
-
-mvn install 安装
-
-### Maven生命周期
-
-Maven构建项目生命周期描述的是一次构建过程经历了多少个事件
-
-Maven对项目构建的生命周期划分为3套
-
-同一生命周期内，执行后边的命令，前边的所有命令会自动执行
-
-- Clean：清理工作
-
-Preclean-clean-postclean
-
-- default：核心工作，编译测试打包安装
-
-compile-test-package-install
-
-- Site：产生报告，发布站点
-
-presite-site-postsite
-
-### Maven坐标
-
-Maven中的坐标是资源的唯一标识
-
-使用坐标来定义项目或引入项目中需要的依赖
-
-Maven坐标主要组成
-
-1.  groupid：定义当前Maven项目隶属组织名称（通常域名反写）
-2.  Artifactid：定义当前Maven项目名称（通常是模块名称，例如order-service）
-3.  Version：定义当前版本号
-
-### 使用坐标导入jar包
-
-1.  在pom.xml中编写&lt;dependencies&gt;标签
-2.  在&lt;dependencies&gt;标签中，使用&lt;dependencies&gt;引入坐标
-3.  定义坐标的groupId,artifactId,version //_Alt+Insert_ 如果本地仓库有 模板生成
-4.  点击刷新按钮，使坐标生效
-
-### 依赖管理
-
-通过设置坐标的依赖范围（scope），可以设置对应jar包的作用范围：编译环境，测试环境，运行环境
-
-依赖范围取值：  
-compile；test；provided；runtime；system；import
-
-| | | | | |
-
-编译 测试 编译 测试 编译 引入DependencyManagement
-
-测试 测试 运行 测试
-
-运行
-
-&lt;scope&gt;默认值:compile
-
-Idea实用插件：Maven Helper
-
 # MyBatis
 
 - MyBitis 一款持久层框架，用于简化JDBC开发
+	持久层：负责将数据保存到数据库的那一层代码
 
-|
+- JavaEE三层框架：表现层，业务层，持久层
 
-持久层：负责将数据保存到数据库的那一层代码
-
-\--JavaEE三层框架：表现层，业务层，持久层
-
-|
-
-框架：
-
-框架是一个半成品软件，一套可重用，通用，软件基础代码模型
-
-在框架基础之上构建软件编写更加高效，规范，通用，可扩展
+框架：框架是一个半成品软件，一套可重用，通用，软件基础代码模型 在框架基础之上构建软件编写更加高效，规范，通用，可扩展
 
 - JDBC缺点
-- 硬编码 -配置文件
-
-注册驱动，获取连接
-
-SQL语句
-
-- 操作繁琐 -自动完成
-
-手动设置参数
-
-手动封装结果集
+	- 硬编码 -配置文件
+	- 注册驱动，获取连接
+	- SQL语句 操作繁琐 -自动完成
+	- 手动设置参数
+	- 手动封装结果集
 
 ## MyBatis快速入门
 
@@ -136,141 +24,135 @@ SQL语句
 3.  编写Mybatis核心配置文件 --- 替换连接信息 解决硬编码问题
 
 Mybatis-config.xml
-
-1.  &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
-2.  <!DOCTYPE configuration
-3.          PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-4.          "http://mybatis.org/dtd/mybatis-3-config.dtd">
-5.  &lt;configuration&gt;
-6.      &lt;environments default="development"&gt;
-7.          &lt;environment id="development"&gt;
-8.              &lt;transactionManager type="JDBC"/&gt;
-9.              &lt;dataSource type="POOLED"&gt;
-
-10.                 &lt;property name="driver" value="com.mysql.jdbc.Driver"/&gt;
-11.                 &lt;property name="url" value="jdbc:mysql:///mybatis?useSSL=false"/&gt;
-12.                 &lt;property name="username" value="root"/&gt;
-13.                 &lt;property name="password" value="1234"/&gt;
-14.             &lt;/dataSource&gt;
-15.         &lt;/environment&gt;
-16.     &lt;/environments&gt;
-17.     &lt;mappers&gt;
-18. &lt;!--加载sql映射文件--&gt;
-19.         &lt;mapper resource="UserMapper.xml"/&gt;
-20.     &lt;/mappers&gt;
-21. &lt;/configuration&gt;
-
-22.  编写SQL映射文件 --- 统一管理sql语句 解决硬编码问题
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql:///mybatis?useSSL=false"/>
+                <property name="username" value="root"/>
+                <property name="password" value="1234"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+<!--加载sql映射文件-->
+        <mapper resource="UserMapper.xml"/>
+    </mappers>
+</configuration>
+```
+ 编写SQL映射文件 --- 统一管理sql语句 解决硬编码问题
 
 操作User表就定义UserMapper.xml
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="test">
+    <select id="selectAll" resultType="com.itheima.pojo.User">
+        select \* from tb_user;
+    </select>
+/mapper>
+```
 
-1.  &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
-2.  <!DOCTYPE mapper
-3.          PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-4.          "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
-5.  &lt;mapper namespace="test"&gt;
-6.      &lt;select id="selectAll" resultType="com.itheima.pojo.User"&gt;
-7.          select \* from tb_user;
-8.      &lt;/select&gt;
-9. &lt;/mapper&gt;
-10. 编码
-11. 定义pojo类
-12. public class User {
-
-13.     private Integer id;
-14.     private String username;
-15.     private String password;
-16.     private String gender;
-17.     private String addr;
-
-18.      @setter
-19. @getter
-
-20.     @Override
-21.     public String toString() {
-22.         return "User{" +
-23.                 "id=" + id +
-24.                 ", username='" + username + '\\'' +
-25.                 ", password='" + password + '\\'' +
-26.                 ", gender='" + gender + '\\'' +
-27.                 ", addr='" + addr + '\\'' +
-28.                 '}';
-29.     }
-30. }
-
-31.  加载核心配置文件，获取SqlSessionFactory对象
-32.  获取SqlSession对象，执行SQL语句
-33.  释放资源
-34.  public static void main(String\[\] args) throws IOException {
-
-35.      _//1. 加载mybatis的核心配置文件，获取 SqlSessionFactory_
-36.      String resource = "mybatis-config.xml";
-37.      InputStream inputStream = Resources.getResourceAsStream(resource);
-38.      SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-
-39.     _//2. 获取SqlSession对象，用它来执行sql_
-40.     SqlSession sqlSession = sqlSessionFactory.openSession();
-
-41.     _//3. 执行sql 传入名称空间.唯一标识_
-42.     List&lt;User&gt; users = sqlSession.selectList("test.selectAll");
-43.     System.out.println(users);
-
-44.     _//4. 释放资源_
-45.     sqlSession.close();
-46. }
+编码
+- 定义pojo类
+```java
+public class User {
+    private Integer id;
+    private String username;
+    private String password;
+    private String gender;
+    private String addr;
+     @setter
+@getter
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\\'' +
+                ", password='" + password + '\\'' +
+                ", gender='" + gender + '\\'' +
+                ", addr='" + addr + '\\'' +
+                '}';
+    }
+}
+```
+ - 加载核心配置文件，获取SqlSessionFactory对象
+ - 获取SqlSession对象，执行SQL语句
+ - 释放资源
+```java
+ public static void main(String\[\] args) throws IOException {
+     //1. 加载mybatis的核心配置文件，获取 SqlSessionFactory
+     String resource = "mybatis-config.xml";
+     InputStream inputStream = Resources.getResourceAsStream(resource);
+     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    //2. 获取SqlSession对象，用它来执行sql
+    SqlSession sqlSession = sqlSessionFactory.openSession();
+    //3. 执行sql 传入名称空间.唯一标识
+    List<User> users = sqlSession.selectList("test.selectAll");
+    System.out.println(users);
+    //4. 释放资源
+    sqlSession.close();
+}
+```
 
 ## Mapper代理开发
 
-1.  定义与SQL映射文件同名的Mapper接口，并将Mapper接口和SQL映射文件放在同一目录
+1.  定义与SQL映射文件同名的Mapper接口，并将Mapper接口和SQL映射文件放在同一目录, 在resource下创建directory时用分隔符：/来代替”.”
 
-在resource下创建directory时用分隔符：/来代替”.”
-
+```java
 public interface UserMapper {
-
-&nbsp;   List&lt;User&gt; selectAll();
-
+	List<User> selectAll();
 }
+```
 
-1.  设置SQL映射文件的namespace属性为Mapper接口全限定名
+2.  设置SQL映射文件的namespace属性为Mapper接口全限定名
 
-&lt;mapper namespace="com.itheima.mapper.UsrMapper"&gt;
+```xml
+<mapper namespace="com.itheima.mapper.UsrMapper">
+```
 
-1.  在Mapper接口中定义方法，方法名就是SQL映射文件中sql语句中的id，并保持参数类型和返回值类型一致
-2.  编码
-3.  通过SqlSession的getMapper方法获取Mapper接口的代理对象
-4.  调用对应方法完成sql的执行
+3.  在Mapper接口中定义方法，方法名就是SQL映射文件中sql语句中的id，并保持参数类型和返回值类型一致
+4.  编码
+- 通过SqlSession的getMapper方法获取Mapper接口的代理对象
+- 调用对应方法完成sql的执行
 
-5.  public static void main(String\[\] args) throws IOException {
-
-6.      _//1. 加载mybatis的核心配置文件，获取 SqlSessionFactory_
-7.      String resource = "mybatis-config.xml";
-8.      InputStream inputStream = Resources.getResourceAsStream(resource);
-9.      SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-
-10.      _//2. 获取SqlSession对象，用它来执行sql_
-11.      SqlSession sqlSession = sqlSessionFactory.openSession();
-
-12.     _//3. 执行sql_
-13.     _//List&lt;User&gt; users = sqlSession.selectList("test.selectAll");_
-14.     _//System.out.println(users);_
-
-15.     _//3.1获取UserMapper接口的代理对象_
-16.     UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
-17.     List&lt;User&gt; users = userMapper.selectAll();
-
-18.     _//4. 释放资源_
-19.     sqlSession.close();
-
-20. }
+```java
+public static void main(String[] args) throws IOException {
+    //1. 加载mybatis的核心配置文件，获取 SqlSessionFactory
+    String resource = "mybatis-config.xml";
+    InputStream inputStream = Resources.getResourceAsStream(resource);
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    //2. 获取SqlSession对象，用它来执行sql
+     SqlSession sqlSession = sqlSessionFactory.openSession();
+    //3. 执行sql
+    //List<User> users = sqlSession.selectList("test.selectAll");
+    //System.out.println(users);
+    //3.1获取UserMapper接口的代理对象_
+    UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+    List<User> users = userMapper.selectAll();
+    //4. 释放资源
+    sqlSession.close();
+}
+```
 
 如果Mapper接口和SQL映射文件名称相同，并在同一目录下，则可以使用包扫描的方式简化SQL映射文件的加载
 
-1.  &lt;mappers&gt;
-2.  &lt;!--加载sql的映射文件--&gt;
-3.  &lt;!-- <mapper resource="com/itheima/mapper/UserMapper.xml"/&gt;-->
-4.      &lt;package name="com.itheima.mapper"/&gt;
-5.  &lt;/mappers&gt;
+```xml
+ <mappers>
+ <!--加载sql的映射文件-->
+ <!-- <mapper resource="com/itheima/mapper/UserMapper.xml"/>-->
+     <package name="com.itheima.mapper"/>
+ </mappers>
+```
 
 ## MyBatis核心配置文件
 
@@ -279,29 +161,26 @@ Mybatis-config.xml配置文件
 1.  Environment
 
 配置数据库连接环境信息。可以配置多个environment，通过default属性切换不同的environment
+```xml
+<environment default="   ">
+```
 
-&lt;environment default="   "&gt;
-
-1.  配置别名 可不区分大小写
-
-&lt;typeAliases&gt;
-
-&nbsp;       &lt;package name ="com.itheima.pojo"/&gt;
-
-&lt;/typeAliases&gt;
+2.  配置别名 可不区分大小写
+```xml
+<typeAliases>
+       <package name ="com.itheima.pojo"/>
+</typeAliases>
+```
 
 ## 配置文件完成增删改查
 
-例：完成品牌数据的增删改查操作
+例：完成品牌数据的增删改操作
 
 ### 环境准备
 
 数据库表tb_brand
-
 实体类Brand
-
 测试用例
-
 安装MyBatisX插件 实现XML和接口方法跳转，根据接口方法生成statement
 
 ### 查询-所有数据
@@ -309,65 +188,65 @@ Mybatis-config.xml配置文件
 1.  编写接口方法：Mapper接口 -Mapper-Brandmapper
 
 - 参数：无
-- 结果：List&lt;Brand&gt;
+- 结果：`List<Brand>`
 
-1.  public interface BrandMapper {
-2.      _/\*\*_
-3.       \* 查询所有
-4.       \*/
-5.      List&lt;Brand&gt; selectAll();
-6.  }
+```java
+ public interface BrandMapper {
+     /**
+      * 查询所有
+      */
+     List<Brand> selectAll();
+ }
+```
 
-7.  编写SQL语句：SQL映射文件 -BrandMapper.xml
-8.  &lt;select id="selectAll" resultType="com.itheima.pojo.Brand"&gt;
-
-别名 brand
-
-1.      select \* from tb_brand;
-2.  &lt;/select&gt;
+2.  编写SQL语句：SQL映射文件 -BrandMapper.xml
+```xml
+  <select id="selectAll" resultType="com.itheima.pojo.Brand"
+      select \* from tb_brand;
+  </select>
+```
 
 3.  执行方法，测试
-4.  @Test
-5.  public void testSelectAll() throws Exception {
-6.      _//1.获取SqlSessionFactory_
-7.     String resource = "mybatis-config.xml";
-8.     InputStream inputStream = Resources.getResourceAsStream(resource);
-9.     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+```java
+@Test
+public void testSelectAll() throws Exception {
+    //1.获取SqlSessionFactory
+   String resource = "mybatis-config.xml";
+   InputStream inputStream = Resources.getResourceAsStream(resource);
+     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    //2. 获取SqlSession对象
+   SqlSession sqlSession = sqlSessionFactory.openSession();
+   
+   //3.获取Mapper接口的代理对象
+    BrandMapper brandMapper = sqlSession.getMapper(BrandMapper.class);
+    
+    //4.执行方法
+    List<Brand> brands = brandMapper.selectAll();
+    System.out.println(brands);
+    
+    //5.释放资源
+    sqlSession.close();
+}    
+```
 
-10.     _//2. 获取SqlSession对象_
-11.    SqlSession sqlSession = sqlSessionFactory.openSession();
 
-12.    _//3.获取Mapper接口的代理对象_
-13.     BrandMapper brandMapper = sqlSession.getMapper(BrandMapper.class);
-
-14.     _//4.执行方法_
-15.     List&lt;Brand&gt; brands = brandMapper.selectAll();
-16.     System.out.println(brands);
-
-17.     _//5.释放资源_
-18.     sqlSession.close();
-
-19. }
-
-20.  执行后问题
+4.  执行后问题
 
 部分数据没有成功加载
-
 原因：数据库表的名称字段和实体类的属性名称不一样，则不能自动封装
 
-pojo实体类Brand中Brand字段
-
-MySQL中Brand字段
+pojo实体类Brand中Brand字段 与 MySQL中Brand（Brand_name）字段不一样
 
 解决：
 
 1.  起别名：//缺点：每次查询都需要定义一次别名
 
+```sql
 select id,brand_name,company_name,ordered,description,status 
 
 from tb_brand;
 
-\--使用别名
+--使用别名
 
 select 
 
@@ -384,40 +263,41 @@ Description,
 status 
 
 from tb_brand;
+```
 
 1.  Sql片段 //不灵活
-2.  &lt;sql id="brand_column"&gt;
+2.  <sql id="brand_column">
 3.       id,
 4.  brandName as brandName,
 5.  companyName as companyName,
 6.  ordered,
 7.  description,
 8.  status
-9.  &lt;/sql&gt;
+9.  </sql>
 
-10. &lt;select id="selectAll" resultType="com.itheima.pojo.Brand"&gt;
+10. <select id="selectAll" resultType="com.itheima.pojo.Brand">
 11.     select 
-12.         &lt;include refid="brand_column"/&gt;    
+12.         <include refid="brand_column"/>    
 13.     from tb_brand;
-14. &lt;/select&gt;
+14. </select>
 
 15.  resultMap 完成不一致的属性名和列名的映射
-16.  &lt;!-- id：唯一标识 type 映射的类型 支持别名--&gt;
-17.  &lt;resultMap id="brandResultMap" type="brand"&gt;
+16.  <!-- id：唯一标识 type 映射的类型 支持别名-->
+17.  <resultMap id="brandResultMap" type="brand">
 18.  <!--
 19.  id:完成主键字段的映射
 20.  result：完成一般字段的映射
 21.  \-->
-22.      &lt;result column="brand_name" property="brandName"/&gt;
-23.      &lt;result column="company_name" property="companyName"/&gt;
-24. &lt;/resultMap&gt;
+22.      <result column="brand_name" property="brandName"/>
+23.      <result column="company_name" property="companyName"/>
+24. </resultMap>
 
-25. &lt;!-- 将resultType 更改成resultMap--&gt;
-26. &lt;select id="selectAll" resultMap="brandResultMap"&gt;
+25. <!-- 将resultType 更改成resultMap-->
+26. <select id="selectAll" resultMap="brandResultMap">
 27.     select 
 28. \* 
 29. from tb_brand;
-30. &lt;/select&gt;
+30. </select>
 
 ### 查看详情
 
@@ -458,11 +338,11 @@ parameterType:可以省略
 
 \]\]>
 
-1.  &lt;select id="selectById" resultMap="brandResultMap"&gt;
+1.  <select id="selectById" resultMap="brandResultMap">
 2.      select
 3.          \*
 4.      from tb_brand where id = _#{id};_
-5.  &lt;/select&gt;
+5.  </select>
 
 6.  执行方法，测试
 7.  @Test
@@ -497,7 +377,7 @@ parameterType:可以省略
 1.  编写接口方法：Mapper接口
 
 - 参数：所有查询条件
-- 结果：List&lt;Brand&gt;
+- 结果：List<Brand>
 
 1.  散装参数接收 使用@Param
 2.  _/\*\*_
@@ -511,22 +391,22 @@ parameterType:可以省略
 10.  \*
 11.  \*/
 
-12. List&lt;Brand&gt; selectByCondition(@Param("status")int status,@Param("companyName")String companyName,@Param("brandName")String brandName);
+12. List<Brand> selectByCondition(@Param("status")int status,@Param("companyName")String companyName,@Param("brandName")String brandName);
 
 13. }
 14. 对象参数：对象中的属性名称要和SQL参数占位符名称一致
 
-List&lt;Brand&gt; selectByCondition(Brand brand);
+List<Brand> selectByCondition(Brand brand);
 
 1.  对象参数：对象中的属性名称要和SQL参数占位符名称一致
 
-List&lt;Brand&gt; selectByCondition(Map map);
+List<Brand> selectByCondition(Map map);
 
 1.  编写SQL语句：SQL映射文件
 2.  _<!--_
 3.  条件查询
 4.  \-->
-5.  &lt;select id="selectByCondition" resultMap="brandResultMap"&gt;
+5.  <select id="selectByCondition" resultMap="brandResultMap">
 6.      select
 7.          \*
 8.      from tb_brand
@@ -534,7 +414,7 @@ List&lt;Brand&gt; selectByCondition(Map map);
 10.         status = #{status}
 11.        and company_name like #{companyName}
 12.        and brand_name like #{brandName}
-13. &lt;/select&gt;
+13. </select>
 
 14.  执行方法，测试
 15.  @Test
@@ -572,9 +452,9 @@ List&lt;Brand&gt; selectByCondition(Map map);
 41.         BrandMapper brandMapper = sqlSession.getMapper(BrandMapper.class);
 
 42.         _//4.执行方法_
-43. _//        List&lt;Brand&gt; brands = brandMapper.selectByCondition(status, companyName, brandName); //对应散装参数接收_
-44. _//        List&lt;Brand&gt; brands = brandMapper.selectByCondition(brand);//对应对象参数接收_
-45.         List&lt;Brand&gt; brands = brandMapper.selectByCondition(map);_//对应Map参数接收_
+43. _//        List<Brand> brands = brandMapper.selectByCondition(status, companyName, brandName); //对应散装参数接收_
+44. _//        List<Brand> brands = brandMapper.selectByCondition(brand);//对应对象参数接收_
+45.         List<Brand> brands = brandMapper.selectByCondition(map);_//对应Map参数接收_
 46.         System.out.println(brands);
 
 47.         _//5.释放资源_
@@ -594,22 +474,22 @@ List&lt;Brand&gt; selectByCondition(Map map);
 
 BrandMapper.xml
 
-1.  &lt;select id="selectByCondition" resultMap="brandResultMap"&gt;
+1.  <select id="selectByCondition" resultMap="brandResultMap">
 2.      select
 3.          \*
 4.      from tb_brand
 5.      where
-6.          &lt;if test="status != null"&gt;
+6.          <if test="status != null">
 7.              status = _#{status}_
-8.          &lt;/if&gt;
-9.      &lt;if test="companyName != null and companyName != ''"&gt;
+8.          </if>
+9.      <if test="companyName != null and companyName != ''">
 10.         and company_name like _#{companyName}_
-11.     &lt;/if&gt;
-12.     &lt;if test="brandName != null and brandName != ''"&gt;
+11.     </if>
+12.     <if test="brandName != null and brandName != ''">
 13.         and brand_name like _#{brandName}_
-14.     &lt;/if&gt;
+14.     </if>
 
-15. &lt;/select&gt;
+15. </select>
 
 test=”条件”条件中使用其真正输入的值而不是属性 即companyName
 
@@ -620,41 +500,41 @@ test=”条件”条件中使用其真正输入的值而不是属性 即companyN
 优化
 
 1.  每个语句都加and，并且在where后加上1 = 1 恒等式
-2.  &lt;select id="selectByCondition" resultMap="brandResultMap"&gt;
+2.  <select id="selectByCondition" resultMap="brandResultMap">
 3.      select
 4.          \*
 5.      from tb_brand
 6.      where 1 = 1
-7.          &lt;if test="status != null"&gt;
+7.          <if test="status != null">
 8.          and status = _#{status}_
-9.          &lt;/if&gt;
-10.     &lt;if test="companyName != null and companyName != ''"&gt;
+9.          </if>
+10.     <if test="companyName != null and companyName != ''">
 11.         and company_name like _#{companyName}_
-12.     &lt;/if&gt;
-13.     &lt;if test="brandName != null and brandName != ''"&gt;
+12.     </if>
+13.     <if test="brandName != null and brandName != ''">
 14.         and brand_name like _#{brandName}_
-15.     &lt;/if&gt;
+15.     </if>
 
-16. &lt;/select&gt;
+16. </select>
 
 17.  where 标签（较常用）
-18.  &lt;select id="selectByCondition" resultMap="brandResultMap"&gt;
+18.  <select id="selectByCondition" resultMap="brandResultMap">
 19.      select
 20.          \*
 21.      from tb_brand
-22.      &lt;where&gt;
-23.          &lt;if test="status != null"&gt;
+22.      <where>
+23.          <if test="status != null">
 24.          and status = _#{status}_
-25.          &lt;/if&gt;
-26.     &lt;if test="companyName != null and companyName != ''"&gt;
+25.          </if>
+26.     <if test="companyName != null and companyName != ''">
 27.         and company_name like _#{companyName}_
-28.     &lt;/if&gt;
-29.     &lt;if test="brandName != null and brandName != ''"&gt;
+28.     </if>
+29.     <if test="brandName != null and brandName != ''">
 30.         and brand_name like _#{brandName}_
-31.     &lt;/if&gt;
-32.     &lt;/where&gt;
+31.     </if>
+32.     </where>
 
-33. &lt;/select&gt;
+33. </select>
 
 - 单条件-动态条件查询
 - 从多个条件中选择一个
@@ -663,29 +543,29 @@ test=”条件”条件中使用其真正输入的值而不是属性 即companyN
 1.  编写接口方法：Mapper接口
 
 - 参数：查询条件
-- 结果：List&lt;Brand&gt;
+- 结果：List<Brand>
 
-List&lt;Brand&gt; selectByConditionSingle(Brand brand);
+List<Brand> selectByConditionSingle(Brand brand);
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;/select&gt;
-3.  &lt;select id="selectByConditionSingle" resultMap="brandResultMap"&gt;
+2.  </select>
+3.  <select id="selectByConditionSingle" resultMap="brandResultMap">
 4.      select
 5.          \*
 6.      from tb_brand
 7.      where
-8.      &lt;choose&gt;_&lt;!--相当于switch--&gt;_
-9.          &lt;when test="status != null"&gt;_&lt;!--相当于case--&gt;_
+8.      <choose>_<!--相当于switch-->_
+9.          <when test="status != null">_<!--相当于case-->_
 10.             status = #{status}
-11.         &lt;/when&gt;
-12.         &lt;when test="companyName != null and companyName != ''"&gt; _&lt;!--相当于case--&gt;_
+11.         </when>
+12.         <when test="companyName != null and companyName != ''"> _<!--相当于case-->_
 13.             company_name like #{companyName}
-14.         &lt;/when&gt;
-15.         &lt;when test="brandName != null and brandName != ''"&gt;_&lt;!--相当于case--&gt;_
+14.         </when>
+15.         <when test="brandName != null and brandName != ''">_<!--相当于case-->_
 16.             brand_name like #{brandName}
-17.         &lt;/when&gt;
-18.     &lt;/choose&gt;
-19. &lt;/select&gt;
+17.         </when>
+18.     </choose>
+19. </select>
 
 20.  执行方法，测试
 21.      @Test
@@ -722,7 +602,7 @@ List&lt;Brand&gt; selectByConditionSingle(Brand brand);
 46.         BrandMapper brandMapper = sqlSession.getMapper(BrandMapper.class);
 
 47.         _//4.执行方法_
-48.         List&lt;Brand&gt; brands = brandMapper.selectByConditionSingle(brand);
+48.         List<Brand> brands = brandMapper.selectByConditionSingle(brand);
 49.         System.out.println(brands);
 
 50.         _//5.释放资源_
@@ -736,9 +616,9 @@ List&lt;Brand&gt; selectByConditionSingle(Brand brand);
 
 优化：恒等式
 
-1.  &lt;otherwise&gt;_&lt;!--相当于default--&gt;_
+1.  <otherwise>_<!--相当于default-->_
 2.     1=1
-3.  &lt;/otherwise&gt;
+3.  </otherwise>
 
 ### 添加
 
@@ -752,10 +632,10 @@ List&lt;Brand&gt; selectByConditionSingle(Brand brand);
 void add(Brand brand);
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;insert id="add"&gt;
+2.  <insert id="add">
 3.      insert into tb_brand (brand_name,company_name,ordered,description,status)
 4.      values (#{brandName},#{companyName},#{ordered},#{description},#{status});
-5.  &lt;/insert&gt;
+5.  </insert>
 
 6.  执行方法，测试
 7.  @Test
@@ -810,12 +690,12 @@ SqlSession sqlSession = sqlSessionFactory.openSession(true);
 
 在数据添加成功后，需要插入数据库数据的主键的值
 
-1.  &lt;insert id="add" useGeneratedKeys="true" keyProperty="id"&gt;
+1.  <insert id="add" useGeneratedKeys="true" keyProperty="id">
 2.      insert into tb_brand 
 3.  (brand_name,company_name,ordered,description,status)
 4.      values 
 5.  (#{brandName},#{companyName},#{ordered},#{description},#{status});
-6.  &lt;/insert&gt;
+6.  </insert>
 
 ### 修改
 
@@ -829,7 +709,7 @@ SqlSession sqlSession = sqlSessionFactory.openSession(true);
 int update (Brand brand);
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;update id="update"&gt;
+2.  <update id="update">
 3.      update tb_brand 
 4.      set 
 5.  brand_name = _#{brandName},_
@@ -838,7 +718,7 @@ int update (Brand brand);
 8.  _description = #{description},_
 9.  _status = #{status}_ 
 10. where _id = #{id};_
-11. &lt;/update&gt;
+11. </update>
 
 12.  执行方法，测试
 13.  @Test
@@ -888,27 +768,27 @@ int update (Brand brand);
 - 结果：void
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;update id="update"&gt;
+2.  <update id="update">
 3.      update tb_brand
-4.      &lt;set&gt;
-5.          &lt;if test="brandName != null and brandName != ''"&gt;
+4.      <set>
+5.          <if test="brandName != null and brandName != ''">
 6.          brand_name = _#{brandName},_
-7.          &lt;/if&gt;
-8.           &lt;if test="companyName != null and companyName != ''"&gt;
+7.          </if>
+8.           <if test="companyName != null and companyName != ''">
 9.          company_name = _#{companyName},_
-10.          &lt;/if&gt;
-11.         &lt;if test="ordered != null "&gt;
+10.          </if>
+11.         <if test="ordered != null ">
 12.         ordered = _#{ordered},_
-13.         &lt;/if&gt;
-14.         &lt;if test="description != null and description != ''"&gt;
+13.         </if>
+14.         <if test="description != null and description != ''">
 15.             description = _#{description},_
-16.         &lt;/if&gt;
-17.         &lt;if test="status != null "&gt;
+16.         </if>
+17.         <if test="status != null ">
 18.         status = _#{status}_
-19.         &lt;/if&gt;
-20.     &lt;/set&gt;
+19.         </if>
+20.     </set>
 21.          where id = _#{id};_
-22. &lt;/update&gt;
+22. </update>
 
 23.  执行方法，测试
 
@@ -924,9 +804,9 @@ int update (Brand brand);
 void deleteById(int id);
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;delete id="deleteById"&gt;
+2.  <delete id="deleteById">
 3.      delete from tb_brand where id = _#{id};_
-4.  &lt;/delete&gt;
+4.  </delete>
 
 5.  执行方法，测试
 6.  @Test
@@ -967,14 +847,14 @@ void deleteById(int id);
 void deleteByIds(@Param("ids") int\[\] ids);
 
 1.  编写SQL语句：SQL映射文件
-2.  &lt;delete id="deleteByIds"&gt;
+2.  <delete id="deleteByIds">
 3.      delete from tb_brand where id
 4.      in (
-5.          &lt;foreach collection="ids" item="id" separator=","open="(" close=")"&gt;
+5.          <foreach collection="ids" item="id" separator=","open="(" close=")">
 6.              _#{id}#{id}#{id}_
-7.          &lt;/foreach&gt;
+7.          </foreach>
 8.          )
-9.  &lt;/delete&gt;
+9.  </delete>
 
 10.  执行方法，测试
 11.  @Test
@@ -1064,7 +944,7 @@ MyBatis提供了ParaNameResolver类来进行参数封装
 - HTML（HyperText Markup Language）是一种语言，所有语言都是用HTML语言编写出来的
 - 标记语言：由标签构成的语言
 - HTML运行在浏览器上，HTML标签由浏览器来解析
-- HTML标签都是预定义好的。例如：使用&lt;img&gt;展示图片
+- HTML标签都是预定义好的。例如：使用<img>展示图片
 - W3C标准：网页主要由三部分组成
 - 结构：HTML
 - 表现：CSS
@@ -1072,22 +952,22 @@ MyBatis提供了ParaNameResolver类来进行参数封装
 
 ## HTML快速入门
 
-1.  &lt;html&gt;
-2.      &lt;head&gt;
-3.          &lt;title&gt;hello html&lt;/title&gt;
-4.      &lt;/head&gt;
-5.      &lt;body&gt;
-6.          &lt;font color = "red"&gt;htmllllll&lt;/font&gt;
-7.      &lt;/body&gt;
-8.  &lt;/html&gt;
+1.  <html>
+2.      <head>
+3.          <title>hello html</title>
+4.      </head>
+5.      <body>
+6.          <font color = "red">htmllllll</font>
+7.      </body>
+8.  </html>
 
 9.  HTML文件以.htm或.html为扩展名
 10.  HTML结构标签
 
-- &lt;HTML&gt; 定义HTML文档
-- &lt;head&gt; 定义关于文档的信息
-- &lt;title&gt; 定义文档的标题
-- &lt;body&gt; 定义文档的主题
+- <HTML> 定义HTML文档
+- <head> 定义关于文档的信息
+- <title> 定义文档的标题
+- <body> 定义文档的主题
 
 1.  HTML标签不区分大小写
 2.  HTML标签属性值 单双引皆可
@@ -1097,15 +977,15 @@ MyBatis提供了ParaNameResolver类来进行参数封装
 
 ### 基础标签
 
-&lt;h1&gt;-&lt;h6&gt; 定义标题，h1最大，h6最小
+<h1>-<h6> 定义标题，h1最大，h6最小
 
-&lt;b&gt; 定义粗体文本
+<b> 定义粗体文本
 
-&lt;i&gt; 定义斜体文本 &lt;u&gt; 定义文本下划线
+<i> 定义斜体文本 <u> 定义文本下划线
 
-&lt;p&gt; 定义段落&lt;center&gt; 定义文本居中
+<p> 定义段落<center> 定义文本居中
 
-&lt;br&gt; 定义新行&lt;hr&gt; 水平分割线
+<br> 定义新行<hr> 水平分割线
 
 html表示颜色：
 
@@ -1113,66 +993,66 @@ html表示颜色：
 2.  RGB表示（值1，值2，值3）取值范围0-255
 3.  #值1 #值2 #值3 ; 值的范围00~FF 十六进制表示
 
-4.  _&lt;!-- html5 标识--&gt;_
-5.  &lt;!DOCTYPE html&gt;
-6.  &lt;html lang="en"&gt;
-7.  &lt;head&gt;
-8.      _&lt;!-- 页面的字符集--&gt;_
-9.      &lt;meta charset="UTF-8"&gt;
-10.      &lt;title&gt;Title&lt;/title&gt;
-11.  &lt;/head&gt;
-12.  &lt;body&gt;
+4.  _<!-- html5 标识-->_
+5.  <!DOCTYPE html>
+6.  <html lang="en">
+7.  <head>
+8.      _<!-- 页面的字符集-->_
+9.      <meta charset="UTF-8">
+10.      <title>Title</title>
+11.  </head>
+12.  <body>
 
-13. &lt;h1&gt;我是标题 h1&lt;/h1&gt;
-14. &lt;h2&gt;我是标题 h2&lt;/h2&gt;
-15. &lt;h3&gt;我是标题 h3&lt;/h3&gt;
-16. &lt;h4&gt;我是标题 h4&lt;/h4&gt;
-17. &lt;h5&gt;我是标题 h5&lt;/h5&gt;
-18. &lt;h6&gt;我是标题 h6&lt;/h6&gt;
+13. <h1>我是标题 h1</h1>
+14. <h2>我是标题 h2</h2>
+15. <h3>我是标题 h3</h3>
+16. <h4>我是标题 h4</h4>
+17. <h5>我是标题 h5</h5>
+18. <h6>我是标题 h6</h6>
 
-19. &lt;hr&gt;
+19. <hr>
 20. _<!--_
 21.     html 表示颜色：
 22.         1. 英文单词：red,pink,blue...
 23.         2. rgb(值1,值2,值3)：值的取值范围：0~255  rgb(255,0,0)
 24.         3. #值1值2值3：值的范围：00~FF
 25. \-->
-26. &lt;font face="楷体" size="5" color="#ff0000"&gt;传智教育&lt;/font&gt;
+26. <font face="楷体" size="5" color="#ff0000">传智教育</font>
 
-27. &lt;hr&gt;
+27. <hr>
 
-28. 刚察草原绿草如茵，沙柳河水流淌入湖。藏族牧民索南才让家中，茶几上摆着馓子、麻花和水果，炉子上刚煮开的奶茶香气四溢……&lt;br&gt;
+28. 刚察草原绿草如茵，沙柳河水流淌入湖。藏族牧民索南才让家中，茶几上摆着馓子、麻花和水果，炉子上刚煮开的奶茶香气四溢……<br>
 
 29. 6月8日下午，习近平总书记来到青海省海北藏族自治州刚察县沙柳河镇果洛藏贡麻村，走进牧民索南才让家中，看望慰问藏族群众。
 
-30. &lt;hr&gt;
-31. &lt;p&gt;
+30. <hr>
+31. <p>
 32. 刚察草原绿草如茵，沙柳河水流淌入湖。藏族牧民索南才让家中，茶几上摆着馓子、麻花和水果，炉子上刚煮开的奶茶香气四溢……
-33. &lt;/p&gt;
-34. &lt;p&gt;6月8日下午，习近平总书记来到青海省海北藏族自治州刚察县沙柳河镇果洛藏贡麻村，走进牧民索南才让家中，看望慰问藏族群众。
-35. &lt;/p&gt;
-36. &lt;hr&gt;
+33. </p>
+34. <p>6月8日下午，习近平总书记来到青海省海北藏族自治州刚察县沙柳河镇果洛藏贡麻村，走进牧民索南才让家中，看望慰问藏族群众。
+35. </p>
+36. <hr>
 
-37. 沙柳河水流淌&lt;br&gt;
+37. 沙柳河水流淌<br>
 38. 
-39. &lt;b&gt;沙柳河水流淌&lt;/b&gt;&lt;br&gt;
-40. &lt;i&gt;沙柳河水流淌&lt;/i&gt;&lt;br&gt;
-41. &lt;u&gt;沙柳河水流淌&lt;/u&gt;&lt;br&gt;
+39. <b>沙柳河水流淌</b><br>
+40. <i>沙柳河水流淌</i><br>
+41. <u>沙柳河水流淌</u><br>
 
-42. &lt;hr&gt;
-43. &lt;center&gt;
-44. &lt;b&gt;沙柳河水流淌&lt;/b&gt;
-45. &lt;/center&gt;
-46. &lt;/body&gt;
-47. &lt;/html&gt;
+42. <hr>
+43. <center>
+44. <b>沙柳河水流淌</b>
+45. </center>
+46. </body>
+47. </html>
 
 ### 图片，音频，视频标签
 
-&lt;img&gt; 定义图片
+<img> 定义图片
 
-&lt;audio&gt; 定义音频
+<audio> 定义音频
 
-&lt;video&gt; 定义视频
+<video> 定义视频
 
 1.  img：定义图片
 
@@ -1180,19 +1060,19 @@ html表示颜色：
 - Height：定义图像的高度
 - Width：定义图像的宽度
 
-1.  &lt;img src="../img/a.jpg" width="300" height="400"&gt;
+1.  <img src="../img/a.jpg" width="300" height="400">
 2.  audio：定义音频，支持的音频格式：MP3，WAV，OGG
 
 - Src：规定的音频的URL
 - Controls：显示播放控件
 
-1.  &lt;audio src="b.mp3" controls&gt;&lt;/audio&gt;
+1.  <audio src="b.mp3" controls></audio>
 2.  Video：定义视频，支持的视频格式：MP4,WebM,OGG
 
 - Src：规定视频的URL
 - Controls：显示播放控件
 
-1.  &lt;video src="c.mp4" controls width="500" height="300"&gt;&lt;/video&gt;
+1.  <video src="c.mp4" controls width="500" height="300"></video>
 
 注：资源路径：
 
@@ -1201,7 +1081,7 @@ html表示颜色：
 
 ### 超链接标签
 
-&lt;a&gt; 定义超链接
+<a> 定义超链接
 
 Href：指定访问资源的URL
 
@@ -1210,42 +1090,42 @@ Target：指定打开资源的方式
 - \_self：默认值，在当前页面打开
 - \_blank：在空白页面打开
 
-1.  &lt;a href="https://www.itcast.cn" target="\_blank"&gt;点我有惊喜&lt;/a&gt;
+1.  <a href="https://www.itcast.cn" target="\_blank">点我有惊喜</a>
 
 ### 列表标签
 
 1.  有序列表（order list）
 2.  无序列表（unorder list）
 
-&lt;ol&gt; 定义有序列表
+<ol> 定义有序列表
 
-&lt;ul&gt; 定义无序列表
+<ul> 定义无序列表
 
-&lt;li&gt; 定义列表项
+<li> 定义列表项
 
-1.  &lt;ol type="A"&gt;
-2.      &lt;li&gt;咖啡&lt;/li&gt;
-3.      &lt;li&gt;茶&lt;/li&gt;
-4.      &lt;li&gt;牛奶&lt;/li&gt;
-5.  &lt;/ol&gt;
+1.  <ol type="A">
+2.      <li>咖啡</li>
+3.      <li>茶</li>
+4.      <li>牛奶</li>
+5.  </ol>
 
-6.  &lt;ul type="circle"&gt;
-7.      &lt;li&gt;咖啡&lt;/li&gt;
-8.     &lt;li&gt;茶&lt;/li&gt;
-9.     &lt;li&gt;牛奶&lt;/li&gt;
-10. &lt;/ul&gt;
+6.  <ul type="circle">
+7.      <li>咖啡</li>
+8.     <li>茶</li>
+9.     <li>牛奶</li>
+10. </ul>
 
 Type设置项目符号 不推荐使用
 
 ### 表格标签
 
-&lt;table&gt; 定义有序列表
+<table> 定义有序列表
 
-&lt;tr&gt; 定义行
+<tr> 定义行
 
-&lt;td&gt; 定义单元格
+<td> 定义单元格
 
-&lt;th&gt; 定义表头单元格
+<th> 定义表头单元格
 
 1.  table：定义表格
 
@@ -1262,62 +1142,62 @@ Type设置项目符号 不推荐使用
 - rowspan：规定单元格可横跨的行数
 - colspan：规定单元格可横跨的列数
 
-1.  &lt;table border="1" cellspacing="0" width="500"&gt;
-2.      &lt;tr&gt;
-3.          &lt;th&gt;序号&lt;/th&gt;
-4.          &lt;th&gt;品牌logo&lt;/th&gt;
-5.          &lt;th&gt;品牌名称&lt;/th&gt;
-6.          &lt;th&gt;企业名称&lt;/th&gt;
+1.  <table border="1" cellspacing="0" width="500">
+2.      <tr>
+3.          <th>序号</th>
+4.          <th>品牌logo</th>
+5.          <th>品牌名称</th>
+6.          <th>企业名称</th>
 
-7.      &lt;/tr&gt;
-8.      &lt;tr align="center"&gt;
-9.         &lt;td&gt;010&lt;/td&gt;
-10.         &lt;td&gt;&lt;img src="../img/三只松鼠.png" width="60" height="50"&gt;&lt;/td&gt;
-11.         &lt;td&gt;三只松鼠&lt;/td&gt;
-12.         &lt;td&gt;三只松鼠&lt;/td&gt;
-13.     &lt;/tr&gt;
+7.      </tr>
+8.      <tr align="center">
+9.         <td>010</td>
+10.         <td><img src="../img/三只松鼠.png" width="60" height="50"></td>
+11.         <td>三只松鼠</td>
+12.         <td>三只松鼠</td>
+13.     </tr>
 
-14.     &lt;tr align="center"&gt;
-15.         &lt;td&gt;009&lt;/td&gt;
-16.         &lt;td&gt;&lt;img src="../img/优衣库.png" width="60" height="50"&gt;&lt;/td&gt;
-17.         &lt;td&gt;优衣库&lt;/td&gt;
-18.         &lt;td&gt;优衣库&lt;/td&gt;
-19.     &lt;/tr&gt;
+14.     <tr align="center">
+15.         <td>009</td>
+16.         <td><img src="../img/优衣库.png" width="60" height="50"></td>
+17.         <td>优衣库</td>
+18.         <td>优衣库</td>
+19.     </tr>
 
-20.     &lt;tr align="center"&gt;
-21.         &lt;td&gt;008&lt;/td&gt;
-22.         &lt;td&gt;&lt;img src="../img/小米.png" width="60" height="50"&gt;&lt;/td&gt;
-23.         &lt;td&gt;小米&lt;/td&gt;
-24.         &lt;td&gt;小米科技有限公司&lt;/td&gt;
-25.     &lt;/tr&gt;
+20.     <tr align="center">
+21.         <td>008</td>
+22.         <td><img src="../img/小米.png" width="60" height="50"></td>
+23.         <td>小米</td>
+24.         <td>小米科技有限公司</td>
+25.     </tr>
 
-26. &lt;/table&gt;
+26. </table>
 
 对逐行进行编辑
 
 ### 布局标签
 
-&lt;div&gt; 定义html文档中的一个区域部分，经常与CSS一起使用。用来布局网页
+<div> 定义html文档中的一个区域部分，经常与CSS一起使用。用来布局网页
 
-&lt;span&gt; 用来组合行内元素
+<span> 用来组合行内元素
 
 ### 表单标签
 
-表单：在网页中主要负责数据采集功能，使用&lt;form&gt;标签定义表单
+表单：在网页中主要负责数据采集功能，使用<form>标签定义表单
 
 表单项（元素）：不同类型的input元素，下拉列表，文本域等
 
-&lt;form&gt; 定义表单
+<form> 定义表单
 
-&lt;input&gt; 定义表单项，通过type属性控制输入形式
+<input> 定义表单项，通过type属性控制输入形式
 
-&lt;label&gt; 为表单项定义标注
+<label> 为表单项定义标注
 
-&lt;select&gt; 定义下拉列表
+<select> 定义下拉列表
 
-&lt;option&gt; 定义下拉列表的列表项
+<option> 定义下拉列表的列表项
 
-&lt;textarea&gt; 定义文本域
+<textarea> 定义文本域
 
 Form：定义表单
 
@@ -1326,10 +1206,10 @@ Form：定义表单
 - Get：浏览器会将数据附在表单的action URL之后，大小有限制
 - Post：浏览器会将数据放到http请求协议的请求体中，大小无限制
 
-1.      &lt;form action="#" method="post/get"&gt;
-2.          &lt;input type="text" name="username"&gt;
-3.          &lt;input type="submit"&gt;
-4.      &lt;/form&gt;
+1.      <form action="#" method="post/get">
+2.          <input type="text" name="username">
+3.          <input type="submit">
+4.      </form>
 
 type取值：
 
@@ -1351,45 +1231,45 @@ Reset：定义重置按钮，重置按钮会清除表单中的所有数据
 
 Button：定义可点击按钮
 
-1.  &lt;form action="#" method="post"&gt;
-2.      &lt;input type="hidden" name="id" value="123"&gt;
+1.  <form action="#" method="post">
+2.      <input type="hidden" name="id" value="123">
 
-3.      &lt;label for="username"&gt;用户名：&lt;/label&gt;
-4.      &lt;input type="text" name="username" id="username"&gt;&lt;br&gt;
+3.      <label for="username">用户名：</label>
+4.      <input type="text" name="username" id="username"><br>
 
-5.      &lt;label for="password"&gt;密码：&lt;/label&gt;
-6.      &lt;input type="password" name="password" id="password"&gt;&lt;br&gt;
+5.      <label for="password">密码：</label>
+6.      <input type="password" name="password" id="password"><br>
 
 7.     性别：
-8.     &lt;input type="radio" name="gender" value="1" id="male"&gt; &lt;label for="male"&gt;男&lt;/label&gt;
-9.     &lt;input type="radio" name="gender" value="2" id="female"&gt; &lt;label for="female"&gt;女&lt;/label&gt;
-10.     &lt;br&gt;
+8.     <input type="radio" name="gender" value="1" id="male"> <label for="male">男</label>
+9.     <input type="radio" name="gender" value="2" id="female"> <label for="female">女</label>
+10.     <br>
 
 11.     爱好：
-12.     &lt;input type="checkbox" name="hobby" value="1"&gt; 旅游
-13.     &lt;input type="checkbox" name="hobby" value="2"&gt; 电影
-14.     &lt;input type="checkbox" name="hobby" value="3"&gt; 游戏
-15.     &lt;br&gt;
+12.     <input type="checkbox" name="hobby" value="1"> 旅游
+13.     <input type="checkbox" name="hobby" value="2"> 电影
+14.     <input type="checkbox" name="hobby" value="3"> 游戏
+15.     <br>
 
 16.     头像：
-17.     &lt;input type="file"&gt;&lt;br&gt;
+17.     <input type="file"><br>
 
 18.     城市:
-19.     &lt;select name="city"&gt;
-20.         &lt;option&gt;北京&lt;/option&gt;
-21.         &lt;option value="shanghai"&gt;上海&lt;/option&gt;
-22.         &lt;option&gt;广州&lt;/option&gt;
-23.     &lt;/select&gt;
-24.     &lt;br&gt;
+19.     <select name="city">
+20.         <option>北京</option>
+21.         <option value="shanghai">上海</option>
+22.         <option>广州</option>
+23.     </select>
+24.     <br>
 
 25.     个人描述：
-26.     &lt;textarea cols="20" rows="5" name="desc"&gt;&lt;/textarea&gt;
-27.     &lt;br&gt;
-28.     &lt;br&gt;
-29.     &lt;input type="submit" value="免费注册"&gt;
-30.     &lt;input type="reset" value="重置"&gt;
-31.     &lt;input type="button" value="一个按钮"&gt;
-32. &lt;/form&gt;
+26.     <textarea cols="20" rows="5" name="desc"></textarea>
+27.     <br>
+28.     <br>
+29.     <input type="submit" value="免费注册">
+30.     <input type="reset" value="重置">
+31.     <input type="button" value="一个按钮">
+32. </form>
 
 ## CSS
 
@@ -1400,26 +1280,26 @@ css是一门语言，用于控制网页表现，Cacading Style Sheet：层叠样
 CSS导入HTML有三种方式：
 
 1.  内联样式：在标签内部使用style属性，属性值是css属性键值对
-2.  内部样式：定义&lt;style&gt;标签，在标签内部定义css样式
+2.  内部样式：定义<style>标签，在标签内部定义css样式
 3.  外部样式：定义link标签，导入外部的css文件
-4.  &lt;head&gt;
-5.      &lt;meta charset="UTF-8"&gt;
-6.      &lt;title&gt;Title&lt;/title&gt;
-7.      &lt;style&gt; --内部样式
+4.  <head>
+5.      <meta charset="UTF-8">
+6.      <title>Title</title>
+7.      <style> --内部样式
 8.          span{
 9.              color: #ff0000;
 10.         }
-11.     &lt;/style&gt;
+11.     </style>
 
-12.     &lt;link href="../css/demo.css" rel="stylesheet"&gt;--外部样式
-13. &lt;/head&gt;
-14. &lt;body&gt;
+12.     <link href="../css/demo.css" rel="stylesheet">--外部样式
+13. </head>
+14. <body>
 
-15.     &lt;div style="color: red"&gt;hello css&lt;/div&gt;--内联样式
+15.     <div style="color: red">hello css</div>--内联样式
 
-16.     &lt;span&gt;hello css &lt;/span&gt;
+16.     <span>hello css </span>
 
-17.     &lt;p&gt;hello css&lt;/p&gt;
+17.     <p>hello css</p>
 
 ### CSS选择器
 
@@ -1431,11 +1311,11 @@ CSS导入HTML有三种方式：
 
 \--谁选择的范围越小 谁就生效
 
-1.  &lt;head&gt;
-2.      &lt;meta charset="UTF-8"&gt;
-3.      &lt;title&gt;Title&lt;/title&gt;
+1.  <head>
+2.      <meta charset="UTF-8">
+3.      <title>Title</title>
 
-4.      &lt;style&gt;
+4.      <style>
 
 5.          div{
 6.              color: red;
@@ -1448,16 +1328,16 @@ CSS导入HTML有三种方式：
 11.         .cls{
 12.             color: pink;
 13.         }
-14.     &lt;/style&gt;
+14.     </style>
 
-15. &lt;/head&gt;
-16. &lt;body&gt;
+15. </head>
+16. <body>
 
-17. &lt;div&gt;div1&lt;/div&gt;
-18. &lt;div id="name"&gt;div2&lt;/div&gt;
-19. &lt;div class="cls"&gt;div3&lt;/div&gt;
+17. <div>div1</div>
+18. <div id="name">div2</div>
+19. <div class="cls">div3</div>
 
-20. &lt;span class="cls"&gt;span&lt;/span&gt;
+20. <span class="cls">span</span>
 
 ## JavaScript
 
@@ -1468,23 +1348,23 @@ CSS导入HTML有三种方式：
 
 1.  内部脚本：将JS代码定义在HTML页面中
 
-在html中，JavaScript代码必须位于&lt;Script&gt;与&lt;/script&gt;标签中
+在html中，JavaScript代码必须位于<Script>与</script>标签中
 
-注：在HTML文档中可以在任意位置放置任意数量的&lt;script&gt;
+注：在HTML文档中可以在任意位置放置任意数量的<script>
 
-一般把脚本置于&lt;body&gt;元素的底部，可改善显示速度，不会因为脚本执行而拖慢显示
+一般把脚本置于<body>元素的底部，可改善显示速度，不会因为脚本执行而拖慢显示
 
-1.  &lt;script&gt;
+1.  <script>
 2.      alert("hello js1");
-3.  &lt;/script&gt;
+3.  </script>
 
 外部脚本：将JS代码定义在外部Js文件中，然后引入到HTML页面中
 
-&lt;script src="../js/demo.js"&gt;&lt;/script&gt;
+<script src="../js/demo.js"></script>
 
-注：外部脚本不能包含&lt;script&gt;标签
+注：外部脚本不能包含<script>标签
 
-&lt;script&gt;标签不能自闭合
+<script>标签不能自闭合
 
 ### JavaScript基础语法
 
@@ -1760,13 +1640,13 @@ setTimeout（）：在指定的毫秒数后调用函数或计算表达式
 
 要求实现：交替开关灯（一秒切换一张图片）
 
-1.  &lt;body&gt;
+1.  <body>
 
-2.  &lt;input type="button" onclick="on()" value="开灯"&gt;
-3.  &lt;img id="myImage" border="0" src="../imgs/off.gif" style="text-align:center;"&gt;
-4.  &lt;input type="button" onclick="off()" value="关灯"&gt;
+2.  <input type="button" onclick="on()" value="开灯">
+3.  <img id="myImage" border="0" src="../imgs/off.gif" style="text-align:center;">
+4.  <input type="button" onclick="off()" value="关灯">
 
-5.  &lt;script&gt;
+5.  <script>
 
 6.      function on(){
 7.         document.getElementById('myImage').src='../imgs/on.gif';
@@ -1791,9 +1671,9 @@ setTimeout（）：在指定的毫秒数后调用函数或计算表达式
 
 22.     },1000);
 
-23. &lt;/script&gt;
+23. </script>
 
-24. &lt;/body&gt;
+24. </body>
 
 ### DOM
 
@@ -1817,15 +1697,15 @@ Element：元素对象
 
 获取：使用Document对象的方法来获取
 
-1.  &lt;img id="light" src="../imgs/off.gif"&gt; &lt;br&gt;
+1.  <img id="light" src="../imgs/off.gif"> <br>
 
-2.  &lt;div class="cls"&gt;传智教育&lt;/div&gt;   &lt;br&gt;
-3.  &lt;div class="cls"&gt;黑马程序员&lt;/div&gt; &lt;br&gt;
+2.  <div class="cls">传智教育</div>   <br>
+3.  <div class="cls">黑马程序员</div> <br>
 
-4.  &lt;input type="checkbox" name="hobby"&gt; 电影
-5.  &lt;input type="checkbox" name="hobby"&gt; 旅游
-6.  &lt;input type="checkbox" name="hobby"&gt; 游戏
-7.  &lt;br&gt;
+4.  <input type="checkbox" name="hobby"> 电影
+5.  <input type="checkbox" name="hobby"> 旅游
+6.  <input type="checkbox" name="hobby"> 游戏
+7.  <br>
 
 getElementById：根据id属性值获取，返回一个Element对象
 
@@ -1858,13 +1738,13 @@ getElementByClassName：根据class属性值获取，返回Element对象数组
 
 \--查阅文档 w3school.com
 
-&lt;img&gt; src:img.src//改变图片属性
+<img> src:img.src//改变图片属性
 
-&lt;div&gt; style:设置元素css样式
+<div> style:设置元素css样式
 
 innnerHTML：设置元素内容
 
-&lt;checkbox&gt; checked:设置或返回checkbox是否被选中 true--被选中
+<checkbox> checked:设置或返回checkbox是否被选中 true--被选中
 
 1.  _[VUE](#_VUE)_
 
@@ -1884,16 +1764,16 @@ innnerHTML：设置元素内容
 
 方式一：通过HTML标签中的按属性进行绑定
 
-1.  &lt;input type="button" value="点我" onclick="on()"&gt; &lt;br&gt;
-2.  &lt;input type="button" value="再点我" id="btn"&gt;
+1.  <input type="button" value="点我" onclick="on()"> <br>
+2.  <input type="button" value="再点我" id="btn">
 
-3.  &lt;script&gt;
+3.  <script>
 
 4.      function on(){
 5.          alert("我被点了");
 6.      }
 
-7. &lt;/script&gt;
+7. </script>
 
 方式二：通过DOM元素属性绑定
 
@@ -1905,19 +1785,19 @@ innnerHTML：设置元素内容
 
 [HTML DOM 事件](https://www.w3school.com.cn/jsref/dom_obj_event.asp)
 
-1.  &lt;form id="register" action="#" &gt;
-2.      &lt;input type="text" name="username" /&gt;
+1.  <form id="register" action="#" >
+2.      <input type="text" name="username" />
 
-3.      &lt;input type="submit" value="提交"&gt;
-4.  &lt;/form&gt;
+3.      <input type="submit" value="提交">
+4.  </form>
 
-5.  &lt;script&gt;
+5.  <script>
 6.      document.getElementById("register").onsubmit = function (){
 7.          _//onsubmit 返回true，则表单会被提交，返回false，则表单不提交_
 8.         return true;
 9.     }
 
-10. &lt;/script&gt;
+10. </script>
 
 常见事件：
 
@@ -1933,7 +1813,7 @@ Onsubmit 当表单提交时触发该事件
 
 Onkeydown 某个键盘的键被按下
 
-&lt;font&gt; 定义文本的字体，字体尺寸，字体颜色
+<font> 定义文本的字体，字体尺寸，字体颜色
 
 Onmousover 鼠标被移到某元素之上
 
@@ -2010,62 +1890,62 @@ $：表示结束
 
 7-表单验证
 
-1.  &lt;!DOCTYPE html&gt;
-2.  &lt;html lang="en"&gt;
-3.  &lt;head&gt;
-4.      &lt;meta charset="UTF-8"&gt;
-5.      &lt;title&gt;欢迎注册&lt;/title&gt;
-6.      &lt;link href="../css/register.css" rel="stylesheet"&gt;
-7.  &lt;/head&gt;
-8.  &lt;body&gt;
+1.  <!DOCTYPE html>
+2.  <html lang="en">
+3.  <head>
+4.      <meta charset="UTF-8">
+5.      <title>欢迎注册</title>
+6.      <link href="../css/register.css" rel="stylesheet">
+7.  </head>
+8.  <body>
 
-9. &lt;div class="form-div"&gt;
-10.     &lt;div class="reg-content"&gt;
-11.         &lt;h1&gt;欢迎注册&lt;/h1&gt;
-12.         &lt;span&gt;已有账号？&lt;/span&gt; &lt;a href="#"&gt;登录&lt;/a&gt;
-13.     &lt;/div&gt;
-14.     &lt;form id="reg-form" action="#" method="get"&gt;
+9. <div class="form-div">
+10.     <div class="reg-content">
+11.         <h1>欢迎注册</h1>
+12.         <span>已有账号？</span> <a href="#">登录</a>
+13.     </div>
+14.     <form id="reg-form" action="#" method="get">
 
-15.         &lt;table&gt;
+15.         <table>
 
-16.             &lt;tr&gt;
-17.                 &lt;td&gt;用户名&lt;/td&gt;
-18.                 &lt;td class="inputs"&gt;
-19.                     &lt;input name="username" type="text" id="username"&gt;
-20.                     &lt;br&gt;
-21.                     &lt;span id="username_err" class="err_msg" style="display: none"&gt;用户名不太受欢迎&lt;/span&gt;
-22.                 &lt;/td&gt;
+16.             <tr>
+17.                 <td>用户名</td>
+18.                 <td class="inputs">
+19.                     <input name="username" type="text" id="username">
+20.                     <br>
+21.                     <span id="username_err" class="err_msg" style="display: none">用户名不太受欢迎</span>
+22.                 </td>
 
-23.             &lt;/tr&gt;
+23.             </tr>
 
-24.             &lt;tr&gt;
-25.                 &lt;td&gt;密码&lt;/td&gt;
-26.                 &lt;td class="inputs"&gt;
-27.                     &lt;input name="password" type="password" id="password"&gt;
-28.                     &lt;br&gt;
-29.                     &lt;span id="password_err" class="err_msg" style="display: none"&gt;密码格式有误&lt;/span&gt;
-30.                 &lt;/td&gt;
-31.             &lt;/tr&gt;
+24.             <tr>
+25.                 <td>密码</td>
+26.                 <td class="inputs">
+27.                     <input name="password" type="password" id="password">
+28.                     <br>
+29.                     <span id="password_err" class="err_msg" style="display: none">密码格式有误</span>
+30.                 </td>
+31.             </tr>
 
-32.             &lt;tr&gt;
-33.                 &lt;td&gt;手机号&lt;/td&gt;
-34.                 &lt;td class="inputs"&gt;&lt;input name="tel" type="text" id="tel"&gt;
-35.                     &lt;br&gt;
-36.                     &lt;span id="tel_err" class="err_msg" style="display: none"&gt;手机号格式有误&lt;/span&gt;
-37.                 &lt;/td&gt;
-38.             &lt;/tr&gt;
+32.             <tr>
+33.                 <td>手机号</td>
+34.                 <td class="inputs"><input name="tel" type="text" id="tel">
+35.                     <br>
+36.                     <span id="tel_err" class="err_msg" style="display: none">手机号格式有误</span>
+37.                 </td>
+38.             </tr>
 
-39.         &lt;/table&gt;
+39.         </table>
 
-40.         &lt;div class="buttons"&gt;
-41.             &lt;input value="注 册" type="submit" id="reg_btn"&gt;
-42.         &lt;/div&gt;
-43.         &lt;br class="clear"&gt;
-44.     &lt;/form&gt;
+40.         <div class="buttons">
+41.             <input value="注 册" type="submit" id="reg_btn">
+42.         </div>
+43.         <br class="clear">
+44.     </form>
 
-45. &lt;/div&gt;
+45. </div>
 
-46. &lt;script&gt;
+46. <script>
 
 47.     _//1. 验证用户名是否符合规则_
 48.     _//1.1 获取用户名的输入框_
@@ -2160,9 +2040,9 @@ $：表示结束
 153.        return flag;
 154.    }
 
-156.&lt;/script&gt;
-157.&lt;/body&gt;
-158.&lt;/html&gt;
+156.</script>
+157.</body>
+158.</html>
 
 # Web核心
 
@@ -2296,7 +2176,7 @@ Archtype 创建项目 补齐缺失的目录结构：webapp
 
 4）在Tomcat中运行 通过
 
-&lt;packaging&gt;war&lt;/packaging&gt;
+<packaging>war</packaging>
 
 打包成war包移动到webapps目录下，即可自动解压
 
@@ -2306,21 +2186,21 @@ Archtype 创建项目 补齐缺失的目录结构：webapp
 
 右键文件选择run Maven-tomcat7：run
 
-1.      _&lt;!-- tomcat插件 --&gt;_
-2.      &lt;build&gt;
-3.          &lt;plugins&gt;
-4.              &lt;plugin&gt;
-5.                  &lt;groupId&gt;org.apache.tomcat.maven&lt;/groupId&gt;
-6.                  &lt;artifactId&gt;tomcat7-maven-plugin&lt;/artifactId&gt;
-7.                  &lt;version&gt;2.2&lt;/version&gt;
-8.              &lt;/plugin&gt;
-9.          &lt;/plugins&gt;
-10.     &lt;/build&gt;
+1.      _<!-- tomcat插件 -->_
+2.      <build>
+3.          <plugins>
+4.              <plugin>
+5.                  <groupId>org.apache.tomcat.maven</groupId>
+6.                  <artifactId>tomcat7-maven-plugin</artifactId>
+7.                  <version>2.2</version>
+8.              </plugin>
+9.          </plugins>
+10.     </build>
 
 可以设置端口号以及路径
 
-1.  &lt;port&gt;80&lt;/port&gt;
-2.  &lt;path&gt;/&lt;/path&gt;
+1.  <port>80</port>
+2.  <path>/</path>
 
 ## Servlet
 
@@ -2330,15 +2210,15 @@ Archtype 创建项目 补齐缺失的目录结构：webapp
 ### 快速入门
 
 1.  创建web项目，导入Servlet依赖坐标
-2.      _&lt;!-- 导入Servlet依赖坐标 --&gt;_
-3.      &lt;dependencies&gt;
-4.          &lt;dependency&gt;
-5.              &lt;groupId&gt;javax.servlet&lt;/groupId&gt;
-6.              &lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;
-7.              &lt;version&gt;3.1.0&lt;/version&gt;
-8.              &lt;scope&gt;provided&lt;/scope&gt;
-9.          &lt;/dependency&gt;
-10.     &lt;/dependencies&gt;
+2.      _<!-- 导入Servlet依赖坐标 -->_
+3.      <dependencies>
+4.          <dependency>
+5.              <groupId>javax.servlet</groupId>
+6.              <artifactId>javax.servlet-api</artifactId>
+7.              <version>3.1.0</version>
+8.              <scope>provided</scope>
+9.          </dependency>
+10.     </dependencies>
 
 11.  创建：定义一个类，实现Servlet接口，并重写接口中所有方法，并在service方法中输入一句话
 
@@ -2575,16 +2455,16 @@ Servlet从3.0开始支持使用注解注释，3.0之前只支持XML配置文件�
 1.  编写Servlet类
 2.  在web.xml中配置该Servlet
 3.      _<!--_Servlet 全类名-->
-4.      &lt;servlet&gt;
-5.          &lt;servlet-name&gt;demo13&lt;/servlet-name&gt;
-6.          &lt;servlet-class&gt;com.itheima.web.ServletDemo13&lt;/servlet-class&gt;
-7.      &lt;/servlet&gt;
+4.      <servlet>
+5.          <servlet-name>demo13</servlet-name>
+6.          <servlet-class>com.itheima.web.ServletDemo13</servlet-class>
+7.      </servlet>
 
 8.      _<!--_Servlet 访问路径-->
-9.     &lt;servlet-mapping&gt;
-10.         &lt;servlet-name&gt;demo13&lt;/servlet-name&gt;
-11.         &lt;url-pattern&gt;/demo13&lt;/url-pattern&gt;
-12.     &lt;/servlet-mapping&gt;
+9.     <servlet-mapping>
+10.         <servlet-name>demo13</servlet-name>
+11.         <url-pattern>/demo13</url-pattern>
+12.     </servlet-mapping>
 
 ## Request & Response
 
@@ -2645,18 +2525,18 @@ User-Agent：Mozilla/5.0 Chrome/91.0.3372.106
 
 GET请求方式和POST请求方式的区别在于获取请求参数的方式不一样，是否可以提供一种统一获取请求参数的方式，从而统一doGet和doPost方法内的代码？
 
-Map&lt;String,String\[\]&gt;getParameterMap():获取所有参数Map集合
+Map<String,String\[\]>getParameterMap():获取所有参数Map集合
 
 String\[\] getParameterValues(String name)：根据名称获取参数值（数组）
 
 String getParameter(String name):根据名称获取参数值（单个值）
 
-1.  &lt;form action="/request-demo/req2" method="get"&gt;
-2.      &lt;input type="text" name="username"&gt;&lt;br&gt;
-3.      &lt;input type="password" name="password"&gt;&lt;br&gt;
-4.      &lt;input type="checkbox" name="hobby" value="1"&gt; 游泳
-5.      &lt;input type="checkbox" name="hobby" value="2"&gt; 爬山 &lt;br&gt;
-6.      &lt;input type="submit"&gt;
+1.  <form action="/request-demo/req2" method="get">
+2.      <input type="text" name="username"><br>
+3.      <input type="password" name="password"><br>
+4.      <input type="checkbox" name="hobby" value="1"> 游泳
+5.      <input type="checkbox" name="hobby" value="2"> 爬山 <br>
+6.      <input type="submit">
 
 后端：
 
@@ -2665,7 +2545,7 @@ String getParameter(String name):根据名称获取参数值（单个值）
 3.          _//System.out.println("get....");_
 
 4.          _//1. 获取所有参数的Map集合_
-5.          Map&lt;String, String\[\]&gt; map = req.getParameterMap();
+5.          Map<String, String\[\]> map = req.getParameterMap();
 6.          for (String key : map.keySet()) {
 7.              _// username:zhangsan lisi_
 8.              System.out.print(key+":");
@@ -2788,7 +2668,7 @@ void setStatus(int sc)：设置响应状态码
 
 void setHeader（String name，String value）：设置响应头键值对
 
-1.  响应体 &lt;html&gt;&lt;head&gt;&lt;head&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;
+1.  响应体 <html><head><head><body></body></html>
 
 PrintWriter getWriter：获取字符输出流
 
@@ -2825,9 +2705,9 @@ resp.sendRedirect（“资源B的路径”）
 
 例：
 
-&lt;a href = ‘路径’&gt; 加虚拟目录
+<a href = ‘路径’> 加虚拟目录
 
-&lt;form action = ’路径’&gt; 加虚拟目录
+<form action = ’路径’> 加虚拟目录
 
 req.getrequestDispatcher（‘路径’） 不加虚拟目录
 
@@ -2850,7 +2730,7 @@ writer.write("aaa");
 
 1.  PrintWriter writer = resp.getwriter（）；
 2.  response.setHeader("content-type","text/html");
-3.  writer.write("&lt;h1&gt;aaa&lt;/h1&gt;");
+3.  writer.write("<h1>aaa</h1>");
 
 4.  细节
 5.  流不需要关闭
@@ -2858,7 +2738,7 @@ writer.write("aaa");
 7.  response.setContentType("text/html;charset = utf-8");
 8.  PrintWriter writer = resp.getwriter（）；
 9.  writer.write("你好");
-10.  writer.write("&lt;h1&gt;aaa&lt;/h1&gt;");
+10.  writer.write("<h1>aaa</h1>");
 
 #### Response响应字节数据
 
@@ -2887,11 +2767,11 @@ while ((len = fls.read(buff))!= -1){
 
 pom.xml中导入坐标
 
-1.  &lt;dependency&gt;
-2.        &lt;groupId&gt;commons-io&lt;/groupId&gt;
-3.        &lt;artifactId&gt;commons-io&lt;/artifactId&gt;
-4.        &lt;version&gt;2.6&lt;/version&gt;
-5.  &lt;/dependency&gt;
+1.  <dependency>
+2.        <groupId>commons-io</groupId>
+3.        <artifactId>commons-io</artifactId>
+4.        <version>2.6</version>
+5.  </dependency>
 
 使用:
 
@@ -2918,33 +2798,33 @@ fis.close();
 
 Mybatis-config配置文件
 
-1.  &lt;configuration&gt;
-2.      _&lt;!--起别名--&gt;_
-3.      &lt;typeAliases&gt;
-4.          &lt;package name="com.itheima.pojo"/&gt;
-5.      &lt;/typeAliases&gt;
+1.  <configuration>
+2.      _<!--起别名-->_
+3.      <typeAliases>
+4.          <package name="com.itheima.pojo"/>
+5.      </typeAliases>
 
-6.      &lt;environments default="development"&gt;
-7.          &lt;environment id="development"&gt;
-8.              &lt;transactionManager type="JDBC"/&gt;
-9.             &lt;dataSource type="POOLED"&gt;
-10.                 &lt;property name="driver" value="com.mysql.jdbc.Driver"/&gt;
-11.                 &lt;property name="url" value="jdbc:mysql:///db1?useSSL=false&amp;useServerPrepStmts=true"/&gt;
-12.                 &lt;property name="username" value="root"/&gt;
-13.                 &lt;property name="password" value="1234"/&gt;
-14.             &lt;/dataSource&gt;
-15.         &lt;/environment&gt;
-16.     &lt;/environments&gt;
-17.     &lt;mappers&gt;
-18.         _&lt;!--扫描mapper--&gt;_
-19.         &lt;package name="com.itheima.mapper"/&gt;
-20.     &lt;/mappers&gt;
+6.      <environments default="development">
+7.          <environment id="development">
+8.              <transactionManager type="JDBC"/>
+9.             <dataSource type="POOLED">
+10.                 <property name="driver" value="com.mysql.jdbc.Driver"/>
+11.                 <property name="url" value="jdbc:mysql:///db1?useSSL=false&amp;useServerPrepStmts=true"/>
+12.                 <property name="username" value="root"/>
+13.                 <property name="password" value="1234"/>
+14.             </dataSource>
+15.         </environment>
+16.     </environments>
+17.     <mappers>
+18.         _<!--扫描mapper-->_
+19.         <package name="com.itheima.mapper"/>
+20.     </mappers>
 
 UserMapper.xml映射文件
 
-1.  &lt;mapper namespace="com.itheima.mapper.UserMapper"&gt;
+1.  <mapper namespace="com.itheima.mapper.UserMapper">
 
-2.  &lt;/mapper&gt;
+2.  </mapper>
 
 3.  接口UseMapper
 4.  @Select("select \* from tb_user where username = #{username} and password = #{password}")
@@ -2954,20 +2834,20 @@ UserMapper.xml映射文件
 
 Login.html
 
-1.  &lt;div id="loginDiv"&gt;
-2.      &lt;form action="/request-demo/loginServlet" method="post" id="form"&gt;
-3.          &lt;h1 id="loginMsg"&gt;LOGIN IN&lt;/h1&gt;
-4.          &lt;p&gt;Username:&lt;input id="username" name="username" type="text"&gt;&lt;/p&gt;
+1.  <div id="loginDiv">
+2.      <form action="/request-demo/loginServlet" method="post" id="form">
+3.          <h1 id="loginMsg">LOGIN IN</h1>
+4.          <p>Username:<input id="username" name="username" type="text"></p>
 
-5.          &lt;p&gt;Password:&lt;input id="password" name="password" type="password"&gt;&lt;/p&gt;
+5.          <p>Password:<input id="password" name="password" type="password"></p>
 
-6.          &lt;div id="subDiv"&gt;
-7.              &lt;input type="submit" class="button" value="login up"&gt;
-8.             &lt;input type="reset" class="button" value="reset"&gt;&nbsp;&nbsp;&nbsp;
-9.             &lt;a href="register.html"&gt;没有账号？点击注册&lt;/a&gt;
-10.         &lt;/div&gt;
-11.     &lt;/form&gt;
-12. &lt;/div&gt;
+6.          <div id="subDiv">
+7.              <input type="submit" class="button" value="login up">
+8.             <input type="reset" class="button" value="reset">&nbsp;&nbsp;&nbsp;
+9.             <a href="register.html">没有账号？点击注册</a>
+10.         </div>
+11.     </form>
+12. </div>
 
 13.  在LoginServlet中使用MyBatis查询数据库，验证用户名密码是否正确
 
@@ -3025,43 +2905,43 @@ LoginServlet.java
 18.    void add(User user);
 
 19.  用户填写用户名，密码等信息，点击注册按钮，提交到registerServlet
-20.  &lt;div class="form-div"&gt;
-21.      &lt;div class="reg-content"&gt;
-22.          &lt;h1&gt;欢迎注册&lt;/h1&gt;
-23.          &lt;span&gt;已有账号？&lt;/span&gt; &lt;a href="login.html"&gt;登录&lt;/a&gt;
-24.      &lt;/div&gt;
-25.      &lt;form id="reg-form" action="/request-demo/registerServlet" method="post"&gt;
+20.  <div class="form-div">
+21.      <div class="reg-content">
+22.          <h1>欢迎注册</h1>
+23.          <span>已有账号？</span> <a href="login.html">登录</a>
+24.      </div>
+25.      <form id="reg-form" action="/request-demo/registerServlet" method="post">
 
-26.          &lt;table&gt;
+26.          <table>
 
-27.             &lt;tr&gt;
-28.                 &lt;td&gt;用户名&lt;/td&gt;
-29.                 &lt;td class="inputs"&gt;
-30.                     &lt;input name="username" type="text" id="username"&gt;
-31.                     &lt;br&gt;
-32.                     &lt;span id="username_err" class="err_msg" style="display: none"&gt;用户名不太受欢迎&lt;/span&gt;
-33.                 &lt;/td&gt;
+27.             <tr>
+28.                 <td>用户名</td>
+29.                 <td class="inputs">
+30.                     <input name="username" type="text" id="username">
+31.                     <br>
+32.                     <span id="username_err" class="err_msg" style="display: none">用户名不太受欢迎</span>
+33.                 </td>
 
-34.             &lt;/tr&gt;
+34.             </tr>
 
-35.             &lt;tr&gt;
-36.                 &lt;td&gt;密码&lt;/td&gt;
-37.                 &lt;td class="inputs"&gt;
-38.                     &lt;input name="password" type="password" id="password"&gt;
-39.                     &lt;br&gt;
-40.                     &lt;span id="password_err" class="err_msg" style="display: none"&gt;密码格式有误&lt;/span&gt;
-41.                 &lt;/td&gt;
-42.             &lt;/tr&gt;
+35.             <tr>
+36.                 <td>密码</td>
+37.                 <td class="inputs">
+38.                     <input name="password" type="password" id="password">
+39.                     <br>
+40.                     <span id="password_err" class="err_msg" style="display: none">密码格式有误</span>
+41.                 </td>
+42.             </tr>
 
-43.         &lt;/table&gt;
+43.         </table>
 
-44.         &lt;div class="buttons"&gt;
-45.             &lt;input value="注 册" type="submit" id="reg_btn"&gt;
-46.         &lt;/div&gt;
-47.         &lt;br class="clear"&gt;
-48.     &lt;/form&gt;
+44.         <div class="buttons">
+45.             <input value="注 册" type="submit" id="reg_btn">
+46.         </div>
+47.         <br class="clear">
+48.     </form>
 
-49. &lt;/div&gt;
+49. </div>
 
 50.  在RegisterServlet中使用MyBatis保存数据
 51.  @Override
@@ -3158,56 +3038,56 @@ LoginServlet.java
 - JSP脚本用于在JSP页面内定义Java代码
 - JSP脚本分类
 
-&lt;%..%&gt;：内容会直接放到_jspService()方法之中
+<%..%>：内容会直接放到_jspService()方法之中
 
-&lt;%=...%&gt;：内容会放到out.print()方法中，作为out.print()的参数
+<%=...%>：内容会放到out.print()方法中，作为out.print()的参数
 
-&lt;%!...%&gt;：内容会放到_jspService()之外，被类直接包含
+<%!...%>：内容会放到_jspService()之外，被类直接包含
 
 1.  关于脚本与截断的案例
-2.  &lt;table border="1" cellspacing="0" width="800"&gt;
-3.      &lt;tr&gt;
-4.          &lt;th&gt;序号&lt;/th&gt;
-5.          &lt;th&gt;品牌名称&lt;/th&gt;
-6.          &lt;th&gt;企业名称&lt;/th&gt;
-7.          &lt;th&gt;排序&lt;/th&gt;
-8.          &lt;th&gt;品牌介绍&lt;/th&gt;
-9.          &lt;th&gt;状态&lt;/th&gt;
-10.         &lt;th&gt;操作&lt;/th&gt;
-11.     &lt;/tr&gt;
+2.  <table border="1" cellspacing="0" width="800">
+3.      <tr>
+4.          <th>序号</th>
+5.          <th>品牌名称</th>
+6.          <th>企业名称</th>
+7.          <th>排序</th>
+8.          <th>品牌介绍</th>
+9.          <th>状态</th>
+10.         <th>操作</th>
+11.     </tr>
 12.     <%
 13.         for (int i = 0; i < brands.size(); i++) {
 14.             Brand brand = brands.get(i);
 15.     %>
 
-16.     &lt;tr align="center"&gt;
-17.         &lt;td&gt;&lt;%=brand.getId()%&gt;&lt;/td&gt;
-18.         &lt;td&gt;&lt;%=brand.getBrandName()%&gt;&lt;/td&gt;
-19.         &lt;td&gt;&lt;%=brand.getCompanyName()%&gt;&lt;/td&gt;
-20.         &lt;td&gt;&lt;%=brand.getOrdered()%&gt;&lt;/td&gt;
-21.         &lt;td&gt;&lt;%=brand.getDescription()%&gt;&lt;/td&gt;
+16.     <tr align="center">
+17.         <td><%=brand.getId()%></td>
+18.         <td><%=brand.getBrandName()%></td>
+19.         <td><%=brand.getCompanyName()%></td>
+20.         <td><%=brand.getOrdered()%></td>
+21.         <td><%=brand.getDescription()%></td>
 
 22.         <%
 23.             if(brand.getStatus() == 1){
 24.                 //显示启用
 25.         %>
-26.             &lt;td&gt;&lt;%="启用"%&gt;&lt;/td&gt;
+26.             <td><%="启用"%></td>
 27.         <%
 28.             }else {
 29.                 // 显示禁用
 30.         %>
-31.             &lt;td&gt;&lt;%="禁用"%&gt;&lt;/td&gt;
+31.             <td><%="禁用"%></td>
 32.         <%
 33.             }
 34.         %>
 
-35.         &lt;td&gt;&lt;a href="#"&gt;修改&lt;/a&gt; &lt;a href="#"&gt;删除&lt;/a&gt;&lt;/td&gt;
-36.     &lt;/tr&gt;
+35.         <td><a href="#">修改</a> <a href="#">删除</a></td>
+36.     </tr>
 37.     <%
 38.         }
 39.     %>
 
-40. &lt;/table&gt;
+40. </table>
 
 41.  JSP的缺点
 
@@ -3231,16 +3111,16 @@ Servlet负责逻辑处理与数据封装处理，转发到JSP中
 ### JSP快速入门
 
 1.  导入JSP坐标
-2.  &lt;dependency&gt;
-3.      &lt;groupId&gt;javax.servlet.jsp&lt;/groupId&gt;
-4.      &lt;artifactId&gt;jsp-api&lt;/artifactId&gt;
-5.      &lt;version&gt;2.2&lt;/version&gt;
-6.      &lt;scope&gt;provided&lt;/scope&gt;
-7.  &lt;/dependency&gt;
+2.  <dependency>
+3.      <groupId>javax.servlet.jsp</groupId>
+4.      <artifactId>jsp-api</artifactId>
+5.      <version>2.2</version>
+6.      <scope>provided</scope>
+7.  </dependency>
 
 8.  创建JSP文件
 9.  编写HTML标签和Java代码
-10.      &lt;h1&gt;hello jsp&lt;/h1&gt;
+10.      <h1>hello jsp</h1>
 
 11.      <%
 12.          System.out.println("hello,jsp~");
@@ -3258,7 +3138,7 @@ ${brands}：获取域中存储的key为brands的数据
 1.  @Override
 2.  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 3.      _//1. 准备数据_
-4.      List&lt;Brand&gt; brands = new ArrayList&lt;Brand&gt;();
+4.      List<Brand> brands = new ArrayList<Brand>();
 5.      brands.add(new Brand(1,"三只松鼠","三只松鼠",100,"三只松鼠，好吃不上火",1));
 6.      brands.add(new Brand(2,"优衣库","优衣库",200,"优衣库，服适人生",0));
 7.      brands.add(new Brand(3,"小米","小米科技有限公司",1000,"为发烧而生",1));
@@ -3290,47 +3170,47 @@ el表达式获取数据，会依次从这4个域中寻找，直到找到为止
 
 - Jsp Standard Tag Library，JSP标准标签库。使用标签取代JSP页面上的Java代码
 
-&lt;c:if&gt;
+<c:if>
 
-&lt;c:foreach&gt;
+<c:foreach>
 
 1）JSTL快速入门
 
 1.  导入坐标
-2.  &lt;dependency&gt;
-3.      &lt;groupId&gt;jstl&lt;/groupId&gt;
-4.      &lt;artifactId&gt;jstl&lt;/artifactId&gt;
-5.      &lt;version&gt;1.2&lt;/version&gt;
-6.  &lt;/dependency&gt;
-7.  &lt;dependency&gt;
-8.       &lt;groupId&gt;taglibs&lt;/groupId&gt;
-9.       &lt;artifactId&gt;standard&lt;/artifactId&gt;
-10.      &lt;version&gt;1.1.2&lt;/version&gt;
-11. &lt;/dependency&gt;
+2.  <dependency>
+3.      <groupId>jstl</groupId>
+4.      <artifactId>jstl</artifactId>
+5.      <version>1.2</version>
+6.  </dependency>
+7.  <dependency>
+8.       <groupId>taglibs</groupId>
+9.       <artifactId>standard</artifactId>
+10.      <version>1.1.2</version>
+11. </dependency>
 
 12.  在JSP页面上引入JSTL标签库
 
-&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 1.  使用：一般与EL表达式结合使用
 
-&lt;c:if&gt;
+<c:if>
 
 jstl-if.jsp
 
-1.      &lt;c:if test="${status ==1}"&gt;
+1.      <c:if test="${status ==1}">
 2.          启用
-3.      &lt;/c:if&gt;
+3.      </c:if>
 
-4.      &lt;c:if test="${status ==0}"&gt;
+4.      <c:if test="${status ==0}">
 5.          禁用
-6.      &lt;/c:if&gt;
+6.      </c:if>
 
 ServletDemo1:
 
 request.getRequestDispatcher("/jstl-if.jsp").forward(request,response);
 
-&lt;c:forEach&gt;：相当于for循环
+<c:forEach>：相当于for循环
 
 Items：被遍历的容器
 
@@ -3342,45 +3222,45 @@ status有两个属性 index从0开始，count从1开始
 
 jstl-foreach.jsp
 
-1.  &lt;input type="button" value="新增"&gt;&lt;br&gt;
-2.  &lt;hr&gt;
-3.  &lt;table border="1" cellspacing="0" width="800"&gt;
-4.      &lt;tr&gt;
-5.          &lt;th&gt;序号&lt;/th&gt;
-6.          &lt;th&gt;品牌名称&lt;/th&gt;
-7.          &lt;th&gt;企业名称&lt;/th&gt;
-8.          &lt;th&gt;排序&lt;/th&gt;
-9.          &lt;th&gt;品牌介绍&lt;/th&gt;
-10.         &lt;th&gt;状态&lt;/th&gt;
-11.         &lt;th&gt;操作&lt;/th&gt;
+1.  <input type="button" value="新增"><br>
+2.  <hr>
+3.  <table border="1" cellspacing="0" width="800">
+4.      <tr>
+5.          <th>序号</th>
+6.          <th>品牌名称</th>
+7.          <th>企业名称</th>
+8.          <th>排序</th>
+9.          <th>品牌介绍</th>
+10.         <th>状态</th>
+11.         <th>操作</th>
 
-12.     &lt;/tr&gt;
+12.     </tr>
 
-13.     &lt;c:forEach items="${brands}" var="brand" varStatus="status"&gt;
-14.         &lt;tr align="center"&gt;
-15.             &lt;--<td&gt;${brand.id}&lt;/td&gt;-->
-16.             &lt;td&gt;${status.count}&lt;/td&gt;
-17.             &lt;td&gt;${brand.brandName}&lt;/td&gt;
-18.             &lt;td&gt;${brand.companyName}&lt;/td&gt;
-19.             &lt;td&gt;${brand.ordered}&lt;/td&gt;
-20.             &lt;td&gt;${brand.description}&lt;/td&gt;
-21.             &lt;c:if test="${brand.status == 1}"&gt;
-22.                 &lt;td&gt;启用&lt;/td&gt;
-23.             &lt;/c:if&gt;
-24.             &lt;c:if test="${brand.status != 1}"&gt;
-25.                 &lt;td&gt;禁用&lt;/td&gt;
-26.             &lt;/c:if&gt;
+13.     <c:forEach items="${brands}" var="brand" varStatus="status">
+14.         <tr align="center">
+15.             <--<td>${brand.id}</td>-->
+16.             <td>${status.count}</td>
+17.             <td>${brand.brandName}</td>
+18.             <td>${brand.companyName}</td>
+19.             <td>${brand.ordered}</td>
+20.             <td>${brand.description}</td>
+21.             <c:if test="${brand.status == 1}">
+22.                 <td>启用</td>
+23.             </c:if>
+24.             <c:if test="${brand.status != 1}">
+25.                 <td>禁用</td>
+26.             </c:if>
 
-27.             &lt;td&gt;&lt;a href="#"&gt;修改&lt;/a&gt; &lt;a href="#"&gt;删除&lt;/a&gt;&lt;/td&gt;
-28.         &lt;/tr&gt;
+27.             <td><a href="#">修改</a> <a href="#">删除</a></td>
+28.         </tr>
 
-29.     &lt;/c:forEach&gt;
+29.     </c:forEach>
 
 普通for循环
 
-1.  &lt;c:forEach begin="1" end="10" step="1" var="i"&gt;
-2.      &lt;a href="#"&gt;${i}&lt;/a&gt;
-3.  &lt;/c:forEach&gt;
+1.  <c:forEach begin="1" end="10" step="1" var="i">
+2.      <a href="#">${i}</a>
+3.  </c:forEach>
 
 应用-分页进度条
 
@@ -3415,22 +3295,22 @@ JDBC，MyBatis，对数据库的CRUD操作
 
 - 创建新的模块，brand_demo，引入坐标
 
-1.  &lt;dependencies&gt;
-2.          _&lt;!--mybatis--&gt;_
-3.          _&lt;!--mysql--&gt;_
-4.          _&lt;!--servlet--&gt;_
-5.          _&lt;!--jsp--&gt;_
-6.          _&lt;!--jstl--&gt;_
-7.  &lt;/dependencies&gt;
-8.      &lt;build&gt; 
-9.          &lt;plugins&gt; 
-10.             &lt;plugin&gt; 
-11.                 &lt;groupId&gt;org.apache.tomcat.maven&lt;/groupId&gt;
-12.                 &lt;artifactId&gt;tomcat7-maven-plugin&lt;/artifactId&gt;
-13.                 &lt;version&gt;2.2&lt;/version&gt;
-14.             &lt;/plugin&gt;
-15.         &lt;/plugins&gt;
-16.     &lt;/build&gt;
+1.  <dependencies>
+2.          _<!--mybatis-->_
+3.          _<!--mysql-->_
+4.          _<!--servlet-->_
+5.          _<!--jsp-->_
+6.          _<!--jstl-->_
+7.  </dependencies>
+8.      <build> 
+9.          <plugins> 
+10.             <plugin> 
+11.                 <groupId>org.apache.tomcat.maven</groupId>
+12.                 <artifactId>tomcat7-maven-plugin</artifactId>
+13.                 <version>2.2</version>
+14.             </plugin>
+15.         </plugins>
+16.     </build>
 
 - 创建三层架构的包结构
 - 数据库表 tb_brand
@@ -3452,7 +3332,7 @@ BrandMapper.java
 4.       \*/
 5.  @ResultMap("brandResultMap")
 6.      @Select("select \* from tb_brand")
-7.      List&lt;Brand&gt; selectAll();
+7.      List<Brand> selectAll();
 
 在接口中创建一个方法，selectAll返回一个Brand的list集合
 
@@ -3462,10 +3342,10 @@ BrandMapper.java
 
 BrandMapper.xml
 
-1.      &lt;resultMap id="brandResultMap" type="brand"&gt;
-2.          &lt;result column="brand_name" property="brandName"&gt;&lt;/result&gt;
-3.          &lt;result column="company_name" property="companyName"&gt;&lt;/result&gt;
-4.      &lt;/resultMap&gt;
+1.      <resultMap id="brandResultMap" type="brand">
+2.          <result column="brand_name" property="brandName"></result>
+3.          <result column="company_name" property="companyName"></result>
+4.      </resultMap>
 
 5.  Service层
 
@@ -3478,7 +3358,7 @@ BrandMapper.xml
 4.       \* 查询所有
 5.       \* @return
 6.       \*/
-7.      public List&lt;Brand&gt; selectAll() {
+7.      public List<Brand> selectAll() {
 
 8.         _//调用brandMapper.selectAll()_
 
@@ -3489,7 +3369,7 @@ BrandMapper.xml
 12.         BrandMapper mapper = sqlSession.getMapper(BrandMapper.class);
 
 13.         _//4.调用方法_
-14.         List&lt;Brand&gt; brands = mapper.selectAll();
+14.         List<Brand> brands = mapper.selectAll();
 
 15.         sqlSession.close();
 
@@ -3533,7 +3413,7 @@ web-selectAllServlet
 
 6.          _//1.调用BrandService完成查询_
 7.          BrandService service = new BrandService();
-8.         List&lt;Brand&gt; brands = service.selectAll();
+8.         List<Brand> brands = service.selectAll();
 
 9.         _//2.将brands存入request域中_
 10.         request.setAttribute("brands",brands);
@@ -3555,40 +3435,40 @@ web-selectAllServlet
 
 brand.jsp
 
-1.  &lt;input type="button" value="新增"&gt;&lt;br&gt;
-2.  &lt;hr&gt;
-3.  &lt;table border="1" cellspacing="0" width="800"&gt;
-4.      &lt;tr&gt;
-5.          &lt;th&gt;序号&lt;/th&gt;
-6.          &lt;th&gt;品牌名称&lt;/th&gt;
-7.          &lt;th&gt;企业名称&lt;/th&gt;
-8.          &lt;th&gt;排序&lt;/th&gt;
-9.          &lt;th&gt;品牌介绍&lt;/th&gt;
-10.         &lt;th&gt;状态&lt;/th&gt;
-11.         &lt;th&gt;操作&lt;/th&gt;
+1.  <input type="button" value="新增"><br>
+2.  <hr>
+3.  <table border="1" cellspacing="0" width="800">
+4.      <tr>
+5.          <th>序号</th>
+6.          <th>品牌名称</th>
+7.          <th>企业名称</th>
+8.          <th>排序</th>
+9.          <th>品牌介绍</th>
+10.         <th>状态</th>
+11.         <th>操作</th>
 
-12.     &lt;/tr&gt;
+12.     </tr>
 
-13.     &lt;c:forEach items="${brands}" var="brand" varStatus="status"&gt;
-14.         &lt;tr align="center"&gt;
-15.             &lt;%--<td&gt;${brand.id}&lt;/td&gt;--%>
-16.             &lt;td&gt;${status.count}&lt;/td&gt;
-17.             &lt;td&gt;${brand.brandName}&lt;/td&gt;
-18.             &lt;td&gt;${brand.companyName}&lt;/td&gt;
-19.             &lt;td&gt;${brand.ordered}&lt;/td&gt;
-20.             &lt;td&gt;${brand.description}&lt;/td&gt;
-21.             &lt;c:if test="${brand.status == 1}"&gt;
-22.                 &lt;td&gt;启用&lt;/td&gt;
-23.             &lt;/c:if&gt;
-24.             &lt;c:if test="${brand.status != 1}"&gt;
-25.                 &lt;td&gt;禁用&lt;/td&gt;
-26.             &lt;/c:if&gt;
+13.     <c:forEach items="${brands}" var="brand" varStatus="status">
+14.         <tr align="center">
+15.             <%--<td>${brand.id}</td>--%>
+16.             <td>${status.count}</td>
+17.             <td>${brand.brandName}</td>
+18.             <td>${brand.companyName}</td>
+19.             <td>${brand.ordered}</td>
+20.             <td>${brand.description}</td>
+21.             <c:if test="${brand.status == 1}">
+22.                 <td>启用</td>
+23.             </c:if>
+24.             <c:if test="${brand.status != 1}">
+25.                 <td>禁用</td>
+26.             </c:if>
 
-27.             &lt;td&gt;&lt;a href="#"&gt;修改&lt;/a&gt; &lt;a href="#"&gt;删除&lt;/a&gt;&lt;/td&gt;
-28.         &lt;/tr&gt;
+27.             <td><a href="#">修改</a> <a href="#">删除</a></td>
+28.         </tr>
 
-29.     &lt;/c:forEach&gt;
-30. &lt;/table&gt;
+29.     </c:forEach>
+30. </table>
 
 brand.jsp负责显示
 
@@ -3633,13 +3513,13 @@ BrandService.java
 
 对brand.jsp进行修改
 
-1.  &lt;input type="button" value="新增" id="add"&gt;&lt;br&gt;
+1.  <input type="button" value="新增" id="add"><br>
 2.  ...
-3.  &lt;script&gt;
+3.  <script>
 4.      document.getElementById("add").onclick = function () {
 5.          location.href = "/brand-demo/addBrand.jsp"
 6.      }
-7.  &lt;/script&gt;
+7.  </script>
 
 在新增按钮上添加id，并用JavaScript的onclick事件绑定按钮
 
@@ -3682,28 +3562,28 @@ AddServlet.java
 
 新建一个添加页表单，静态页面，完成添加操作
 
-1.  &lt;!DOCTYPE html&gt;
-2.  &lt;html lang="en"&gt;
+1.  <!DOCTYPE html>
+2.  <html lang="en">
 
-3.  &lt;head&gt;
-4.    &lt;meta charset="UTF-8"&gt;
-5.    &lt;title&gt;添加品牌&lt;/title&gt;
-6.  &lt;/head&gt;
-7.  &lt;body&gt;
-8.  &lt;h3&gt;添加品牌&lt;/h3&gt;
-9. &lt;form action="/brand-demo/addServlet" method="post"&gt;
-10.   品牌名称：&lt;input name="brandName"&gt;&lt;br&gt;
-11.   企业名称：&lt;input name="companyName"&gt;&lt;br&gt;
-12.   排序：&lt;input name="ordered"&gt;&lt;br&gt;
-13.   描述信息：&lt;textarea rows="5" cols="20" name="description"&gt;&lt;/textarea&gt;&lt;br&gt;
+3.  <head>
+4.    <meta charset="UTF-8">
+5.    <title>添加品牌</title>
+6.  </head>
+7.  <body>
+8.  <h3>添加品牌</h3>
+9. <form action="/brand-demo/addServlet" method="post">
+10.   品牌名称：<input name="brandName"><br>
+11.   企业名称：<input name="companyName"><br>
+12.   排序：<input name="ordered"><br>
+13.   描述信息：<textarea rows="5" cols="20" name="description"></textarea><br>
 14.   状态：
-15.   &lt;input type="radio" name="status" value="0"&gt;禁用
-16.   &lt;input type="radio" name="status" value="1"&gt;启用&lt;br&gt;
+15.   <input type="radio" name="status" value="0">禁用
+16.   <input type="radio" name="status" value="1">启用<br>
 
-17.   &lt;input type="submit" value="提交"&gt;
-18. &lt;/form&gt;
-19. &lt;/body&gt;
-20. &lt;/html&gt;
+17.   <input type="submit" value="提交">
+18. </form>
+19. </body>
+20. </html>
 
 #### 修改-回显数据
 
@@ -3766,29 +3646,29 @@ SelectByIdServlet.java
 
 新建update.jsp
 
-1.  &lt;h3&gt;修改品牌&lt;/h3&gt;
-2.  &lt;form action="/brand-demo/updateServlet" method="post"&gt;
-3.    品牌名称：&lt;input name="brandName" value="${brand.brandName}"&gt;&lt;br&gt;
-4.    企业名称：&lt;input name="companyName"value="${brand.companyName}&gt;&lt;br&gt;
-5.    排序：&lt;input name="ordered"value="${brand.ordered}&gt;&lt;br&gt;
-6.    描述信息：&lt;textarea rows="5" cols="20" name ="description"${brand.brandName}&gt;&lt;/textarea&gt;&lt;br&gt;
+1.  <h3>修改品牌</h3>
+2.  <form action="/brand-demo/updateServlet" method="post">
+3.    品牌名称：<input name="brandName" value="${brand.brandName}"><br>
+4.    企业名称：<input name="companyName"value="${brand.companyName}><br>
+5.    排序：<input name="ordered"value="${brand.ordered}><br>
+6.    描述信息：<textarea rows="5" cols="20" name ="description"${brand.brandName}></textarea><br>
 7.    状态：
-8.    &lt;c:if test="${brand.status == 1}"&gt;
-9.      &lt;input type="radio" name="status" value="1" checked&gt;启用
-10.     &lt;input type="radio" name="status" value="0"&gt;禁用&lt;br&gt;
-11.   &lt;/c:if&gt;
+8.    <c:if test="${brand.status == 1}">
+9.      <input type="radio" name="status" value="1" checked>启用
+10.     <input type="radio" name="status" value="0">禁用<br>
+11.   </c:if>
 
-12.   &lt;c:if test="${brand.status == 0}"&gt;
-13.   &lt;input type="radio" name="status" value="0" checked&gt;禁用
-14.   &lt;input type="radio" name="status" value="1"&gt;启用&lt;br&gt;
-15.   &lt;/c:if&gt;
+12.   <c:if test="${brand.status == 0}">
+13.   <input type="radio" name="status" value="0" checked>禁用
+14.   <input type="radio" name="status" value="1">启用<br>
+15.   </c:if>
 
-16.   &lt;input type="submit" value="提交"&gt;
-17. &lt;/form&gt;
+16.   <input type="submit" value="提交">
+17. </form>
 
 修改brand.jsp
 
-&lt;td&gt;&lt;a href="/brand-demo/selectByIdServlet?id=${brand.id}"&gt;修改&lt;/a&gt; 
+<td><a href="/brand-demo/selectByIdServlet?id=${brand.id}">修改</a> 
 
 修改处使用超链接，跳转到selectByIdServlet，
 
@@ -3872,28 +3752,28 @@ UpdateServlet.java
 
 新建update.jsp
 
-1.  &lt;h3&gt;修改品牌&lt;/h3&gt;
-2.  &lt;form action="/brand-demo/updateServlet" method="post"&gt;
+1.  <h3>修改品牌</h3>
+2.  <form action="/brand-demo/updateServlet" method="post">
 
-3.    &lt;%--隐藏域，提交id--%&gt;
-4.    &lt;input type="hidden" name="id" value="${brand.id}"&gt;
+3.    <%--隐藏域，提交id--%>
+4.    <input type="hidden" name="id" value="${brand.id}">
 
-5.    品牌名称：&lt;input name="brandName" value="${brand.brandName}"&gt;&lt;br&gt;
-6.    企业名称：&lt;input name="companyName"value="${brand.companyName}"&gt;&lt;br&gt;
-7.    排序：&lt;input name="ordered"value="${brand.ordered}"&gt;&lt;br&gt;
-8.   描述信息：&lt;textarea rows="5" cols="20" name="description"${brand.description}&gt;&lt;/textarea&gt;&lt;br&gt;
+5.    品牌名称：<input name="brandName" value="${brand.brandName}"><br>
+6.    企业名称：<input name="companyName"value="${brand.companyName}"><br>
+7.    排序：<input name="ordered"value="${brand.ordered}"><br>
+8.   描述信息：<textarea rows="5" cols="20" name="description"${brand.description}></textarea><br>
 9.   状态：
-10.   &lt;c:if test="${brand.status == 1}"&gt;
-11.     &lt;input type="radio" name="status" value="1" checked&gt;启用
-12.     &lt;input type="radio" name="status" value="0"&gt;禁用&lt;br&gt;
-13.   &lt;/c:if&gt;
+10.   <c:if test="${brand.status == 1}">
+11.     <input type="radio" name="status" value="1" checked>启用
+12.     <input type="radio" name="status" value="0">禁用<br>
+13.   </c:if>
 
-14.   &lt;c:if test="${brand.status == 0}"&gt;
-15.   &lt;input type="radio" name="status" value="0" checked&gt;禁用
-16.   &lt;input type="radio" name="status" value="1"&gt;启用&lt;br&gt;
-17.   &lt;/c:if&gt;
-18.   &lt;input type="submit" value="提交"&gt;
-19. &lt;/form&gt;
+14.   <c:if test="${brand.status == 0}">
+15.   <input type="radio" name="status" value="0" checked>禁用
+16.   <input type="radio" name="status" value="1">启用<br>
+17.   </c:if>
+18.   <input type="submit" value="提交">
+19. </form>
 
 #### 删除数据
 
@@ -3997,9 +3877,9 @@ HttpSession session = request.getSession();
 - Session销毁
 - 默认情况下，无操作，30分钟自动销毁，使用session-config标签配置时间
 
-1.  &lt;session-config&gt;
-2.       &lt;session-timeout&gt;100&lt;/session-timeout&gt;
-3.  &lt;/session-config&gt;
+1.  <session-config>
+2.       <session-timeout>100</session-timeout>
+3.  </session-config>
 
 - 调用Session对象的invalidate（）方法
 
@@ -4086,7 +3966,7 @@ UserMapper.java
 
 新建login.jsp定义静态页面并定义action
 
-&lt;form action="/brand-demo/loginServlet" id="form"&gt;
+<form action="/brand-demo/loginServlet" id="form">
 
 新建loginServlet完成业务
 
@@ -4135,7 +4015,7 @@ UserMapper.java
 
 修改login.jsp
 
-&lt;div id="errorMsg"&gt;${login_msg}&lt;/div&gt;
+<div id="errorMsg">${login_msg}</div>
 
 - 使用EL表达式，这里称为动态的表达
 
@@ -4202,7 +4082,7 @@ UserMapper.java
 
 修改Login.jsp
 
-&lt;p&gt;Remember:&lt;input id="remember" name="remember" value ="1" type="checkbox"&gt;&lt;/p&gt;
+<p>Remember:<input id="remember" name="remember" value ="1" type="checkbox"></p>
 
 加入value使得确认remember复选框的内容
 
@@ -4213,9 +4093,9 @@ UserMapper.java
 
 修改login.jsp
 
-1.  &lt;p&gt;Username:&lt;input id="username" name="username" value ="${cookie.username.value}"type="text"&gt;&lt;/p&gt;
+1.  <p>Username:<input id="username" name="username" value ="${cookie.username.value}"type="text"></p>
 
-2.  &lt;p&gt;Password:&lt;input id="password" name="password" type="password" value ="${cookie.password.value}"&gt;&lt;/p&gt;
+2.  <p>Password:<input id="password" name="password" type="password" value ="${cookie.password.value}"></p>
 
 #### 用户注册--注册功能
 
@@ -4304,7 +4184,7 @@ UserMapper.java
 
 修改login.jsp
 
-&lt;div id="errorMsg"&gt;${login_msg}${register_msg}&lt;/div&gt;
+<div id="errorMsg">${login_msg}${register_msg}</div>
 
 #### 用户注册--验证码功能
 
@@ -4335,58 +4215,58 @@ UserMapper.java
 
 修改register.jsp
 
-1.  &lt;div class="form-div"&gt;
-2.      &lt;div class="reg-content"&gt;
-3.          &lt;h1&gt;欢迎注册&lt;/h1&gt;
-4.          &lt;span&gt;已有账号？&lt;/span&gt; &lt;a href="login.html"&gt;登录&lt;/a&gt;
-5.      &lt;/div&gt;
-6.      &lt;form id="reg-form" action="/brand-demo/registerServlet" method="post"&gt;
+1.  <div class="form-div">
+2.      <div class="reg-content">
+3.          <h1>欢迎注册</h1>
+4.          <span>已有账号？</span> <a href="login.html">登录</a>
+5.      </div>
+6.      <form id="reg-form" action="/brand-demo/registerServlet" method="post">
 
-7.          &lt;table&gt;
+7.          <table>
 
-8.             &lt;tr&gt;
-9.                 &lt;td&gt;用户名&lt;/td&gt;
-10.                 &lt;td class="inputs"&gt;
-11.                     &lt;input name="username" type="text" id="username"&gt;
-12.                     &lt;br&gt;
-13.                     &lt;span id="username_err" class="err_msg"&gt;${register_msg}&lt;/span&gt;
-14.                 &lt;/td&gt;
+8.             <tr>
+9.                 <td>用户名</td>
+10.                 <td class="inputs">
+11.                     <input name="username" type="text" id="username">
+12.                     <br>
+13.                     <span id="username_err" class="err_msg">${register_msg}</span>
+14.                 </td>
 
-15.             &lt;/tr&gt;
+15.             </tr>
 
-16.             &lt;tr&gt;
-17.                 &lt;td&gt;密码&lt;/td&gt;
-18.                 &lt;td class="inputs"&gt;
-19.                     &lt;input name="password" type="password" id="password"&gt;
-20.                     &lt;br&gt;
-21.                     &lt;span id="password_err" class="err_msg" style="display: none"&gt;密码格式有误&lt;/span&gt;
-22.                 &lt;/td&gt;
-23.             &lt;/tr&gt;
+16.             <tr>
+17.                 <td>密码</td>
+18.                 <td class="inputs">
+19.                     <input name="password" type="password" id="password">
+20.                     <br>
+21.                     <span id="password_err" class="err_msg" style="display: none">密码格式有误</span>
+22.                 </td>
+23.             </tr>
 
-24.             &lt;tr&gt;
-25.                 &lt;td&gt;验证码&lt;/td&gt;
-26.                 &lt;td class="inputs"&gt;
-27.                     &lt;input name="checkCode" type="text" id="checkCode"&gt;
-28.                     &lt;img id="checkCodeImg" src="/brand-demo/checkCodeServlet"&gt;
-29.                     &lt;a href="#" id="changeImg" &gt;看不清？&lt;/a&gt;
-30.                 &lt;/td&gt;
-31.             &lt;/tr&gt;
+24.             <tr>
+25.                 <td>验证码</td>
+26.                 <td class="inputs">
+27.                     <input name="checkCode" type="text" id="checkCode">
+28.                     <img id="checkCodeImg" src="/brand-demo/checkCodeServlet">
+29.                     <a href="#" id="changeImg" >看不清？</a>
+30.                 </td>
+31.             </tr>
 
-32.         &lt;/table&gt;
+32.         </table>
 
-33.         &lt;div class="buttons"&gt;
-34.             &lt;input value="注 册" type="submit" id="reg_btn"&gt;
-35.         &lt;/div&gt;
-36.         &lt;br class="clear"&gt;
-37.     &lt;/form&gt;
+33.         <div class="buttons">
+34.             <input value="注 册" type="submit" id="reg_btn">
+35.         </div>
+36.         <br class="clear">
+37.     </form>
 
-38. &lt;/div&gt;
+38. </div>
 
-39. &lt;script&gt;
+39. <script>
 40.     document.getElementById("changeImg").onclick = function (){
 41.         document.getElementById("checkCodeImg").src = "/brand-demo/checkCodeServlet?time="+new Date().getTime();
 42.     }
-43. &lt;/script&gt;
+43. </script>
 
 主要修改在30-53行之间 对图片src进行修改，使得通过servlet生成，并对看不清超链接设置id”changeImg”，然后使用getElementId查护照这个超链接，绑定单击事件，使得再一次请求时更换图片，但是不能单一请求/brand-demo/checkCodeServlet，因为图片路径 已经载入缓存，只需要加一个参数使用时间，确保不重复。
 
@@ -4692,7 +4572,7 @@ Register.html
 
 在前面配置好静态页面
 
-1.  &lt;script&gt;
+1.  <script>
 
 2.      _//1. 给用户名输入框绑定 失去焦点事件_
 3.      document.getElementById("username").onblur = function () {
@@ -4728,7 +4608,7 @@ Register.html
 31.         };
 
 32.     }
-33. &lt;/script&gt;
+33. </script>
 
 当用户名输入框失去焦点（绑定事件）时，校验用户名是否在数据库已存在
 
@@ -4742,7 +4622,7 @@ Axios对原生的AJAX进行封装，简化书写
 
 在webapp中创建一个js包，用来存放所有的js文件 这里存入axios源码
 
-&lt;script src="js/axios-0.18.0.js"&gt;&lt;/script&gt;
+<script src="js/axios-0.18.0.js"></script>
 
 1.  使用axios发送请求，并获取响应结果
 
@@ -4771,7 +4651,7 @@ AxiosServlet.java
 
 axios-demo.html
 
-1.  &lt;script&gt;
+1.  <script>
 2.      _//1. get_
 3.      axios({
 4.          method:"get",
@@ -4789,7 +4669,7 @@ axios-demo.html
 15.         alert(resp.data);
 16.     })
 
-17. &lt;/script&gt;
+17. </script>
 
 通过.then获取对应的响应，方法被执行时，resp就有响应数据
 
@@ -4875,11 +4755,11 @@ Json.name
 - 使用：
     1.  导入坐标
 
-1.  &lt;dependency&gt;
-2.      &lt;groupId&gt;com.alibaba&lt;/groupId&gt;
-3.      &lt;artifactId&gt;fastjson&lt;/artifactId&gt;
-4.      &lt;version&gt;1.2.62&lt;/version&gt;
-5.  &lt;/dependency&gt;
+1.  <dependency>
+2.      <groupId>com.alibaba</groupId>
+3.      <artifactId>fastjson</artifactId>
+4.      <version>1.2.62</version>
+5.  </dependency>
 
 - 1.  Java对象转JSON
 
@@ -4904,7 +4784,7 @@ User user = JSON.parseObject(jsonStr,User.class);
 3.       \* 查询所有
 4.       \* @return
 5.       \*/
-6.      public List&lt;Brand&gt; selectAll(){
+6.      public List<Brand> selectAll(){
 7.          _//调用BrandMapper.selectAll()_
 
 8.          _//2. 获取SqlSession_
@@ -4913,7 +4793,7 @@ User user = JSON.parseObject(jsonStr,User.class);
 11.         BrandMapper mapper = sqlSession.getMapper(BrandMapper.class);
 
 12.         _//4. 调用方法_
-13.         List&lt;Brand&gt; brands = mapper.selectAll();
+13.         List<Brand> brands = mapper.selectAll();
 
 14.         sqlSession.close();
 
@@ -4931,7 +4811,7 @@ SelectAllServlet.java
 4.      @Override
 5.      protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 6.          _//1. 调用Service查询_
-7.          List&lt;Brand&gt; brands = brandService.selectAll();
+7.          List<Brand> brands = brandService.selectAll();
 
 8.         _//2. 将集合转换为JSON数据   序列化_
 9.         String jsonString = JSON.toJSONString(brands);
@@ -4951,7 +4831,7 @@ SelectAllServlet.java
 
 Brand.html
 
-1.  &lt;script&gt;
+1.  <script>
 2.      _//1. 当页面加载完成后，发送ajax请求_
 3.      window.onload = function () {
 4.          _//2. 发送ajax请求_
@@ -4961,30 +4841,30 @@ Brand.html
 8.          }).then(function (resp) {
 9.              _//获取数据_
 10.             let brands = resp.data;
-11.             let tableData = " &lt;tr&gt;\\n" +
-12.                 "        &lt;th&gt;序号&lt;/th&gt;\\n" +
-13.                 "        &lt;th&gt;品牌名称&lt;/th&gt;\\n" +
-14.                 "        &lt;th&gt;企业名称&lt;/th&gt;\\n" +
-15.                 "        &lt;th&gt;排序&lt;/th&gt;\\n" +
-16.                 "        &lt;th&gt;品牌介绍&lt;/th&gt;\\n" +
-17.                 "        &lt;th&gt;状态&lt;/th&gt;\\n" +
-18.                 "        &lt;th&gt;操作&lt;/th&gt;\\n" +
-19.                 "    &lt;/tr&gt;";
+11.             let tableData = " <tr>\\n" +
+12.                 "        <th>序号</th>\\n" +
+13.                 "        <th>品牌名称</th>\\n" +
+14.                 "        <th>企业名称</th>\\n" +
+15.                 "        <th>排序</th>\\n" +
+16.                 "        <th>品牌介绍</th>\\n" +
+17.                 "        <th>状态</th>\\n" +
+18.                 "        <th>操作</th>\\n" +
+19.                 "    </tr>";
 
 20.             for (let i = 0; i < brands.length ; i++) {
 21.                 let brand = brands\[i\];
 
 22.                 tableData += "\\n" +
-23.                     "    &lt;tr align=\\"center\\"&gt;\\n" +
-24.                     "        &lt;td&gt;"+(i+1)+"&lt;/td&gt;\\n" +
-25.                     "        &lt;td&gt;"+brand.brandName+"&lt;/td&gt;\\n" +
-26.                     "        &lt;td&gt;"+brand.companyName+"&lt;/td&gt;\\n" +
-27.                     "        &lt;td&gt;"+brand.ordered+"&lt;/td&gt;\\n" +
-28.                     "        &lt;td&gt;"+brand.description+"&lt;/td&gt;\\n" +
-29.                     "        &lt;td&gt;"+brand.status+"&lt;/td&gt;\\n" +
+23.                     "    <tr align=\\"center\\">\\n" +
+24.                     "        <td>"+(i+1)+"</td>\\n" +
+25.                     "        <td>"+brand.brandName+"</td>\\n" +
+26.                     "        <td>"+brand.companyName+"</td>\\n" +
+27.                     "        <td>"+brand.ordered+"</td>\\n" +
+28.                     "        <td>"+brand.description+"</td>\\n" +
+29.                     "        <td>"+brand.status+"</td>\\n" +
 30.                     "\\n" +
-31.                     "        &lt;td&gt;&lt;a href=\\"#\\"&gt;修改&lt;/a&gt; &lt;a href=\\"#\\"&gt;删除&lt;/a&gt;&lt;/td&gt;\\n" +
-32.                     "    &lt;/tr&gt;";
+31.                     "        <td><a href=\\"#\\">修改</a> <a href=\\"#\\">删除</a></td>\\n" +
+32.                     "    </tr>";
 33.             }
 
 34.           _// 设置表格数据_
@@ -5018,7 +4898,7 @@ resp.config: 当前请求的配置信息。
 
 addBrand.html
 
-1.  &lt;script&gt;
+1.  <script>
 2.      _//1. 给按钮绑定单击事件_
 3.      document.getElementById("btn").onclick = function () {
 4.          _// 将表单数据转为json_
@@ -5070,7 +4950,7 @@ addBrand.html
 45.             }
 46.         })
 47.     }
-48. &lt;/script&gt;
+48. </script>
 
 增删改一般建议使用post的请求方式，var formdata操作是为了创建json对象
 
@@ -5161,7 +5041,7 @@ application/x- www-form-urlencoded是Post请求默认的请求体内容类型，
 
 1.  新建HTML页面，引入Vue.js文件
 
-&lt;script src="js/vue.js"&gt;&lt;/script&gt;
+<script src="js/vue.js"></script>
 
 1.  在JS代码区域，创建Vue核心对象，进行数据绑定
 2.  new Vue({
@@ -5176,13 +5056,13 @@ application/x- www-form-urlencoded是Post请求默认的请求体内容类型，
 el：elemet用来指定vue的作用范围，这里使用id选择器，选定id=app
 
 1.  编写视图
-2.  &lt;div id="app"&gt;
+2.  <div id="app">
 
-3.      &lt;input v-model="username"&gt;
-4.      _&lt;!--插值表达式--&gt;_
+3.      <input v-model="username">
+4.      _<!--插值表达式-->_
 5.      {{username}}
 
-6.  &lt;/div&gt;
+6.  </div>
 
 插值表达式，取出模型数据
 
@@ -5194,18 +5074,18 @@ el：elemet用来指定vue的作用范围，这里使用id选择器，选定id=a
 
 讲话书写：直接在href前加 ：即可
 
-1.  &lt;div id="app"&gt;
+1.  <div id="app">
 
-2.     &lt;a v-bind:href="url"&gt;点击一下&lt;/a&gt;
+2.     <a v-bind:href="url">点击一下</a>
 
-3.      &lt;a :href="url"&gt;点击一下&lt;/a&gt;
+3.      <a :href="url">点击一下</a>
 
-4.      &lt;input v-model="url"&gt;
+4.      <input v-model="url">
 
-5. &lt;/div&gt;
+5. </div>
 
-6. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
-7. &lt;script&gt;
+6. <script src="js/vue.js"></script>
+7. <script>
 
 8.     _//1. 创建Vue核心对象_
 9.     new Vue({
@@ -5218,22 +5098,22 @@ el：elemet用来指定vue的作用范围，这里使用id选择器，选定id=a
 16.         }
 17.     });
 
-18. &lt;/script&gt;
+18. </script>
 
 19.  v-model：在表单元素上创建双向数据绑定
 20.  v-on：为HTML标签绑定事件
 
 简化书写：@
 
-1.  &lt;div id="app"&gt;
+1.  <div id="app">
 
-2.      &lt;input type="button" value="一个按钮" v-on:click="show()"&gt;&lt;br&gt;
-3.      &lt;input type="button" value="一个按钮" @click="show()"&gt;
+2.      <input type="button" value="一个按钮" v-on:click="show()"><br>
+3.      <input type="button" value="一个按钮" @click="show()">
 
-4.  &lt;/div&gt;
+4.  </div>
 
-5. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
-6. &lt;script&gt;
+5. <script src="js/vue.js"></script>
+6. <script>
 
 7.     _//1. 创建Vue核心对象_
 8.     new Vue({
@@ -5251,7 +5131,7 @@ el：elemet用来指定vue的作用范围，这里使用id选择器，选定id=a
 20.         }
 21.     });
 
-22. &lt;/script&gt;
+22. </script>
 
 23.  v-if与v-show
 
@@ -5261,21 +5141,21 @@ If条件性地渲染某元素，判断为true时渲染，否则不渲染
 
 Show根据条件展示莫元素，区别在于切换的是display属性的值
 
-1.  &lt;div id="app"&gt;
+1.  <div id="app">
 
-2.      &lt;div v-if="count == 3"&gt;div1&lt;/div&gt;
-3.      &lt;div v-else-if="count == 4"&gt;div2&lt;/div&gt;
-4.      &lt;div v-else&gt;div3&lt;/div&gt;
-5.      &lt;hr&gt;
-6.      &lt;div v-show="count == 3"&gt;div v-show&lt;/div&gt;
-7.      &lt;br&gt;
+2.      <div v-if="count == 3">div1</div>
+3.      <div v-else-if="count == 4">div2</div>
+4.      <div v-else>div3</div>
+5.      <hr>
+6.      <div v-show="count == 3">div v-show</div>
+7.      <br>
 
-8.     &lt;input v-model="count"&gt;
+8.     <input v-model="count">
 
-9. &lt;/div&gt;
+9. </div>
 
-10. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
-11. &lt;script&gt;
+10. <script src="js/vue.js"></script>
+11. <script>
 
 12.     _//1. 创建Vue核心对象_
 13.     new Vue({
@@ -5294,26 +5174,26 @@ Show根据条件展示莫元素，区别在于切换的是display属性的值
 26.         }
 27.     });
 
-28. &lt;/script&gt;
+28. </script>
 
 29.  v-for
 
 列表渲染，遍历容器的元素和对象的属性
 
-1.  &lt;div id="app"&gt;
+1.  <div id="app">
 
-2.      &lt;div v-for="addr in addrs"&gt;
-3.          {{addr}} &lt;br&gt;
-4.      &lt;/div&gt;
+2.      <div v-for="addr in addrs">
+3.          {{addr}} <br>
+4.      </div>
 
-5.      &lt;hr&gt;
-6.      &lt;div v-for="(addr,i) in addrs"&gt;
-7.          {{i+1}}--{{addr}} &lt;br&gt;
-8.     &lt;/div&gt;
-9. &lt;/div&gt;
+5.      <hr>
+6.      <div v-for="(addr,i) in addrs">
+7.          {{i+1}}--{{addr}} <br>
+8.     </div>
+9. </div>
 
-10. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
-11. &lt;script&gt;
+10. <script src="js/vue.js"></script>
+11. <script>
 
 12.     _//1. 创建Vue核心对象_
 13.     new Vue({
@@ -5333,7 +5213,7 @@ Show根据条件展示莫元素，区别在于切换的是display属性的值
 27.         }
 28.     });
 
-29. &lt;/script&gt;
+29. </script>
 
 i表示索引，从0开始
 
@@ -5370,7 +5250,7 @@ i表示索引，从0开始
 21.         }
 22.     });
 
-23. &lt;/script&gt;
+23. </script>
 
 在这之前使用window.unload来实现页面加载完成，发送异步请求，现在可以使用mounted来代替
 
@@ -5387,40 +5267,40 @@ i表示索引，从0开始
 
 brand.html
 
-1.  &lt;div id="app"&gt;
-2.      &lt;a href="addBrand.html"&gt;&lt;input type="button" value="新增"&gt;&lt;/a&gt;&lt;br&gt;
-3.      &lt;hr&gt;
-4.      &lt;table id="brandTable" border="1" cellspacing="0" width="100%"&gt;
-5.          &lt;tr&gt;
-6.              &lt;th&gt;序号&lt;/th&gt;
-7.              &lt;th&gt;品牌名称&lt;/th&gt;
-8.              &lt;th&gt;企业名称&lt;/th&gt;
-9.              &lt;th&gt;排序&lt;/th&gt;
-10.             &lt;th&gt;品牌介绍&lt;/th&gt;
-11.             &lt;th&gt;状态&lt;/th&gt;
-12.             &lt;th&gt;操作&lt;/th&gt;
-13.         &lt;/tr&gt;
+1.  <div id="app">
+2.      <a href="addBrand.html"><input type="button" value="新增"></a><br>
+3.      <hr>
+4.      <table id="brandTable" border="1" cellspacing="0" width="100%">
+5.          <tr>
+6.              <th>序号</th>
+7.              <th>品牌名称</th>
+8.              <th>企业名称</th>
+9.              <th>排序</th>
+10.             <th>品牌介绍</th>
+11.             <th>状态</th>
+12.             <th>操作</th>
+13.         </tr>
 
 14.         _<!--_
 15.             使用v-for遍历tr
 16.         -->
 
-17.         &lt;tr v-for="(brand,i) in brands" align="center"&gt;
-18.             &lt;td&gt;{{i + 1}}&lt;/td&gt;
-19.             &lt;td&gt;{{brand.brandName}}&lt;/td&gt;
-20.             &lt;td&gt;{{brand.companyName}}&lt;/td&gt;
-21.             &lt;td&gt;{{brand.ordered}}&lt;/td&gt;
-22.             &lt;td&gt;{{brand.description}}&lt;/td&gt;
-23.             &lt;td&gt;{{brand.statusStr}}&lt;/td&gt;
-24.             &lt;td&gt;&lt;a href="#"&gt;修改&lt;/a&gt; &lt;a href="#"&gt;删除&lt;/a&gt;&lt;/td&gt;
-25.         &lt;/tr&gt;
+17.         <tr v-for="(brand,i) in brands" align="center">
+18.             <td>{{i + 1}}</td>
+19.             <td>{{brand.brandName}}</td>
+20.             <td>{{brand.companyName}}</td>
+21.             <td>{{brand.ordered}}</td>
+22.             <td>{{brand.description}}</td>
+23.             <td>{{brand.statusStr}}</td>
+24.             <td><a href="#">修改</a> <a href="#">删除</a></td>
+25.         </tr>
 
-26.     &lt;/table&gt;
-27. &lt;/div&gt;
-28. &lt;script src="js/axios-0.18.0.js"&gt;&lt;/script&gt;
-29. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
+26.     </table>
+27. </div>
+28. <script src="js/axios-0.18.0.js"></script>
+29. <script src="js/vue.js"></script>
 
-30. &lt;script&gt;
+30. <script>
 
 31.     new Vue({
 32.         el: "#app",
@@ -5440,7 +5320,7 @@ brand.html
 46.             })
 47.         }
 48.     })
-49. &lt;/script&gt;
+49. </script>
 
 el指定id -div div包裹整个页面范围 设置vue指定作用范围
 
@@ -5471,25 +5351,25 @@ Mounted指定一个函数，页面加载完成后，发送异步请求，查询�
 
 ##### 查询所有
 
-1.  &lt;div id="app"&gt;
-2.      &lt;h3&gt;添加品牌&lt;/h3&gt;
-3.      &lt;form action="" method="post"&gt;
-4.          品牌名称：&lt;input id="brandName" v-model="brand.brandName" name="brandName"&gt;&lt;br&gt;
-5.          企业名称：&lt;input id="companyName" v-model="brand.companyName" name="companyName"&gt;&lt;br&gt;
-6.          排序：&lt;input id="ordered" v-model="brand.ordered" name="ordered"&gt;&lt;br&gt;
-7.          描述信息：&lt;textarea rows="5" cols="20" id="description" v-model="brand.description" name="description"&gt;&lt;/textarea&gt;&lt;br&gt;
+1.  <div id="app">
+2.      <h3>添加品牌</h3>
+3.      <form action="" method="post">
+4.          品牌名称：<input id="brandName" v-model="brand.brandName" name="brandName"><br>
+5.          企业名称：<input id="companyName" v-model="brand.companyName" name="companyName"><br>
+6.          排序：<input id="ordered" v-model="brand.ordered" name="ordered"><br>
+7.          描述信息：<textarea rows="5" cols="20" id="description" v-model="brand.description" name="description"></textarea><br>
 8.          状态：
-9.          &lt;input type="radio" name="status" v-model="brand.status" value="0"&gt;禁用
-10.         &lt;input type="radio" name="status" v-model="brand.status" value="1"&gt;启用&lt;br&gt;
+9.          <input type="radio" name="status" v-model="brand.status" value="0">禁用
+10.         <input type="radio" name="status" v-model="brand.status" value="1">启用<br>
 
-11.         &lt;input type="button" id="btn" @click="submitForm" value="提交"&gt;
-12.     &lt;/form&gt;
-13. &lt;/div&gt;
-14. &lt;script src="js/axios-0.18.0.js"&gt;&lt;/script&gt;
+11.         <input type="button" id="btn" @click="submitForm" value="提交">
+12.     </form>
+13. </div>
+14. <script src="js/axios-0.18.0.js"></script>
 
-15. &lt;script src="js/vue.js"&gt;&lt;/script&gt;
+15. <script src="js/vue.js"></script>
 
-16. &lt;script&gt;
+16. <script>
 
 17.     new Vue({
 18.         el: "#app",
@@ -5516,7 +5396,7 @@ Mounted指定一个函数，页面加载完成后，发送异步请求，查询�
 38.             }
 39.         }
 40.     })
-41. &lt;/script&gt;
+41. </script>
 
 42.  _//1. 给按钮绑定单击事件_
 43.      document.getElementById("btn").onclick = function () {
@@ -5539,12 +5419,12 @@ Mounted指定一个函数，页面加载完成后，发送异步请求，查询�
 ### Element快速入门
 
 1.  引入Element的css，js文件和Vue.js
-2.  &lt;script src="js/vue.js"&gt;&lt;/script&gt;
-3.  &lt;script src="element-ui/lib/index.js"&gt;&lt;/script&gt;
-4.  &lt;link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css"&gt;
+2.  <script src="js/vue.js"></script>
+3.  <script src="element-ui/lib/index.js"></script>
+4.  <link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
 
 5.  创建Vue核心对象
-6.  &lt;script&gt;
+6.  <script>
 7.      new Vue({
 8.          el:"#app"
 9.      })
@@ -5823,7 +5703,7 @@ Gitee设置账户共公钥
 
 此操作是先初始化本地库，然后与已创建的远程库连接
 
-命令： git remote add &lt;远端名称&gt; &lt;仓库路径&gt;
+命令： git remote add <远端名称> <仓库路径>
 
 远端名称，默认是origin，取决于远端服务器设置
 
@@ -5862,7 +5742,7 @@ git branch -vv命令
 
 如果已经有一个远端仓库，我们可以直接clone到本地。
 
-命令: git clone &lt;仓库路径&gt; \[本地目录\] 指定一个名字
+命令: git clone <仓库路径> \[本地目录\] 指定一个名字
 
 本地目录可以省略，会自动生成一个目录
 
@@ -5919,24 +5799,24 @@ Mapper-brandMapper.java
 
 1.      @Select("select \* from tb_brand")
 2.      @ResultMap（"brandResultMap"）
-3.      List&lt;Brand&gt; selectAll();
+3.      List<Brand> selectAll();
 
 由于Brand实体类中的名称与数据库表中字段不匹配，需要使用resultMap进行映射
 
 resourses-com-itheima-mapper-brandMapper.xml
 
-1.  &lt;mapper namespace="com.itheima.mapper.BrandMapper"&gt;
-2.      &lt;resultMap id="brandResultMap" type="brand"&gt;
-3.          &lt;result property="brandName" column="brand_name" /&gt;
-4.          &lt;result property="companyName" column="company_name" /&gt;
-5.      &lt;/resultMap&gt;
-6.  &lt;/mapper&gt;
+1.  <mapper namespace="com.itheima.mapper.BrandMapper">
+2.      <resultMap id="brandResultMap" type="brand">
+3.          <result property="brandName" column="brand_name" />
+4.          <result property="companyName" column="company_name" />
+5.      </resultMap>
+6.  </mapper>
 
 service-BrandMapper.java
 
 创建一个接口，在接口中写方法
 
-1.  List&lt;Brand&gt; selectAll();
+1.  List<Brand> selectAll();
 
 service-impl-brandServiceImpl
 
@@ -5944,7 +5824,7 @@ service-impl-brandServiceImpl
 2.      _//1.创建sqlSessionFactory_
 3.      SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtils.getSqlSessionFactory();
 4.      @Override
-5.      public List&lt;Brand&gt; selectAll() {
+5.      public List<Brand> selectAll() {
 
 6.          _//2.获取SqlSession对象_
 7.          SqlSession sqlSession = sqlSessionFactory.openSession();    
@@ -5952,7 +5832,7 @@ service-impl-brandServiceImpl
 8.         _//3.获取BrandMapper_
 9.         BrandMapper mapper = sqlSession.getMapper(BrandMapper.class);
 
-10.         List&lt;Brand&gt; brands = mapper.selectAll();
+10.         List<Brand> brands = mapper.selectAll();
 
 11. _//5.释放资源_
 12. sqlSession.close();
@@ -5974,7 +5854,7 @@ web-SelectAllServlet
 5.              throws ServletException, IOException {
 
 6.         _//1. 调用service查询_
-7.         List&lt;Brand&gt; brands = brandService.selectAll();
+7.         List<Brand> brands = brandService.selectAll();
 
 8.         _//2.转为json_
 9.         String jsonString = JSON.toJSONString(brands);   
@@ -6087,10 +5967,10 @@ web-AddServlet
 
 \--后端代码#end
 
-1.              &lt;el-form-item&gt;
-2.                  &lt;el-button type="primary" @click="addBrand"&gt;提交&lt;/el-button&gt;
-3.                  &lt;el-button @click="dialogVisible = false"&gt;取消&lt;/el-button&gt;
-4.              &lt;/el-form-item&gt;
+1.              <el-form-item>
+2.                  <el-button type="primary" @click="addBrand">提交</el-button>
+3.                  <el-button @click="dialogVisible = false">取消</el-button>
+4.              </el-form-item>
 
 静态页面表单的案件绑定，将按钮绑定单击事件addBrand
 
@@ -6164,7 +6044,7 @@ brand.html
 
 12.         _//3.获取BrandServlet/UserServlet 字节码对象 class_
 13.         _//谁调用我（this所在的方法），我（this）调用谁，这里的this指BrandServlet(baseServlet的子类们)，而不是Httpservlet_
-14.         Class&lt;? extends BaseServlet&gt; cls = this.getClass();
+14.         Class<? extends BaseServlet> cls = this.getClass();
 
 15.         _//获取方法Method对象_
 16.         try {
@@ -6208,12 +6088,12 @@ Mapper-BrandMapper.java
 
 Resources-com-itheima-brandMapper.xml
 
-1.      &lt;delete id="delectByIds" &gt;
+1.      <delete id="delectByIds" >
 2.          delete from tb_brand where in
-3.          &lt;foreach item="id" collection="ids" separator="," open="(" close=")"&gt;
+3.          <foreach item="id" collection="ids" separator="," open="(" close=")">
 4.              _#{id}_
-5.          &lt;/foreach&gt;
-6.      &lt;/delete&gt;
+5.          </foreach>
+6.      </delete>
 
 Sql语句复杂使用配置文件编写sql语句
 
@@ -6268,7 +6148,7 @@ web-BrandServlet
 
 brand.html
 
-1.  &lt;el-button type="danger" plain @click="deleteByIds"&gt;批量删除&lt;/el-button&gt;
+1.  <el-button type="danger" plain @click="deleteByIds">批量删除</el-button>
 
 静态页面，按键绑定deleteByIds事件，实现批量删除
 
@@ -6379,11 +6259,11 @@ SELECT \* FROM tb_brand LIMIT 0,5
 Pojo-PageBean
 
 1.  _//分页查询的JavaBean_
-2.  public class PageBean&lt;T&gt; {
+2.  public class PageBean<T> {
 3.      _// 总记录数_
 4.      private int totalCount;
 5.      _// 当前页数据_
-6.      private List&lt;T&gt; rows;
+6.      private List<T> rows;
 
 7.      public int getTotalCount() {
 8.         return totalCount;
@@ -6393,11 +6273,11 @@ Pojo-PageBean
 11.         this.totalCount = totalCount;
 12.     }
 
-13.     public List&lt;T&gt; getRows() {
+13.     public List<T> getRows() {
 14.         return rows;
 15.     }
 
-16.     public void setRows(List&lt;T&gt; rows) {
+16.     public void setRows(List<T> rows) {
 17.         this.rows = rows;
 18.     }
 19. }
@@ -6414,7 +6294,7 @@ Mapper-BrandMapper.java
 6.       \*/
 7.      @Select("select \* from tb_brand limit #{begin} , #{size}")
 8.      @ResultMap("brandResultMap")
-9.      List&lt;Brand&gt; selectByPage(@Param("begin") int begin,@Param("size") int size);
+9.      List<Brand> selectByPage(@Param("begin") int begin,@Param("size") int size);
 
 10.     _/\*\*_
 11.      \* 查询总记录数
@@ -6432,14 +6312,14 @@ BrandService.java
 4.       \* @param pageSize   每页展示条数
 5.       \* @return
 6.       \*/
-7.      PageBean&lt;Brand&gt;  selectByPage(int currentPage,int pageSize);
+7.      PageBean<Brand>  selectByPage(int currentPage,int pageSize);
 
 返回一个Pagebean对象，由前端传入currentPage和pageSize
 
 Service-impl-brandServiceImpl.java
 
 1.  @Override
-2.      public PageBean&lt;Brand&gt; selectByPage(int currentPage, int pageSize) {
+2.      public PageBean<Brand> selectByPage(int currentPage, int pageSize) {
 3.          _//2. 获取SqlSession对象_
 4.          SqlSession sqlSession = factory.openSession();
 5.          _//3. 获取BrandMapper_
@@ -6451,13 +6331,13 @@ Service-impl-brandServiceImpl.java
 10.         int size = pageSize;
 
 11.         _//5. 查询当前页数据_
-12.         List&lt;Brand&gt; rows = mapper.selectByPage(begin, size);
+12.         List<Brand> rows = mapper.selectByPage(begin, size);
 
 13.         _//6. 查询总记录数_
 14.         int totalCount = mapper.selectTotalCount();
 
 15.         _//7. 封装PageBean对象_
-16.         PageBean&lt;Brand&gt; pageBean = new PageBean<>();
+16.         PageBean<Brand> pageBean = new PageBean<>();
 17.         pageBean.setRows(rows);
 18.         pageBean.setTotalCount(totalCount);
 
@@ -6478,7 +6358,7 @@ BrandServlet.java
 6.          int pageSize = Integer.parseInt(\_pageSize);
 
 7.          _//2. 调用service查询_
-8.         PageBean&lt;Brand&gt; pageBean = brandService.selectByPage(currentPage, pageSize);
+8.         PageBean<Brand> pageBean = brandService.selectByPage(currentPage, pageSize);
 
 9.         _//2. 转为JSON_
 10.         String jsonString = JSON.toJSONString(pageBean);
@@ -6522,7 +6402,7 @@ brand.html
 
 分页工具条
 
-1.      &lt;!--分页工具条--&gt;
+1.      <!--分页工具条-->
 2.      <el-pagination
 3.              @size-change="handleSizeChange"
 4.              @current-change="handleCurrentChange"
@@ -6531,7 +6411,7 @@ brand.html
 7.              :page-size="5"
 8.              layout="total, sizes, prev, pager, next, jumper"
 9.              :total="totalCount">
-10.     &lt;/el-pagination&gt;
+10.     </el-pagination>
 
 Total处展示总记录数，建立到totalCount模型中，@size-change，@current-change是动态分页的方法
 
@@ -6568,7 +6448,7 @@ BrandMapper.java
 4.       \* @param size
 5.       \* @return
 6.       \*/
-7.      List&lt;Brand&gt; selectByPageAndCondition(@Param("begin") int begin, @Param("size") int size, @Param("brand") Brand brand);
+7.      List<Brand> selectByPageAndCondition(@Param("begin") int begin, @Param("size") int size, @Param("brand") Brand brand);
 
 8.      _/\*\*_
 9.      \* 根据条件查询总记录数
@@ -6581,59 +6461,59 @@ BrandMapper.java
 
 BrandMapper.xml
 
-1.      &lt;select id="selectByPageAndCondition" resultMap="brandResultMap"&gt;
+1.      <select id="selectByPageAndCondition" resultMap="brandResultMap">
 2.          select \*
 3.          from tb_brand
-4.          &lt;where&gt;
-5.          &lt;if test=" brandName != null and  brandName ！=''"&gt;
+4.          <where>
+5.          <if test=" brandName != null and  brandName ！=''">
 6.              and brand_name like _#{ brandName}_
-7.          &lt;/if&gt;
+7.          </if>
 
-8.          &lt;if test=" companyName != null and  companyName ！=''"&gt;
+8.          <if test=" companyName != null and  companyName ！=''">
 9.             and company_name like _#{ companyName}_
-10.         &lt;/if&gt;
+10.         </if>
 
-11.         &lt;if test=" status != null "&gt;
+11.         <if test=" status != null ">
 12.             and status = _#{ status}_
-13.         &lt;/if&gt;
+13.         </if>
 
-14.         &lt;/where&gt;
+14.         </where>
 
 15.         limit _#{begin},#{size}_
-16.     &lt;/select&gt;
+16.     </select>
 
-17.     &lt;select id="selectTotalCountByCondition" resultMap="brandResultMap"&gt;
+17.     <select id="selectTotalCountByCondition" resultMap="brandResultMap">
 18.         select count(\*)
 19.         from tb_brand
-20.         &lt;where&gt;
-21.             &lt;if test=" brandName != null and  brandName ！=''"&gt;
+20.         <where>
+21.             <if test=" brandName != null and  brandName ！=''">
 22.                 and brand_name like _#{ brandName}_
-23.             &lt;/if&gt;
+23.             </if>
 
-24.             &lt;if test=" companyName != null and  companyName ！=''"&gt;
+24.             <if test=" companyName != null and  companyName ！=''">
 25.                 and company_name like _#{ companyName}_
-26.             &lt;/if&gt;
+26.             </if>
 
-27.             &lt;if test=" status != null "&gt;
+27.             <if test=" status != null ">
 28.                 and status = _#{ status}_
-29.             &lt;/if&gt;
+29.             </if>
 
-30.         &lt;/where&gt;
+30.         </where>
 
-31.     &lt;/select&gt;
+31.     </select>
 
 由于需要写动态SQL，所以在XML文件中编辑，第二个select语句中，由于没有采用@brand注解，可以直接使用brand实体类中的属性，所以可以省略brand. ，同时希望模糊匹配没使用like，而不是=
 
 BrandService.java
 
-1.  PageBean&lt;Brand&gt; selectByPageAndCondition(int currentPage, int pageSize, Brand brand);
+1.  PageBean<Brand> selectByPageAndCondition(int currentPage, int pageSize, Brand brand);
 
 分页条件查询，返回一个pageBean
 
 BrandServiceImpl.java
 
 1.      @Override
-2.      public PageBean&lt;Brand&gt; selectByPageAndCondition(int currentPage, int pageSize, Brand brand) {
+2.      public PageBean<Brand> selectByPageAndCondition(int currentPage, int pageSize, Brand brand) {
 
 3.          _//2.获取SqlSession对象_
 4.          SqlSession sqlSession = factory.openSession();
@@ -6658,12 +6538,12 @@ BrandServiceImpl.java
 19.         }
 
 20.         _//4.查询当前页数据_
-21.         List&lt;Brand&gt; rows = mapper.selectByPageAndCondition(begin, size,brand);
+21.         List<Brand> rows = mapper.selectByPageAndCondition(begin, size,brand);
 
 22.         _//5.查询总记录数_
 23.         int totalCount = mapper.selectTotalCountByCondition(brand);
 
-24.         PageBean&lt;Brand&gt; pageBean = new PageBean<>();
+24.         PageBean<Brand> pageBean = new PageBean<>();
 25.         pageBean.setRows(rows);
 26.         pageBean.setTotalCount(totalCount);
 
@@ -6690,7 +6570,7 @@ BrandServlet.java
 9.         int currentPage = Integer.parseInt(\_currentPage);
 10.         int pageSize = Integer.parseInt(\_pageSize);
 
-11.         PageBean&lt;Brand&gt; pageBean = brandService.selectByPageAndCondition(currentPage, pageSize,brand);
+11.         PageBean<Brand> pageBean = brandService.selectByPageAndCondition(currentPage, pageSize,brand);
 
 12.         _//转为json_
 13.         String json = JSON.toJSONString(pageBean);
@@ -6859,11 +6739,11 @@ Web Web开发（WebSocket Servlet Web Portlet）
 
 pom.xml
 
-1.      &lt;dependency&gt;
-2.        &lt;groupId&gt;org.springframework&lt;/groupId&gt;
-3.        &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
-4.        &lt;version&gt;5.2.10.RELEASE&lt;/version&gt;
-5.      &lt;/dependency&gt;
+1.      <dependency>
+2.        <groupId>org.springframework</groupId>
+3.        <artifactId>spring-context</artifactId>
+4.        <version>5.2.10.RELEASE</version>
+5.      </dependency>
 
 创建配置文件将被管理的对象告知IoC容器
 
@@ -6871,15 +6751,15 @@ resouse中创建spring.config配置文件xml 配置对应类作为Spring管理�
 
 ApplicationContext.xml
 
-1.      _&lt;!--1.导入spring的坐标spring-context，对应版本是5.2.10.RELEASE--&gt;_
+1.      _<!--1.导入spring的坐标spring-context，对应版本是5.2.10.RELEASE-->_
 
-2.      _&lt;!--2.配置bean--&gt;_
+2.      _<!--2.配置bean-->_
 3.      _<!--bean标签标示配置bean_
 4.      id属性标示给bean起名字
 5.      class属性表示给bean定义类型-->
-6.      &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/&gt;
+6.      <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
 
-7.      &lt;bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"/&gt;
+7.      <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"/>
 
 围堵标签或者空标签皆可
 
@@ -6926,13 +6806,13 @@ BookServiceImpl.java
 
 applicationContext
 
-1.      &lt;bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"&gt;
-2.          _&lt;!--7.配置server与dao的关系--&gt;_
+1.      <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl">
+2.          _<!--7.配置server与dao的关系-->_
 3.          _<!--property标签表示配置当前bean的属性_
 4.          name属性表示配置哪一个具体的属性
 5.          ref属性表示参照哪一个bean-->
-6.          &lt;property name="bookDao" ref="bookDao"/&gt;
-7.      &lt;/bean&gt;
+6.          <property name="bookDao" ref="bookDao"/>
+7.      </bean>
 
 Ref-reference
 
@@ -6954,10 +6834,10 @@ Service中有个属性是bookDao 对应需要参照的对象bookDao（id）两�
 
 格式
 
-1.  &lt;beans&gt;
-2.      &lt;bean/&gt;
-3.      &lt;bean&gt;&lt;/bean&gt;
-4.  &lt;/beans&gt;
+1.  <beans>
+2.      <bean/>
+3.      <bean></bean>
+4.  </beans>
 
 属性列表:
 
@@ -6967,17 +6847,17 @@ Class：bean的类型，即配置的bean的全路径名
 
 别名配置
 
-1.      _&lt;!--name:为bean指定别名，别名可以有多个，使用逗号，分号，空格进行分隔--&gt;_
-2.      &lt;bean id="bookService" name="service service4 bookEbi" class="com.itheima.service.impl.BookServiceImpl"&gt;
-3.          &lt;property name="bookDao" ref="bookDao"/&gt;
-4.      &lt;/bean&gt;
+1.      _<!--name:为bean指定别名，别名可以有多个，使用逗号，分号，空格进行分隔-->_
+2.      <bean id="bookService" name="service service4 bookEbi" class="com.itheima.service.impl.BookServiceImpl">
+3.          <property name="bookDao" ref="bookDao"/>
+4.      </bean>
 
 使用name属性配置 但还是建议使用id引用
 
 Bean作用范围
 
-1.      _&lt;!--scope：为bean设置作用范围，可选值为单例singloton，非单例prototype--&gt;_
-2.      &lt;bean id="bookDao" name="dao" class="com.itheima.dao.impl.BookDaoImpl" scope="prototype"/&gt;
+1.      _<!--scope：为bean设置作用范围，可选值为单例singloton，非单例prototype-->_
+2.      <bean id="bookDao" name="dao" class="com.itheima.dao.impl.BookDaoImpl" scope="prototype"/>
 
 为了控制同一个bean是不是同一个bean对象，即是否为单例，同一个为单例
 
@@ -7029,8 +6909,8 @@ BookDaoImpl.java
 
 配置
 
-1.  _&lt;!--方式一：构造方法实例化bean--&gt;_
-2.  &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/&gt;
+1.  _<!--方式一：构造方法实例化bean-->_
+2.  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
 
 3.  通过静态工厂
 
@@ -7062,8 +6942,8 @@ OrderDaoFactory.java
 
 配置
 
-1.      _&lt;!--方式二：使用静态工厂实例化bean--&gt;_
-2.  &lt;bean id="orderDao" class="com.itheima.factory.OrderDaoFactory" factory-method="getOrderDao"/&gt;
+1.      _<!--方式二：使用静态工厂实例化bean-->_
+2.  <bean id="orderDao" class="com.itheima.factory.OrderDaoFactory" factory-method="getOrderDao"/>
 
 Class是工厂类名，如果不加factory-method 那么配出来的bean是工厂的实例对象，还需要加上工厂内路径
 
@@ -7094,20 +6974,20 @@ UserDaoFactory.java
 
 配置
 
-1.      _&lt;!--方式三：使用实例工厂实例化bean--&gt;_
-2.  &lt;bean id="userFactory" class="com.itheima.factory.UserDaoFactory"/&gt;
-3.  &lt;bean id="userDao" factory-method="getUserDao" factory-bean="userFactory"/&gt;
+1.      _<!--方式三：使用实例工厂实例化bean-->_
+2.  <bean id="userFactory" class="com.itheima.factory.UserDaoFactory"/>
+3.  <bean id="userDao" factory-method="getUserDao" factory-bean="userFactory"/>
 
 需要先造出工厂对象 工厂中的路径是getUserDao方法 工厂对象对应的bean使用工厂id
 
 1.  使用factoryBean（方式C的变种）
-2.  public class UserDaoFactoryBean implements FactoryBean&lt;UserDao&gt; {
+2.  public class UserDaoFactoryBean implements FactoryBean<UserDao> {
 3.      _//代替原始实例工厂中创建对象的方法_
 4.      public UserDao getObject() throws Exception {
 5.          return new UserDaoImpl();
 6.      }
 
-7.      public Class&lt;?&gt; getObjectType() {
+7.      public Class<?> getObjectType() {
 8.          return UserDao.class;
 9.     }
 10. }
@@ -7116,8 +6996,8 @@ UserDaoFactory.java
 
 配置
 
-1.     _&lt;!--方式四：使用FactoryBean实例化bean--&gt;_
-2.     &lt;bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean"/&gt;
+1.     _<!--方式四：使用FactoryBean实例化bean-->_
+2.     <bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean"/>
 
 配置时更简单
 
@@ -7161,9 +7041,9 @@ BookDaoImpl.java
 
 配置
 
-1.      _&lt;!--init-method：设置bean初始化生命周期回调函数--&gt;_
-2.      _&lt;!--destroy-method：设置bean销毁生命周期回调函数，仅适用于单例对象--&gt;_
-3.      &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" init-method="init" destroy-method="destory"/&gt;
+1.      _<!--init-method：设置bean初始化生命周期回调函数-->_
+2.      _<!--destroy-method：设置bean销毁生命周期回调函数，仅适用于单例对象-->_
+3.      <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" init-method="init" destroy-method="destory"/>
 
 4.  public class AppForLifeCycle {
 5.      public static void main( String\[\] args ) {
@@ -7257,14 +7137,14 @@ BookServiceImpl.java
 
 applicationContext
 
-1.      _&lt;!--注入引用类型--&gt;_
-2.      &lt;bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"&gt;
-3.          _&lt;!--property标签：设置注入属性--&gt;_
-4.          _&lt;!--name属性：设置注入的属性名，实际是set方法对应的名称--&gt;_
-5.          _&lt;!--ref属性：设置注入引用类型bean的id或name--&gt;_
-6.          &lt;property name="bookDao" ref="bookDao"/&gt;
-7.          &lt;property name="userDao" ref="userDao"/&gt;
-8.      &lt;/bean&gt;
+1.      _<!--注入引用类型-->_
+2.      <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl">
+3.          _<!--property标签：设置注入属性-->_
+4.          _<!--name属性：设置注入的属性名，实际是set方法对应的名称-->_
+5.          _<!--ref属性：设置注入引用类型bean的id或name-->_
+6.          <property name="bookDao" ref="bookDao"/>
+7.          <property name="userDao" ref="userDao"/>
+8.      </bean>
 
 - 简单类型
 
@@ -7289,14 +7169,14 @@ BookDaoImpl.java
 
 applicationContext
 
-1.      _&lt;!--注入简单类型--&gt;_
-2.      &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"&gt;
-3.          _&lt;!--property标签：设置注入属性--&gt;_
-4.          _&lt;!--name属性：设置注入的属性名，实际是set方法对应的名称--&gt;_
-5.          _&lt;!--value属性：设置注入简单类型数据值--&gt;_
-6.          &lt;property name="connectionNum" value="100"/&gt;
-7.          &lt;property name="databaseName" value="mysql"/&gt;
-8.      &lt;/bean&gt;
+1.      _<!--注入简单类型-->_
+2.      <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
+3.          _<!--property标签：设置注入属性-->_
+4.          _<!--name属性：设置注入的属性名，实际是set方法对应的名称-->_
+5.          _<!--value属性：设置注入简单类型数据值-->_
+6.          <property name="connectionNum" value="100"/>
+7.          <property name="databaseName" value="mysql"/>
+8.      </bean>
 
 提供可访问的set方法
 
@@ -7326,10 +7206,10 @@ BookServiceImpl.java
 
 ApplicationContext
 
-1.      &lt;bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"&gt;
-2.          &lt;constructor-arg name="userDao" ref="userDao"/&gt;
-3.          &lt;constructor-arg name="bookDao" ref="bookDao"/&gt;
-4.      &lt;/bean&gt;
+1.      <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl">
+2.          <constructor-arg name="userDao" ref="userDao"/>
+3.          <constructor-arg name="bookDao" ref="bookDao"/>
+4.      </bean>
 
 - 简单类型
 
@@ -7349,27 +7229,27 @@ ApplicationContext
 
 applicationContext
 
-1.      &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"&gt;
-2.          &lt;constructor-arg name="connectionNum" value="10"/&gt;
-3.          &lt;constructor-arg name="databaseName" value="mysql"/&gt;
-4.      &lt;/bean&gt;
+1.      <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
+2.          <constructor-arg name="connectionNum" value="10"/>
+3.          <constructor-arg name="databaseName" value="mysql"/>
+4.      </bean>
 
 5.  问题
 
 耦合度高 applicationContext与BookDaoImpl耦合度高 如果形参名称更改，applicaton中constructor-arg中的name属性也要同步修改
 
-1.  _&lt;!--解决形参名称的问题，与形参名不耦合 根据构造方法类型注入--&gt;_
-2.  &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"&gt;
-3.          &lt;constructor-arg type="int" value="10"/&gt;
-4.          &lt;constructor-arg type="java.lang.String" value="mysql"/&gt;
-5.  &lt;/bean&gt;
+1.  _<!--解决形参名称的问题，与形参名不耦合 根据构造方法类型注入-->_
+2.  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
+3.          <constructor-arg type="int" value="10"/>
+4.          <constructor-arg type="java.lang.String" value="mysql"/>
+5.  </bean>
 
-6.  _&lt;!--解决参数类型重复问题，使用位置解决参数匹配--&gt;_
-7.      &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"&gt;
-8.          _&lt;!--根据构造方法参数位置注入--&gt;_
-9.          &lt;constructor-arg index="0" value="mysql"/&gt;
-10.          &lt;constructor-arg index="1" value="100"/&gt;
-11.      &lt;/bean&gt;
+6.  _<!--解决参数类型重复问题，使用位置解决参数匹配-->_
+7.      <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
+8.          _<!--根据构造方法参数位置注入-->_
+9.          <constructor-arg index="0" value="mysql"/>
+10.          <constructor-arg index="1" value="100"/>
+11.      </bean>
 
 12.  依赖注入方式选择
 
@@ -7386,9 +7266,9 @@ IoC容器根据bean所依赖的资源在容器中自动查找并注入bean中的
 
 自动装配方式：按类型/按名称/按构造方法/不启用自动装配
 
-1.  &lt;bean id="bookDao" class="com.itheima.service.impl.BookDaoImpl" /&gt;
-2.  _&lt;!--autowire属性：开启自动装配，通常使用按类型装配--&gt;_
-3.  &lt;bean id="bookService" class="com.itheima.service.impl.BookServiceImpl" autowire="byType"/&gt;
+1.  <bean id="bookDao" class="com.itheima.service.impl.BookDaoImpl" />
+2.  _<!--autowire属性：开启自动装配，通常使用按类型装配-->_
+3.  <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl" autowire="byType"/>
 
 按类型装配时，bean对象需唯一 连id都可以省略
 
@@ -7408,21 +7288,21 @@ IoC容器根据bean所依赖的资源在容器中自动查找并注入bean中的
 1.  public class BookDaoImpl implements BookDao {
 
 2.      private int\[\] array;
-3.      private List&lt;String&gt; list;
-4.      private Set&lt;String&gt; set;
-5.      private Map&lt;String,String&gt; map;
+3.      private List<String> list;
+4.      private Set<String> set;
+5.      private Map<String,String> map;
 6.      private Properties properties;
 
 7.      public void setArray(int\[\] array) {
 8.         this.array = array;
 9.     }
-10.     public void setList(List&lt;String&gt; list) {
+10.     public void setList(List<String> list) {
 11.         this.list = list;
 12.     }
-13.     public void setSet(Set&lt;String&gt; set) {
+13.     public void setSet(Set<String> set) {
 14.         this.set = set;
 15.     }
-16.     public void setMap(Map&lt;String, String&gt; map) {
+16.     public void setMap(Map<String, String> map) {
 17.         this.map = map;
 18.     }
 19.     public void setProperties(Properties properties) {
@@ -7440,50 +7320,50 @@ IoC容器根据bean所依赖的资源在容器中自动查找并注入bean中的
 
 配置
 
-1.  &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"&gt;
-2.          _&lt;!--数组注入--&gt;_
-3.          &lt;property name="array"&gt;
-4.              &lt;array&gt;
-5.                  &lt;value&gt;100&lt;/value&gt;
-6.                  &lt;value&gt;200&lt;/value&gt;
-7.                  &lt;value&gt;300&lt;/value&gt;
-8.              &lt;/array&gt;
-9.          &lt;/property&gt;
-10.         _&lt;!--list集合注入--&gt;_
-11.         &lt;property name="list"&gt;
-12.             &lt;list&gt;
-13.                 &lt;value&gt;itcast&lt;/value&gt;
-14.                 &lt;value&gt;itheima&lt;/value&gt;
-15.                 &lt;value&gt;boxuegu&lt;/value&gt;
-16.                 &lt;value&gt;chuanzhihui&lt;/value&gt;
-17.             &lt;/list&gt;
-18.         &lt;/property&gt;
-19.         _&lt;!--set集合注入--&gt;_
-20.         &lt;property name="set"&gt;
-21.             &lt;set&gt;
-22.                 &lt;value&gt;itcast&lt;/value&gt;
-23.                 &lt;value&gt;itheima&lt;/value&gt;
-24.                 &lt;value&gt;boxuegu&lt;/value&gt;
-25.                 &lt;value&gt;boxuegu&lt;/value&gt;
-26.             &lt;/set&gt;
-27.         &lt;/property&gt;
-28.         _&lt;!--map集合注入--&gt;_
-29.         &lt;property name="map"&gt;
-30.             &lt;map&gt;
-31.                 &lt;entry key="country" value="china"/&gt;
-32.                 &lt;entry key="province" value="henan"/&gt;
-33.                 &lt;entry key="city" value="kaifeng"/&gt;
-34.             &lt;/map&gt;
-35.         &lt;/property&gt;
-36.         _&lt;!--Properties注入--&gt;_
-37.         &lt;property name="properties"&gt;
-38.             &lt;props&gt;
-39.                 &lt;prop key="country"&gt;china&lt;/prop&gt;
-40.                 &lt;prop key="province"&gt;henan&lt;/prop&gt;
-41.                 &lt;prop key="city"&gt;kaifeng&lt;/prop&gt;
-42.             &lt;/props&gt;
-43.         &lt;/property&gt;
-44.     &lt;/bean&gt;
+1.  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
+2.          _<!--数组注入-->_
+3.          <property name="array">
+4.              <array>
+5.                  <value>100</value>
+6.                  <value>200</value>
+7.                  <value>300</value>
+8.              </array>
+9.          </property>
+10.         _<!--list集合注入-->_
+11.         <property name="list">
+12.             <list>
+13.                 <value>itcast</value>
+14.                 <value>itheima</value>
+15.                 <value>boxuegu</value>
+16.                 <value>chuanzhihui</value>
+17.             </list>
+18.         </property>
+19.         _<!--set集合注入-->_
+20.         <property name="set">
+21.             <set>
+22.                 <value>itcast</value>
+23.                 <value>itheima</value>
+24.                 <value>boxuegu</value>
+25.                 <value>boxuegu</value>
+26.             </set>
+27.         </property>
+28.         _<!--map集合注入-->_
+29.         <property name="map">
+30.             <map>
+31.                 <entry key="country" value="china"/>
+32.                 <entry key="province" value="henan"/>
+33.                 <entry key="city" value="kaifeng"/>
+34.             </map>
+35.         </property>
+36.         _<!--Properties注入-->_
+37.         <property name="properties">
+38.             <props>
+39.                 <prop key="country">china</prop>
+40.                 <prop key="province">henan</prop>
+41.                 <prop key="city">kaifeng</prop>
+42.             </props>
+43.         </property>
+44.     </bean>
 
 注：
 
@@ -7491,7 +7371,7 @@ Set如果重复会自动过滤
 
 Array与list能混用
 
-&lt;ref bean = “beanId’’&gt; 如果使用引用类型
+<ref bean = “beanId’’> 如果使用引用类型
 
 ##### 案例：数据源对象管理
 
@@ -7501,23 +7381,23 @@ Array与list能混用
 
 管理第三方数据连接池
 
-1.  _&lt;!--    管理DruidDataSource对象--&gt;_
-2.     &lt;bean id ="dataSouce" class="com.alibaba.druid.pool.DruidDataSource"&gt;
-3.          &lt;property name="driverClassName" value="com.mysql.jdbc.Driver"/&gt;
-4.          &lt;property name="url" value="jdbc:mysql://localhost:3306/spring_db"/&gt;
-5.          &lt;property name="username" value="root"/&gt;
-6.          &lt;property name="password" value="root"/&gt;
-7.     &lt;/bean&gt;
+1.  _<!--    管理DruidDataSource对象-->_
+2.     <bean id ="dataSouce" class="com.alibaba.druid.pool.DruidDataSource">
+3.          <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+4.          <property name="url" value="jdbc:mysql://localhost:3306/spring_db"/>
+5.          <property name="username" value="root"/>
+6.          <property name="password" value="root"/>
+7.     </bean>
 
 管理c3p0
 
-1.      &lt;bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"&gt;
-2.          &lt;property name="driverClass" value="com.mysql.jdbc.Driver"/&gt;
-3.          &lt;property name="jdbcUrl" value="jdbc:mysql://localhost:3306/spring_db"/&gt;
-4.          &lt;property name="user" value="root"/&gt;
-5.          &lt;property name="password" value="root"/&gt;
-6.          &lt;property name="maxPoolSize" value="1000"/&gt;
-7.      &lt;/bean&gt;
+1.      <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+2.          <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+3.          <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/spring_db"/>
+4.          <property name="user" value="root"/>
+5.          <property name="password" value="root"/>
+6.          <property name="maxPoolSize" value="1000"/>
+7.      </bean>
 
 使用setter注入
 
@@ -7535,13 +7415,13 @@ Array与list能混用
 10. 开启一个全新的context命名空间
 11. 使用context空间加载properties文件
 12. 使用属性占位符${}读取properties文件中的属性
-13. &lt;context:property-placeholder location="jdbc.properties"&gt;
-14.     &lt;bean class="com.alibaba.druid.pool.DruidDataSource"&gt;
-15.         &lt;property name="driverClassName" value="${jdbc.driver}"/&gt;
-16.         &lt;property name="url" value="${jdbc.url}"/&gt;
-17.         &lt;property name="username" value="${jdbc.username}"/&gt;
-18.         &lt;property name="password" value="${jdbc.password}"/&gt;
-19.     &lt;/bean&gt;
+13. <context:property-placeholder location="jdbc.properties">
+14.     <bean class="com.alibaba.druid.pool.DruidDataSource">
+15.         <property name="driverClassName" value="${jdbc.driver}"/>
+16.         <property name="url" value="${jdbc.url}"/>
+17.         <property name="username" value="${jdbc.username}"/>
+18.         <property name="password" value="${jdbc.password}"/>
+19.     </bean>
 
 不加载系统变量system-properties-mode="NEVER"
 
@@ -7549,7 +7429,7 @@ Array与list能混用
 
 Classpath\*表示不仅可以从当前目录读取也可以读取框架中jar包，设置加载当前工程类路径和当前工程所依赖的所有jar包中的所有properties文件
 
-1.  &lt;context:property-placeholder location="classpath\*:\*.properties" system-properties-mode="NEVER"/&gt;
+1.  <context:property-placeholder location="classpath\*:\*.properties" system-properties-mode="NEVER"/>
 
 ##### 容器补充
 
@@ -7592,7 +7472,7 @@ Classpath\*表示不仅可以从当前目录读取也可以读取框架中jar包
 
 Beanfactory与applicationContext加载bean的实际不一样，beanFactory是延迟加载bean（懒汉），application是立即加载bean（饿汉）
 
-1.  &lt;bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" lazy-init="true"/&gt;
+1.  <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" lazy-init="true"/>
 
 在配置文件中加入这一行，也可以使application延迟加载
 
@@ -7683,7 +7563,7 @@ Component可以指定名称理解成id
 
 核心配置文件中通过组件扫描加载bean
 
-1.  &lt;context:component-scan base-package="com.itheima"/&gt;
+1.  <context:component-scan base-package="com.itheima"/>
 
 Spring提供@Component注解的三个衍生注解，功能完全一致，方便理解
 
@@ -7949,26 +7829,26 @@ XML配置vs注解开发
 
 SqlMapConfig
 
-1.  &lt;configuration&gt;
-2.      &lt;properties resource="jdbc.properties"&gt;&lt;/properties&gt;
-3.      &lt;typeAliases&gt;
-4.          &lt;package name="com.itheima.domain"/&gt;
-5.      &lt;/typeAliases&gt;
-6.      &lt;environments default="mysql"&gt;
-7.          &lt;environment id="mysql"&gt;
-8.              &lt;transactionManager type="JDBC"&gt;&lt;/transactionManager&gt;
-9.              &lt;dataSource type="POOLED"&gt;
-10.                 &lt;property name="driver" value="${jdbc.driver}"&gt;&lt;/property&gt;
-11.                 &lt;property name="url" value="${jdbc.url}"&gt;&lt;/property&gt;
-12.                 &lt;property name="username" value="${jdbc.username}"&gt;&lt;/property&gt;
-13.                 &lt;property name="password" value="${jdbc.password}"&gt;&lt;/property&gt;
-14.             &lt;/dataSource&gt;
-15.         &lt;/environment&gt;
-16.     &lt;/environments&gt;
-17.     &lt;mappers&gt;
-18.         &lt;package name="com.itheima.dao"&gt;&lt;/package&gt;
-19.     &lt;/mappers&gt;
-20. &lt;/configuration&gt;
+1.  <configuration>
+2.      <properties resource="jdbc.properties"></properties>
+3.      <typeAliases>
+4.          <package name="com.itheima.domain"/>
+5.      </typeAliases>
+6.      <environments default="mysql">
+7.          <environment id="mysql">
+8.              <transactionManager type="JDBC"></transactionManager>
+9.              <dataSource type="POOLED">
+10.                 <property name="driver" value="${jdbc.driver}"></property>
+11.                 <property name="url" value="${jdbc.url}"></property>
+12.                 <property name="username" value="${jdbc.username}"></property>
+13.                 <property name="password" value="${jdbc.password}"></property>
+14.             </dataSource>
+15.         </environment>
+16.     </environments>
+17.     <mappers>
+18.         <package name="com.itheima.dao"></package>
+19.     </mappers>
+20. </configuration>
 
 整合MyBatis
 
@@ -7980,17 +7860,17 @@ SqlMapConfig
 
 额外导包
 
-1.      &lt;dependency&gt;
-2.        &lt;groupId&gt;org.springframework&lt;/groupId&gt;
-3.        &lt;artifactId&gt;spring-jdbc&lt;/artifactId&gt;
-4.        &lt;version&gt;5.2.10.RELEASE&lt;/version&gt;
-5.      &lt;/dependency&gt;
+1.      <dependency>
+2.        <groupId>org.springframework</groupId>
+3.        <artifactId>spring-jdbc</artifactId>
+4.        <version>5.2.10.RELEASE</version>
+5.      </dependency>
 
-6.      &lt;dependency&gt;
-7.        &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
-8.        &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;
-9.       &lt;version&gt;1.3.0&lt;/version&gt;
-10.     &lt;/dependency&gt;
+6.      <dependency>
+7.        <groupId>org.mybatis</groupId>
+8.        <artifactId>mybatis-spring</artifactId>
+9.       <version>1.3.0</version>
+10.     </dependency>
 
 SpringConfig
 
@@ -8051,23 +7931,23 @@ JdbcConfig
 
 完全替代
 
-1.      &lt;typeAliases&gt;
-2.          &lt;package name="com.itheima.domain"/&gt;
-3.      &lt;/typeAliases&gt;
-4.      &lt;environments default="mysql"&gt;
-5.          &lt;environment id="mysql"&gt;
-6.              &lt;transactionManager type="JDBC"&gt;&lt;/transactionManager&gt;
-7.              &lt;dataSource type="POOLED"&gt;
-8.                  &lt;property name="driver" value="${jdbc.driver}"&gt;&lt;/property&gt;
-9.                  &lt;property name="url" value="${jdbc.url}"&gt;&lt;/property&gt;
-10.                 &lt;property name="username" value="${jdbc.username}"&gt;&lt;/property&gt;
-11.                 &lt;property name="password" value="${jdbc.password}"&gt;&lt;/property&gt;
-12.             &lt;/dataSource&gt;
-13.         &lt;/environment&gt;
-14.     &lt;/environments&gt;
-15.     &lt;mappers&gt;
-16.         &lt;package name="com.itheima.dao"&gt;&lt;/package&gt;
-17.     &lt;/mappers&gt;
+1.      <typeAliases>
+2.          <package name="com.itheima.domain"/>
+3.      </typeAliases>
+4.      <environments default="mysql">
+5.          <environment id="mysql">
+6.              <transactionManager type="JDBC"></transactionManager>
+7.              <dataSource type="POOLED">
+8.                  <property name="driver" value="${jdbc.driver}"></property>
+9.                  <property name="url" value="${jdbc.url}"></property>
+10.                 <property name="username" value="${jdbc.username}"></property>
+11.                 <property name="password" value="${jdbc.password}"></property>
+12.             </dataSource>
+13.         </environment>
+14.     </environments>
+15.     <mappers>
+16.         <package name="com.itheima.dao"></package>
+17.     </mappers>
 
 只需要配置不是默认的部分
 
@@ -8077,9 +7957,9 @@ JdbcConfig
 
 1.Line7使用形参注入引用类型，引用JdbcConfig中的dataSouce （bean）
 
-1.      &lt;mappers&gt;
-2.          &lt;package name="com.itheima.dao"&gt;&lt;/package&gt;
-3.      &lt;/mappers&gt;
+1.      <mappers>
+2.          <package name="com.itheima.dao"></package>
+3.      </mappers>
 
 对于这一段与SqlSession不是一体的，SqlSessionFactoryBean只负责造出SqlSession
 
@@ -8148,16 +8028,16 @@ src\\test\\java\\com\\itheima\\service\\AccountServiceTest.java
 
 - 导入坐标（pom.xml）
 
-1.      &lt;dependency&gt;
-2.        &lt;groupId&gt;org.springframework&lt;/groupId&gt;
-3.        &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
-4.        &lt;version&gt;5.2.10.RELEASE&lt;/version&gt;
-5.      &lt;/dependency&gt;
-6.      &lt;dependency&gt;
-7.        &lt;groupId&gt;org.aspectj&lt;/groupId&gt;
-8.        &lt;artifactId&gt;aspectjweaver&lt;/artifactId&gt;
-9.        &lt;version&gt;1.9.4&lt;/version&gt;
-10.     &lt;/dependency&gt;
+1.      <dependency>
+2.        <groupId>org.springframework</groupId>
+3.        <artifactId>spring-context</artifactId>
+4.        <version>5.2.10.RELEASE</version>
+5.      </dependency>
+6.      <dependency>
+7.        <groupId>org.aspectj</groupId>
+8.        <artifactId>aspectjweaver</artifactId>
+9.        <version>1.9.4</version>
+10.     </dependency>
 
 - 制作连接点方法（原始操作，Dao接口与实现类）
 - 制作共性功能（通知类与通知）
@@ -8753,17 +8633,17 @@ SpringMVC是一种基于Java实现MVC模型的轻量级Web框架
 #### SpringMVC入门案例
 
 1.  使用SpringMVC技术需要先导入SpringMVC与Servlet坐标
-2.      &lt;dependency&gt;
-3.        &lt;groupId&gt;javax.servlet&lt;/groupId&gt;
-4.        &lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;
-5.        &lt;version&gt;3.1.0&lt;/version&gt;
-6.        &lt;scope&gt;provided&lt;/scope&gt;ws
-7.      &lt;/dependency&gt;
-8.      &lt;dependency&gt;
-9.        &lt;groupId&gt;org.springframework&lt;/groupId&gt;
-10.       &lt;artifactId&gt;spring-webmvc&lt;/artifactId&gt;
-11.       &lt;version&gt;5.2.10.RELEASE&lt;/version&gt;
-12.     &lt;/dependency&gt;
+2.      <dependency>
+3.        <groupId>javax.servlet</groupId>
+4.        <artifactId>javax.servlet-api</artifactId>
+5.        <version>3.1.0</version>
+6.        <scope>provided</scope>ws
+7.      </dependency>
+8.      <dependency>
+9.        <groupId>org.springframework</groupId>
+10.       <artifactId>spring-webmvc</artifactId>
+11.       <version>5.2.10.RELEASE</version>
+12.     </dependency>
 
 13.  创建SpringMVC控制器类（同Servlet）
 14.  _//定义表现层控制器bean_
@@ -8911,11 +8791,11 @@ CUSTOM//按照自定义的过滤规则过滤
 1.  _//web配置类简化开发，仅设置配置类类名即可_
 2.  public class ServletContainersInitConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-3.      protected Class&lt;?&gt;\[\] getRootConfigClasses() {
+3.      protected Class<?>\[\] getRootConfigClasses() {
 4.          return new Class\[\]{SpringConfig.class};
 5.      }
 
-6.      protected Class&lt;?&gt;\[\] getServletConfigClasses() {
+6.      protected Class<?>\[\] getServletConfigClasses() {
 7.          return new Class\[\]{SpringMvcConfig.class};
 8.     }
 
@@ -9056,7 +8936,7 @@ POJO中包含POJO对象
 17.     _//集合参数：同名请求参数可以使用@RequestParam注解映射到对应名称的集合对象中作为数据_
 18.     @RequestMapping("/listParam")
 19.     @ResponseBody
-20.     public String listParam(@RequestParam List&lt;String&gt; likes){
+20.     public String listParam(@RequestParam List<String> likes){
 21.         System.out.println("集合参数传递 likes ==> "+ likes);
 22.         return "{'module':'list param'}";
 23.     }
@@ -9065,11 +8945,11 @@ POJO中包含POJO对象
 
 Step1：导入json依赖
 
-1.      &lt;dependency&gt;
-2.        &lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
-3.        &lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
-4.        &lt;version&gt;2.9.0&lt;/version&gt;
-5.      &lt;/dependency&gt;
+1.      <dependency>
+2.        <groupId>com.fasterxml.jackson.core</groupId>
+3.        <artifactId>jackson-databind</artifactId>
+4.        <version>2.9.0</version>
+5.      </dependency>
 
 Step1.5：Postman设置发json数据
 
@@ -9091,7 +8971,7 @@ Step3：设置接收json数据
 3.      _//2.使用@RequestBody注解将外部传递的json数组数据映射到形参的保存实体类对象的集合对象中，要求属性名称一一对应_
 4.      @RequestMapping("/listPojoParamForJson")
 5.      @ResponseBody
-6.      public String listPojoParamForJson(@RequestBody List&lt;User&gt; likes){
+6.      public String listPojoParamForJson(@RequestBody List<User> likes){
 7.          System.out.println("list pojo(json)参数传递 list ==> "+likes);
 8.          return "{'module':'list pojo for json param'}";
 9.      }
@@ -9117,7 +8997,7 @@ Pojo参数：json数组
 3.      _//2.使用@RequestBody注解将外部传递的json数组数据映射到形参的保存实体类对象的集合对象中，要求属性名称一一对应_
 4.      @RequestMapping("/listPojoParamForJson")
 5.      @ResponseBody
-6.      public String listPojoParamForJson(@RequestBody List&lt;User&gt; list){
+6.      public String listPojoParamForJson(@RequestBody List<User> list){
 7.          System.out.println("list pojo(json)参数传递 list ==> "+list);
 8.          return "{'module':'list pojo for json param'}";
 9.      }
@@ -9371,9 +9251,9 @@ http://localhost/user/1 删除用户信息 DELETE（删除）
 8.      }
 
 9.     @GetMapping
-10.     public List&lt;Book&gt; getAll(){ 
+10.     public List<Book> getAll(){ 
 11.         System.out.println("book getAll is running ...");
-12.         List&lt;Book&gt; bookList = new ArrayList&lt;Book&gt;();
+12.         List<Book> bookList = new ArrayList<Book>();
 
 13.         Book book1 = new Book();
 14.         book1.setType("计算机");
@@ -9433,7 +9313,7 @@ http://localhost/user/1 删除用户信息 DELETE（删除）
 
 并在前端页面上绑定按钮
 
-1.  &lt;script&gt;
+1.  <script>
 2.          var vue = new Vue({
 
 3.              el: '#app',
@@ -9480,7 +9360,7 @@ http://localhost/user/1 删除用户信息 DELETE（删除）
 
 37.             }
 38.         })
-39.     &lt;/script&gt;
+39.     </script>
 
 小结：
 
@@ -9593,11 +9473,11 @@ SpringMvcConfig
 ServletConfig
 
 1.  public class ServletConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
-2.      protected Class&lt;?&gt;\[\] getRootConfigClasses() {
+2.      protected Class<?>\[\] getRootConfigClasses() {
 3.          return new Class\[\]{SpringConfig.class};
 4.      }
 
-5.      protected Class&lt;?&gt;\[\] getServletConfigClasses() {
+5.      protected Class<?>\[\] getServletConfigClasses() {
 6.          return new Class\[\]{SpringMvcConfig.class};
 7.      }
 
@@ -9679,7 +9559,7 @@ BookDao
 10.     public Book getById(Integer id);
 
 11.     @Select("select \* from tbl_book")
-12.     public List&lt;Book&gt; getAll();
+12.     public List<Book> getAll();
 13. }
 
 BookService
@@ -9718,7 +9598,7 @@ BookService
 27.      \* 查询全部
 28.      \* @return
 29.      \*/
-30.     public List&lt;Book&gt; getAll();
+30.     public List<Book> getAll();
 31. }
 
 BookServiceImpl
@@ -9747,7 +9627,7 @@ BookServiceImpl
 18.         return bookDao.getById(id);
 19.     }
 
-20.     public List&lt;Book&gt; getAll() {
+20.     public List<Book> getAll() {
 21.         return bookDao.getAll();
 22.     }
 23. }
@@ -9788,7 +9668,7 @@ BookController
 21.     }
 
 22.     @GetMapping
-23.     public List&lt;Book&gt; getAll() {
+23.     public List<Book> getAll() {
 24.         return bookService.getAll();
 25.     }
 26. }
@@ -9818,7 +9698,7 @@ BookController
 
 11.     @Test
 12.     public void testGetAll(){
-13.         List&lt;Book&gt; all = bookService.getAll();
+13.         List<Book> all = bookService.getAll();
 14.         System.out.println(all);
 15.     }
 
@@ -10177,12 +10057,12 @@ slot-scope="scope" 是 Element UI 表格组件提供的作用域插槽
 
 scope.row 代表当前行的数据对象
 
-1.  &lt;el-table-column label="操作" align="center"&gt;
-2.      &lt;template slot-scope="scope"&gt;
-3.          &lt;el-button type="primary" size="mini" @click="handleUpdate(scope.row)"&gt;编辑&lt;/el-button&gt;
-4.          &lt;el-button type="danger" size="mini" @click="handleDelete(scope.row)"&gt;删除&lt;/el-button&gt;
-5.      &lt;/template&gt;
-6.  &lt;/el-table-column&gt;
+1.  <el-table-column label="操作" align="center">
+2.      <template slot-scope="scope">
+3.          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+4.          <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+5.      </template>
+6.  </el-table-column>
 
 Row对象来自于表格的 :data="dataList" 属性
 
@@ -10390,12 +10270,12 @@ AfterCompletion：与配置顺序相反，可能不运行
 
 Maven_02_ssm
 
-1.      _&lt;!--依赖domain运行--&gt;_
-2.      &lt;dependency&gt;
-3.        &lt;groupId&gt;com.itheima&lt;/groupId&gt;
-4.        &lt;artifactId&gt;maven_03_pojo&lt;/artifactId&gt;
-5.        &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
-6.      &lt;/dependency&gt;
+1.      _<!--依赖domain运行-->_
+2.      <dependency>
+3.        <groupId>com.itheima</groupId>
+4.        <artifactId>maven_03_pojo</artifactId>
+5.        <version>1.0-SNAPSHOT</version>
+6.      </dependency>
 
 依赖domain运行
 
@@ -10424,29 +10304,29 @@ Maven_02_ssm
 
 可选依赖-隐藏自己的依赖 对外隐藏当前所依赖的资源——不透明
 
-1.          &lt;dependency&gt;
-2.              &lt;groupId&gt;com.itheima&lt;/groupId&gt;
-3.              &lt;artifactId&gt;maven_03_pojo&lt;/artifactId&gt;
-4.              &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
-5.              &lt;!--可选依赖是隐藏当前工程所依赖的资源，隐藏后对应资源将不具有依赖传递性;--&gt;
-6.              &lt;optional&gt;false&lt;/optional&gt;
-7.          &lt;/dependency&gt;
+1.          <dependency>
+2.              <groupId>com.itheima</groupId>
+3.              <artifactId>maven_03_pojo</artifactId>
+4.              <version>1.0-SNAPSHOT</version>
+5.              <!--可选依赖是隐藏当前工程所依赖的资源，隐藏后对应资源将不具有依赖传递性;-->
+6.              <optional>false</optional>
+7.          </dependency>
 
 - 排除依赖是隐藏当前资源对应的依赖关系-使用其他的资源时排除不用的依赖
 
 主动断开以来的资源，被排除的资源无需指定版本——不需要
 
-1.        &lt;exclusions&gt;
-2.          &lt;exclusion&gt;
-3.            &lt;groupId&gt;log4j&lt;/groupId&gt;
-4.            &lt;artifactId&gt;log4j&lt;/artifactId&gt;
-5.          &lt;/exclusion&gt;
-6.          &lt;exclusion&gt;
-7.            &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
-8.            &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
-9.          &lt;/exclusion&gt;
-10.       &lt;/exclusions&gt;
-11.     &lt;/dependency&gt;
+1.        <exclusions>
+2.          <exclusion>
+3.            <groupId>log4j</groupId>
+4.            <artifactId>log4j</artifactId>
+5.          </exclusion>
+6.          <exclusion>
+7.            <groupId>org.mybatis</groupId>
+8.            <artifactId>mybatis</artifactId>
+9.          </exclusion>
+10.       </exclusions>
+11.     </dependency>
 
 排除依赖仅指定GA即可，无需指定V
 
@@ -10461,19 +10341,19 @@ Maven_02_ssm
 
 新建maven_01_parent 设置打包类型为pom
 
-1.      &lt;groupId&gt;com.itheima&lt;/groupId&gt;
-2.      &lt;artifactId&gt;maven_01_parent&lt;/artifactId&gt;
-3.      &lt;version&gt;1.0-RELEASE&lt;/version&gt;
-4.      &lt;packaging&gt;pom&lt;/packaging&gt;
+1.      <groupId>com.itheima</groupId>
+2.      <artifactId>maven_01_parent</artifactId>
+3.      <version>1.0-RELEASE</version>
+4.      <packaging>pom</packaging>
 
 设置当前聚合工程所包含的子模块名称
 
-1.      _&lt;!--设置管理的模块名称--&gt;_
-2.      &lt;modules&gt;
-3.          &lt;module&gt;../maven_02_ssm&lt;/module&gt;
-4.          &lt;module&gt;../maven_03_pojo&lt;/module&gt;
-5.          &lt;module&gt;../maven_04_dao&lt;/module&gt;
-6.      &lt;/modules&gt;
+1.      _<!--设置管理的模块名称-->_
+2.      <modules>
+3.          <module>../maven_02_ssm</module>
+4.          <module>../maven_03_pojo</module>
+5.          <module>../maven_04_dao</module>
+6.      </modules>
 
 启动compile后会先构建没有依赖的，交换module的顺序对编译过程不产生影响
 
@@ -10485,28 +10365,28 @@ Maven_02_ssm
 
 Maven_02_ssm 在子工程中配置当前继承的夫工程
 
-1.    &lt;parent&gt;
-2.      &lt;groupId&gt;com.itheima&lt;/groupId&gt;
-3.      &lt;artifactId&gt;maven_01_parent&lt;/artifactId&gt;
-4.      &lt;version&gt;1.0-RELEASE&lt;/version&gt;
-5.      &lt;relativePath&gt;../maven_01_parent/pom.xml&lt;/relativePath&gt;
-6.    &lt;/parent&gt;
+1.    <parent>
+2.      <groupId>com.itheima</groupId>
+3.      <artifactId>maven_01_parent</artifactId>
+4.      <version>1.0-RELEASE</version>
+5.      <relativePath>../maven_01_parent/pom.xml</relativePath>
+6.    </parent>
 
 配置父工程GAV relativePath
 
 父工程中可选依赖 配置子工程中可选的依赖关系
 
-1.      _&lt;!--定义依赖管理--&gt;_
-2.      &lt;dependencyManagement&gt;
-3.          &lt;dependencies&gt;
-4.              &lt;dependency&gt;
-5.                  &lt;groupId&gt;junit&lt;/groupId&gt;
-6.                  &lt;artifactId&gt;junit&lt;/artifactId&gt;
-7.                  &lt;version&gt;4.12&lt;/version&gt;
-8.                  &lt;scope&gt;test&lt;/scope&gt;
-9.              &lt;/dependency&gt;
-10.         &lt;/dependencies&gt;
-11.     &lt;/dependencyManagement&gt;
+1.      _<!--定义依赖管理-->_
+2.      <dependencyManagement>
+3.          <dependencies>
+4.              <dependency>
+5.                  <groupId>junit</groupId>
+6.                  <artifactId>junit</artifactId>
+7.                  <version>4.12</version>
+8.                  <scope>test</scope>
+9.              </dependency>
+10.         </dependencies>
+11.     </dependencyManagement>
 
 子工程中使用父工程中的可选依赖时，仅需要提供群组id和项目id，无需提供版本，版本由父工程统一提供，避免版本冲突，子工程中还可以定义父工程中没有定义的依赖关系
 
@@ -10524,25 +10404,25 @@ Maven_02_ssm 在子工程中配置当前继承的夫工程
 
 #### 属性
 
-1.      _&lt;!--定义属性--&gt;_
-2.      &lt;properties&gt;
-3.          &lt;spring.version&gt;5.2.10.RELEASE&lt;/spring.version&gt;
-4.          &lt;junit.version&gt;4.12&lt;/junit.version&gt;
-5.          &lt;mybatis-spring.version&gt;1.3.0&lt;/mybatis-spring.version&gt;
-6.          _&lt;!--<jdbc.url&gt;jdbc:mysql://127.0.0.1:3306/ssm_db&lt;/jdbc.url&gt;-->_
-7.      &lt;/properties&gt;
+1.      _<!--定义属性-->_
+2.      <properties>
+3.          <spring.version>5.2.10.RELEASE</spring.version>
+4.          <junit.version>4.12</junit.version>
+5.          <mybatis-spring.version>1.3.0</mybatis-spring.version>
+6.          _<!--<jdbc.url>jdbc:mysql://127.0.0.1:3306/ssm_db</jdbc.url>-->_
+7.      </properties>
 
-8.      _&lt;!--定义依赖管理--&gt;_
-9.     &lt;dependencyManagement&gt;
-10.         &lt;dependencies&gt;
-11.             &lt;dependency&gt;
-12.                 &lt;groupId&gt;junit&lt;/groupId&gt;
-13.                 &lt;artifactId&gt;junit&lt;/artifactId&gt;
-14.                 &lt;version&gt;${junit.version}&lt;/version&gt;
-15.                 &lt;scope&gt;test&lt;/scope&gt;
-16.             &lt;/dependency&gt;
-17.         &lt;/dependencies&gt;
-18.     &lt;/dependencyManagement&gt;
+8.      _<!--定义依赖管理-->_
+9.     <dependencyManagement>
+10.         <dependencies>
+11.             <dependency>
+12.                 <groupId>junit</groupId>
+13.                 <artifactId>junit</artifactId>
+14.                 <version>${junit.version}</version>
+15.                 <scope>test</scope>
+16.             </dependency>
+17.         </dependencies>
+18.     </dependencyManagement>
 
 定义属性--引用属性
 
@@ -10550,10 +10430,10 @@ Maven_02_ssm 在子工程中配置当前继承的夫工程
 
 加载jdbc，定义属性
 
-1.      _&lt;!--定义属性--&gt;_
-2.      &lt;properties&gt;
-3.          &lt;jdbc.url&gt;jdbc:mysql://127.0.0.1:3306/ssm_db&lt;/jdbc.url&gt;
-4.      &lt;/properties&gt;
+1.      _<!--定义属性-->_
+2.      <properties>
+3.          <jdbc.url>jdbc:mysql://127.0.0.1:3306/ssm_db</jdbc.url>
+4.      </properties>
 
 Jdbc.properties配置资源中引用属性
 
@@ -10566,28 +10446,28 @@ Jdbc.properties配置资源中引用属性
 
 开启资源文件目录加载属性的过滤器
 
-1.      &lt;build&gt;
-2.          &lt;resources&gt;
-3.              _&lt;!--设置资源目录，并设置能够解析${}--&gt;_
-4.              &lt;resource&gt;
-5.                  &lt;directory&gt;${project.basedir}/src/main/resources&lt;/directory&gt;
-6.                  &lt;filtering&gt;true&lt;/filtering&gt;
-7.              &lt;/resource&gt;
-8.          &lt;/resources&gt;
-9.      &lt;/build&gt;
+1.      <build>
+2.          <resources>
+3.              _<!--设置资源目录，并设置能够解析${}-->_
+4.              <resource>
+5.                  <directory>${project.basedir}/src/main/resources</directory>
+6.                  <filtering>true</filtering>
+7.              </resource>
+8.          </resources>
+9.      </build>
 
 ${project.basedir}内置属性名
 
 配置maven打jar包，忽略web.xml检查
 
-1.        &lt;plugin&gt;
-2.          &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-3.          &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
-4.          &lt;version&gt;3.2.3&lt;/version&gt;
-5.          &lt;configuration&gt;
-6.            &lt;failOnMissingWebXml&gt;false&lt;/failOnMissingWebXml&gt;
-7.          &lt;/configuration&gt;
-8.        &lt;/plugin&gt;
+1.        <plugin>
+2.          <groupId>org.apache.maven.plugins</groupId>
+3.          <artifactId>maven-war-plugin</artifactId>
+4.          <version>3.2.3</version>
+5.          <configuration>
+6.            <failOnMissingWebXml>false</failOnMissingWebXml>
+7.          </configuration>
+8.        </plugin>
 
 #### 版本管理
 
@@ -10613,34 +10493,34 @@ ${project.basedir}内置属性名
 
 #### 多环境开发
 
-1.  _&lt;!--配置多环境--&gt;_
-2.      &lt;profiles&gt;
-3.          _&lt;!--开发环境--&gt;_
-4.          &lt;profile&gt;
-5.              &lt;id&gt;env_dep&lt;/id&gt;
-6.              &lt;properties&gt;
-7.                  &lt;jdbc.url&gt;jdbc:mysql://127.1.1.1:3306/ssm_db&lt;/jdbc.url&gt;
-8.              &lt;/properties&gt;
-9.              _&lt;!--设定是否为默认启动环境--&gt;_
-10.             &lt;activation&gt;
-11.                 &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
-12.             &lt;/activation&gt;
-13.         &lt;/profile&gt;
-14.         _&lt;!--生产环境--&gt;_
-15.         &lt;profile&gt;
-16.             &lt;id&gt;env_pro&lt;/id&gt;
-17.             &lt;properties&gt;
-18.                 &lt;jdbc.url&gt;jdbc:mysql://127.2.2.2:3306/ssm_db&lt;/jdbc.url&gt;
-19.             &lt;/properties&gt;
-20.         &lt;/profile&gt;
-21.         _&lt;!--测试环境--&gt;_
-22.         &lt;profile&gt;
-23.             &lt;id&gt;env_test&lt;/id&gt;
-24.             &lt;properties&gt;
-25.                 &lt;jdbc.url&gt;jdbc:mysql://127.3.3.3:3306/ssm_db&lt;/jdbc.url&gt;
-26.             &lt;/properties&gt;
-27.         &lt;/profile&gt;
-28.     &lt;/profiles&gt;
+1.  _<!--配置多环境-->_
+2.      <profiles>
+3.          _<!--开发环境-->_
+4.          <profile>
+5.              <id>env_dep</id>
+6.              <properties>
+7.                  <jdbc.url>jdbc:mysql://127.1.1.1:3306/ssm_db</jdbc.url>
+8.              </properties>
+9.              _<!--设定是否为默认启动环境-->_
+10.             <activation>
+11.                 <activeByDefault>true</activeByDefault>
+12.             </activation>
+13.         </profile>
+14.         _<!--生产环境-->_
+15.         <profile>
+16.             <id>env_pro</id>
+17.             <properties>
+18.                 <jdbc.url>jdbc:mysql://127.2.2.2:3306/ssm_db</jdbc.url>
+19.             </properties>
+20.         </profile>
+21.         _<!--测试环境-->_
+22.         <profile>
+23.             <id>env_test</id>
+24.             <properties>
+25.                 <jdbc.url>jdbc:mysql://127.3.3.3:3306/ssm_db</jdbc.url>
+26.             </properties>
+27.         </profile>
+28.     </profiles>
 
 选中执行指令，mvn install -p env_test 相当于携带test指令
 
@@ -10656,21 +10536,21 @@ mvn package -D skipTests
 
 配置文件实现跳过指定的测试部分/细粒度管理
 
-1.      &lt;build&gt;
-2.          &lt;plugins&gt;
-3.              &lt;plugin&gt;
-4.                  &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
-5.                  &lt;version&gt;2.12.4&lt;/version&gt;
-6.                  &lt;configuration&gt;
-7.                      &lt;skipTests&gt;false&lt;/skipTests&gt;
-8.                      _&lt;!--排除掉不参与测试的内容--&gt;_
-9.                      &lt;excludes&gt;
-10.                         &lt;exclude&gt;\*\*/BookServiceTest.java&lt;/exclude&gt;
-11.                     &lt;/excludes&gt;
-12.                 &lt;/configuration&gt;
-13.             &lt;/plugin&gt;
-14.         &lt;/plugins&gt;
-15.     &lt;/build&gt;
+1.      <build>
+2.          <plugins>
+3.              <plugin>
+4.                  <artifactId>maven-surefire-plugin</artifactId>
+5.                  <version>2.12.4</version>
+6.                  <configuration>
+7.                      <skipTests>false</skipTests>
+8.                      _<!--排除掉不参与测试的内容-->_
+9.                      <excludes>
+10.                         <exclude>\*\*/BookServiceTest.java</exclude>
+11.                     </excludes>
+12.                 </configuration>
+13.             </plugin>
+14.         </plugins>
+15.     </build>
 
 ### 私服
 
@@ -10711,46 +10591,46 @@ Idea——本地仓库——私服
 1.  在Nexus中配置demo-release与demo-snapshot两个仓库
 
 2.  Settings.xml中配置访问私服的权限
-3.      _&lt;!-- 配置访问私服的权限 --&gt;_
-4.      &lt;server&gt;
-5.        &lt;id&gt;demo-snapshot&lt;/id&gt;
-6.        &lt;username&gt;admin&lt;/username&gt;
-7.        &lt;password&gt;admin&lt;/password&gt;
-8.      &lt;/server&gt;
-9.      &lt;server&gt;
-10.        &lt;id&gt;demo-release&lt;/id&gt;
-11.       &lt;username&gt;admin&lt;/username&gt;
-12.       &lt;password&gt;admin&lt;/password&gt;
-13.     &lt;/server&gt;
+3.      _<!-- 配置访问私服的权限 -->_
+4.      <server>
+5.        <id>demo-snapshot</id>
+6.        <username>admin</username>
+7.        <password>admin</password>
+8.      </server>
+9.      <server>
+10.        <id>demo-release</id>
+11.       <username>admin</username>
+12.       <password>admin</password>
+13.     </server>
 
 14.  找到group中的maven仓库作为仓库组
 
 15.  移动demo-release与demo-snapshot得到maven-public管理
 
 16.  配置私服的访问路径
-17.       &lt;mirror&gt;
-18.       _&lt;!-- 私服的访问路径 --&gt;_
-19.        &lt;mirror&gt;
-20.        &lt;id&gt;maven-public&lt;/id&gt;
-21.        &lt;mirrorOf&gt;\*&lt;/mirrorOf&gt;
-22.        &lt;url&gt;http://localhost:8081/repository/maven-public/&lt;/url&gt;
-23.      &lt;/mirror&gt;
-24.    &lt;/mirrors&gt;
+17.       <mirror>
+18.       _<!-- 私服的访问路径 -->_
+19.        <mirror>
+20.        <id>maven-public</id>
+21.        <mirrorOf>\*</mirrorOf>
+22.        <url>http://localhost:8081/repository/maven-public/</url>
+23.      </mirror>
+24.    </mirrors>
 
 这样本地仓库就与私服建立联系
 
 1.  配置当前工程保存在私服中的具体位置
-2.      _&lt;!--配置当前工程保存在私服中的具体位置--&gt;_
-3.      &lt;distributionManagement&gt;
-4.          &lt;repository&gt;
-5.              &lt;id&gt;itheima-release&lt;/id&gt;
-6.              &lt;url&gt;http://localhost:8081/repository/itheima-release/&lt;/url&gt;
-7.          &lt;/repository&gt;
-8.          &lt;snapshotRepository&gt;
-9.              &lt;id&gt;itheima-snapshot&lt;/id&gt;
-10.             &lt;url&gt;http://localhost:8081/repository/itheima-snapshot/&lt;/url&gt;
-11.         &lt;/snapshotRepository&gt;
-12.     &lt;/distributionManagement&gt;
+2.      _<!--配置当前工程保存在私服中的具体位置-->_
+3.      <distributionManagement>
+4.          <repository>
+5.              <id>itheima-release</id>
+6.              <url>http://localhost:8081/repository/itheima-release/</url>
+7.          </repository>
+8.          <snapshotRepository>
+9.              <id>itheima-snapshot</id>
+10.             <url>http://localhost:8081/repository/itheima-snapshot/</url>
+11.         </snapshotRepository>
+12.     </distributionManagement>
 
 13.  发布命令
 
@@ -10818,11 +10698,11 @@ Spring程序与SpringBoot程序对比
 
 （jar支持命令行启动，但需要依赖maven插件支持）
 
-1.          &lt;plugins&gt;
-2.              &lt;plugin&gt;
-3.                  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-4.                  &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
-5.              &lt;/plugin&gt;
+1.          <plugins>
+2.              <plugin>
+3.                  <groupId>org.springframework.boot</groupId>
+4.                  <artifactId>spring-boot-maven-plugin</artifactId>
+5.              </plugin>
 
 成功快速启动
 
@@ -10834,16 +10714,16 @@ Spring程序缺点：配置繁琐，依赖设置繁琐
 
 起步依赖-一次性地写了若干个依赖。开发web程序所需要依赖
 
-1.          &lt;dependency&gt;
-2.  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-3.              &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-4.              &lt;exclusions&gt;
-5.                  &lt;exclusion&gt;
-6.                     &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-7.                     &lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
-8.                  &lt;/exclusion&gt;
-9.              &lt;/exclusions&gt;
-10.         &lt;/dependency&gt;
+1.          <dependency>
+2.  <groupId>org.springframework.boot</groupId>
+3.              <artifactId>spring-boot-starter-web</artifactId>
+4.              <exclusions>
+5.                  <exclusion>
+6.                     <groupId>org.springframework.boot</groupId>
+7.                     <artifactId>spring-boot-starter-tomcat</artifactId>
+8.                  </exclusion>
+9.              </exclusions>
+10.         </dependency>
 
 Parent所有SpringBoot项目要继承的项目，定义若干个坐标版本号，以达到减少依赖冲突的目的
 
@@ -10861,21 +10741,21 @@ SpringBoot的引导类是项目的入口，运行main方法就可以启动项目
 
 更改Tomcat服务器
 
-1.          &lt;dependency&gt;
-2.              &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-3.              &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-4.              &lt;exclusions&gt;
-5.                  &lt;exclusion&gt;
-6.                     &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-7.                     &lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
-8.                  &lt;/exclusion&gt;
-9.              &lt;/exclusions&gt;
-10.         &lt;/dependency&gt;
+1.          <dependency>
+2.              <groupId>org.springframework.boot</groupId>
+3.              <artifactId>spring-boot-starter-web</artifactId>
+4.              <exclusions>
+5.                  <exclusion>
+6.                     <groupId>org.springframework.boot</groupId>
+7.                     <artifactId>spring-boot-starter-tomcat</artifactId>
+8.                  </exclusion>
+9.              </exclusions>
+10.         </dependency>
 
-11.         &lt;dependency&gt;
-12.             &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-13.             &lt;artifactId&gt;spring-boot-starter-jetty&lt;/artifactId&gt;
-14.         &lt;/dependency&gt;
+11.         <dependency>
+12.             <groupId>org.springframework.boot</groupId>
+13.             <artifactId>spring-boot-starter-jetty</artifactId>
+14.         </dependency>
 
 需要先排除tomcat，更换jetty服务器（更轻量级，可扩展性更强）
 
@@ -11047,32 +10927,32 @@ Java -jar springboot.jar --spring.profile.active=test
 
 Maven中设置多环境属性
 
-1.  &lt;profiles&gt;
-2.          _&lt;!--开发环境--&gt;_
-3.          &lt;profile&gt;
-4.              &lt;id&gt;dev&lt;/id&gt;
-5.              &lt;properties&gt;
-6.                  &lt;profile.active&gt;dev&lt;/profile.active&gt;
-7.              &lt;/properties&gt;
-8.          &lt;/profile&gt;
-9.          _&lt;!--生产环境--&gt;_
-10.         &lt;profile&gt;
-11.             &lt;id&gt;pro&lt;/id&gt;
-12.             &lt;properties&gt;
-13.                 &lt;profile.active&gt;pro&lt;/profile.active&gt;
-14.             &lt;/properties&gt;
-15.             &lt;activation&gt;
-16.                 &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
-17.             &lt;/activation&gt;
-18.         &lt;/profile&gt;
-19.         _&lt;!--测试环境--&gt;_
-20.         &lt;profile&gt;
-21.             &lt;id&gt;test&lt;/id&gt;
-22.             &lt;properties&gt;
-23.                 &lt;profile.active&gt;test&lt;/profile.active&gt;
-24.             &lt;/properties&gt;
-25.         &lt;/profile&gt;
-26.     &lt;/profiles&gt;
+1.  <profiles>
+2.          _<!--开发环境-->_
+3.          <profile>
+4.              <id>dev</id>
+5.              <properties>
+6.                  <profile.active>dev</profile.active>
+7.              </properties>
+8.          </profile>
+9.          _<!--生产环境-->_
+10.         <profile>
+11.             <id>pro</id>
+12.             <properties>
+13.                 <profile.active>pro</profile.active>
+14.             </properties>
+15.             <activation>
+16.                 <activeByDefault>true</activeByDefault>
+17.             </activation>
+18.         </profile>
+19.         _<!--测试环境-->_
+20.         <profile>
+21.             <id>test</id>
+22.             <properties>
+23.                 <profile.active>test</profile.active>
+24.             </properties>
+25.         </profile>
+26.     </profiles>
 
 SpringBoot中应用Maven属性
 
@@ -11087,15 +10967,15 @@ Maven指令执行package指令，但没有编译，生成了对应的包，其�
 
 需要配置maven插件，对资源文件开启对默认占位符的解析
 
-1.  &lt;plugin&gt;
-2.                  &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-3.                  &lt;artifactId&gt;maven-resources-plugin&lt;/artifactId&gt;
-4.                  &lt;version&gt;3.2.0&lt;/version&gt;
-5.                  &lt;configuration&gt;
-6.                      &lt;encoding&gt;UTF-8&lt;/encoding&gt;
-7.                      &lt;useDefaultDelimiters&gt;true&lt;/useDefaultDelimiters&gt;
-8.                  &lt;/configuration&gt;
-9.              &lt;/plugin&gt;
+1.  <plugin>
+2.                  <groupId>org.apache.maven.plugins</groupId>
+3.                  <artifactId>maven-resources-plugin</artifactId>
+4.                  <version>3.2.0</version>
+5.                  <configuration>
+6.                      <encoding>UTF-8</encoding>
+7.                      <useDefaultDelimiters>true</useDefaultDelimiters>
+8.                  </configuration>
+9.              </plugin>
 
 #### 配置文件分类
 
@@ -11244,11 +11124,11 @@ git clone --filterblob:none https://github.com/CrRdz/Learning_SSM.git
 
 手动添加mp起步依赖
 
-1.          &lt;dependency&gt;
-2.              &lt;groupId&gt;com.baomidou&lt;/groupId&gt;
-3.              &lt;artifactId&gt;mybatis-plus-boot-starter&lt;/artifactId&gt;
-4.              &lt;version&gt;3.4.1&lt;/version&gt;
-5.          &lt;/dependency&gt;
+1.          <dependency>
+2.              <groupId>com.baomidou</groupId>
+3.              <artifactId>mybatis-plus-boot-starter</artifactId>
+4.              <version>3.4.1</version>
+5.          </dependency>
 
 由于mp并未被收录到idea的系统内置配置，无法直接选择加入
 
@@ -11264,10 +11144,10 @@ git clone --filterblob:none https://github.com/CrRdz/Learning_SSM.git
 
 制作实体类
 
-定义数据接口，继承BaseMapper&lt;User&gt;
+定义数据接口，继承BaseMapper<User>
 
 1.  @Mapper
-2.  public interface UserDao extends BaseMapper&lt;User&gt; {
+2.  public interface UserDao extends BaseMapper<User> {
 3.  }
 
 - MyBatisPlus特性
@@ -11288,19 +11168,19 @@ git clone --filterblob:none https://github.com/CrRdz/Learning_SSM.git
 | 删除  | boolean delete（int id） | Int deleteById（Serializable id） |
 | 修改  | boolean update（T t） | Int updateById（T t） |
 | 根据id查询 | T getById（int id） | T selectById（Serializable id） |
-| 查询全部 | List&lt;T&gt; getAll（） | List&lt;T&gt; selectList（） |
-| 分页查询 | PageInfo&lt;T&gt; getAll（int page,int size） | IPage&lt;T&gt; selectPage（Ipage&lt;T&gt; page） |
-| 按条件查询 | List&lt;T&gt; getAll（Condition condition） | IPage&lt;T&gt; selectPage（Wrapper&lt;T&gt; queryWrapper） |
+| 查询全部 | List<T> getAll（） | List<T> selectList（） |
+| 分页查询 | PageInfo<T> getAll（int page,int size） | IPage<T> selectPage（Ipage<T> page） |
+| 按条件查询 | List<T> getAll（Condition condition） | IPage<T> selectPage（Wrapper<T> queryWrapper） |
 
 #### 快速开发实体类
 
 导入坐标
 
-1.          &lt;dependency&gt;
-2.              &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
-3.              &lt;artifactId&gt;lombok&lt;/artifactId&gt;
-4.              &lt;version&gt;1.18.12&lt;/version&gt;
-5.          &lt;/dependency&gt;
+1.          <dependency>
+2.              <groupId>org.projectlombok</groupId>
+3.              <artifactId>lombok</artifactId>
+4.              <version>1.18.12</version>
+5.          </dependency>
 
 6.  @Data
 7.  @NoArgsConstructor
@@ -11363,39 +11243,39 @@ MyBatisPlus将书写复杂的SQL查询条件进行了封装，使用编程的形
 1.          _//方式一：按条件查询_
 2.          QueryWrapper qw = new QueryWrapper();
 3.          qw.lt("age",18);
-4.          List&lt;User&gt; userList = userDao.selectList(qw);
+4.          List<User> userList = userDao.selectList(qw);
 5.          System.out.println(userList);
 
 6.           _//方式二：lambda格式按条件查询_
-7.          QueryWrapper&lt;User&gt; qw = new QueryWrapper&lt;User&gt;();
+7.          QueryWrapper<User> qw = new QueryWrapper<User>();
 8.          qw.lambda().lt(User::getAge, 10);
-9.         List&lt;User&gt; userList = userDao.selectList(qw);
+9.         List<User> userList = userDao.selectList(qw);
 10.         System.out.println(userList);
 
 11.         _//方式三：lambda格式按条件查询_
-12.         LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+12.         LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 13.         lqw.lt(User::getAge, 10);
-14.         List&lt;User&gt; userList = userDao.selectList(lqw);
+14.         List<User> userList = userDao.selectList(lqw);
 15.         System.out.println(userList);
 
 链式编程
 
-1.         LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+1.         LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 2.          _//并且关系：10到30岁之间_
 3.          _//lqw.lt(User::getAge, 30).gt(User::getAge, 10);_
 4.          _//或者关系：小于10岁或者大于30岁_
 5.          lqw.lt(User::getAge, 10).or().gt(User::getAge, 30);
-6.          List&lt;User&gt; userList = userDao.selectList(lqw);
+6.          List<User> userList = userDao.selectList(lqw);
 7.          System.out.println(userList);
 
 Null值处理
 
-1.          LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+1.          LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 2.          _//先判定第一个参数是否为true，如果为true连接当前条件_
 3.          lqw.lt(null != uq.getAge2(),User::getAge, uq.getAge2());
 4.          lqw.gt(null != uq.getAge(),User::getAge, uq.getAge());
 
-5.          List&lt;User&gt; userList = userDao.selectList(lqw);
+5.          List<User> userList = userDao.selectList(lqw);
 6.          System.out.println(userList);
 
 #### 查询投影
@@ -11403,22 +11283,22 @@ Null值处理
 查询结果包含属性类中部分模型
 
 1.          _//查询投影_
-2.          LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+2.          LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 3.          lqw.select(User::getId,User::getName,User::getAge);
-4.          List&lt;User&gt; userList = userDao.selectList(lqw);
+4.          List<User> userList = userDao.selectList(lqw);
 5.          System.out.println(userList);
 
 使用QueryWrapper
 
-1.          QueryWrapper&lt;User&gt; lqw = new QueryWrapper&lt;User&gt;();
+1.          QueryWrapper<User> lqw = new QueryWrapper<User>();
 2.          lqw.select("id","name","age","tel");
 
 查询结果包含模型类中未定义的属性
 
-1.          QueryWrapper&lt;User&gt; lqw = new QueryWrapper&lt;User&gt;();
+1.          QueryWrapper<User> lqw = new QueryWrapper<User>();
 2.          lqw.select("count(\*) as count, tel");
 3.          lqw.groupBy("tel");
-4.          List&lt;Map<String, Object&gt;> userList = userDao.selectMaps(lqw);
+4.          List<Map<String, Object>> userList = userDao.selectMaps(lqw);
 5.          System.out.println(userList);
 
 如果有不支持的，去UserDao中使用原生MyBatis
@@ -11429,7 +11309,7 @@ Null值处理
 
 精确查询，查询单个
 
-1.          LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+1.          LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 2.          _//等同于=_
 3.          lqw.eq(User::getName,"Jerry").eq(User::getPassword,"jerry");
 4.          User loginUser = userDao.selectOne(lqw);
@@ -11437,20 +11317,20 @@ Null值处理
 
 范围查询
 
-1.          LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+1.          LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 2.          _//范围查询 lt le gt ge eq between_
 3.          lqw.between(User::getAge,10,30);
-4.          List&lt;User&gt; userList = userDao.selectList(lqw);
+4.          List<User> userList = userDao.selectList(lqw);
 5.          System.out.println(userList);
 
 前面小值后面大值
 
 模糊匹配
 
-1.          LambdaQueryWrapper&lt;User&gt; lqw = new LambdaQueryWrapper&lt;User&gt;();
+1.          LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<User>();
 2.          _//模糊匹配 like_
 3.          lqw.likeLeft(User::getName,"J");
-4.          List&lt;User&gt; userList = userDao.selectList(lqw);
+4.          List<User> userList = userDao.selectList(lqw);
 5.          System.out.println(userList);
 
 #### 字段映射与表名映射
@@ -11526,13 +11406,13 @@ yml设定全局设定，让每一个实体类都使用相同的策略
 ##### 根据主键删除多条记录/根据主键查询多条记录
 
 1.          _//删除指定多条数据_
-2.          List&lt;Long&gt; list = new ArrayList<>();
+2.          List<Long> list = new ArrayList<>();
 3.          list.add(1402551342481838081L);
 4.          list.add(1402553134049501186L);
 5.          list.add(1402553619611430913L);
 6.          userDao.deleteBatchIds(list);
 7.          _//查询指定多条数据_
-8.          List&lt;Long&gt; list = new ArrayList<>();
+8.          List<Long> list = new ArrayList<>();
 9.          list.add(1L);
 10.         list.add(3L);
 11.         list.add(4L);
@@ -11614,19 +11494,19 @@ yml设定全局设定，让每一个实体类都使用相同的策略
 
 开发者自定义配置：手工配置
 
-1.          _&lt;!--代码生成器--&gt;_
-2.          &lt;dependency&gt;
-3.              &lt;groupId&gt;com.baomidou&lt;/groupId&gt;
-4.              &lt;artifactId&gt;mybatis-plus-generator&lt;/artifactId&gt;
-5.              &lt;version&gt;3.4.1&lt;/version&gt;
-6.          &lt;/dependency&gt;
+1.          _<!--代码生成器-->_
+2.          <dependency>
+3.              <groupId>com.baomidou</groupId>
+4.              <artifactId>mybatis-plus-generator</artifactId>
+5.              <version>3.4.1</version>
+6.          </dependency>
 
-7.          _&lt;!--velocity模板引擎--&gt;_
-8.          &lt;dependency&gt;
-9.             &lt;groupId&gt;org.apache.velocity&lt;/groupId&gt;
-10.             &lt;artifactId&gt;velocity-engine-core&lt;/artifactId&gt;
-11.             &lt;version&gt;2.3&lt;/version&gt;
-12.         &lt;/dependency&gt;
+7.          _<!--velocity模板引擎-->_
+8.          <dependency>
+9.             <groupId>org.apache.velocity</groupId>
+10.             <artifactId>velocity-engine-core</artifactId>
+11.             <version>2.3</version>
+12.         </dependency>
 
 Generator
 
