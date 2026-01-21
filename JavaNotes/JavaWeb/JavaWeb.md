@@ -252,7 +252,7 @@ select 
 
 id,
 
-brand_name as brandName,
+brand_name as brandN     me,
 
 company_name as companyName,
 
@@ -265,40 +265,45 @@ status 
 from tb_brand;
 ```
 
-1.  Sql片段 //不灵活
-2.  <sql id="brand_column">
-3.       id,
-4.  brandName as brandName,
-5.  companyName as companyName,
-6.  ordered,
-7.  description,
-8.  status
-9.  </sql>
+2.  Sql片段 -不灵活
+```xml
+ <sql id="brand_column">
+      id,
+ brandName as brandName,
+ companyName as companyName,
+ ordered,
+ description,
+ status
+  </sql>
+```
 
-10. <select id="selectAll" resultType="com.itheima.pojo.Brand">
-11.     select 
-12.         <include refid="brand_column"/>    
-13.     from tb_brand;
-14. </select>
+```xml
+<select id="selectAll" resultType="com.itheima.pojo.Brand">
+    select 
+        <include refid="brand_column"/>    
+    from tb_brand
+</select>
+```
 
-15.  resultMap 完成不一致的属性名和列名的映射
-16.  <!-- id：唯一标识 type 映射的类型 支持别名-->
-17.  <resultMap id="brandResultMap" type="brand">
-18.  <!--
-19.  id:完成主键字段的映射
-20.  result：完成一般字段的映射
-21.  \-->
-22.      <result column="brand_name" property="brandName"/>
-23.      <result column="company_name" property="companyName"/>
-24. </resultMap>
-
-25. <!-- 将resultType 更改成resultMap-->
-26. <select id="selectAll" resultMap="brandResultMap">
-27.     select 
-28. \* 
-29. from tb_brand;
-30. </select>
-
+3.  resultMap 完成不一致的属性名和列名的映射
+```xml
+ <!-- id：唯一标识 type 映射的类型 支持别名-->
+  <resultMap id="brandResultMap" type="brand">
+  <!--
+  id:完成主键字段的映射
+  result：完成一般字段的映射
+  -->
+      <result column="brand_name" property="brandName"/>
+     <result column="company_name" property="companyName"/>
+ </resultMap>
+ 
+<!-- 将resultType 更改成resultMap-->
+ <select id="selectAll" resultMap="brandResultMap">
+     select 
+	 * 
+	 from tb_brand
+ </select>
+```
 ### 查看详情
 
 1.  编写接口方法：Mapper接口
@@ -306,25 +311,23 @@ from tb_brand;
 - 参数：id
 - 结果：brand
 
-1.  _/\*\*_
-2.  \* 查看详情 根据id查询
-3.  \*/
-4.  Brand selectById(int id);
+```xml
+  /**
+  * 查看详情 根据id查询
+  */
+  Brand selectById(int id);
+```
 
-5.  编写SQL语句：SQL映射文件
-6.  参数占位符：
+2.  编写SQL语句：SQL映射文件
+	 参数占位符：
+	#{}：会将其替换为 ？.为了防止SQL注入
+	${}：拼sql，会存在SQL注入问题
 
-#{}：会将其替换为 ？.为了防止SQL注入
-
-${}：拼sql，会存在SQL注入问题
-
-使用时机：参数传递时：#{}
-
-表名或列名不固定情况下：${} 会存在SQL注入问题
-
-1.  参数类型：
-
-parameterType:可以省略
+	使用时机：参数传递时：#{}
+		表名或列名不固定情况下：${} 会存在SQL注入问题
+		
+	参数类型：
+	parameterType:可以省略
 
 1.  特殊字符处理
 
