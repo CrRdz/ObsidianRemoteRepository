@@ -1,4 +1,4 @@
-## 1. 概念
+# 1. 概念
 
 - **Filter**：表示过滤器，是 JavaWeb 三大组件（Servlet，Filter，Listener）之一。
     
@@ -9,9 +9,9 @@
 
 ---
 
-## 2. Filter (过滤器)
+# 2. Filter (过滤器)
 
-### 2.1 Filter 快速入门
+## 2.1 Filter 快速入门
 
 （开发步骤类似 Servlet）
 
@@ -44,7 +44,7 @@ public class FilterDemo implements Filter {
 }
 ```
 
-### 2.2 Filter 执行流程
+## 2.2 Filter 执行流程
 
 1. **Filter**：执行放行前逻辑 -> 放行 -> 访问资源 -> 执行放行后逻辑。
     
@@ -53,9 +53,9 @@ public class FilterDemo implements Filter {
 3. 回到 Filter 会执行 **放行后逻辑**，而不是从头执行。
     
 
-### 2.3 Filter 使用细节
+## 2.3 Filter 使用细节
 
-#### 1. Filter 拦截路径配置
+### 1. Filter 拦截路径配置
 
 配置示例：
 
@@ -74,7 +74,7 @@ public class FilterDemo
 - **拦截所有**：`/*` —— 访问所有资源，都会被拦截。
     
 
-#### 2. 过滤器链
+### 2. 过滤器链
 
 - **概念**：一个 Web 应用可以配置多个过滤器，这多个过滤器称为过滤器链。
     
@@ -85,11 +85,11 @@ public class FilterDemo
 - **优先级**：注解配置的 Filter，优先级按照过滤器 **类名（字符串）的自然排序** 决定。
     
 
-### 2.4 案例：登录验证
+## 2.4 案例：登录验证
 
 **需求**：访问服务器资源时，需要先进行登录验证，如果没有登录，则自动跳转到登录页面。
 
-#### 基础实现
+### 基础实现
 
 新建 `LoginFilter` 实现登录验证的过滤：
 
@@ -129,7 +129,7 @@ public class LoginFilter implements Filter {
 }
 ```
 
-#### 问题与解决
+### 问题与解决
 
 - 问题：
     
@@ -144,7 +144,7 @@ public class LoginFilter implements Filter {
     - **不是**：进行登录验证。
         
 
-#### 优化后的逻辑 (LoginFilter.java)
+### 优化后的逻辑 (LoginFilter.java)
 
 ```Java
 public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -170,16 +170,16 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 
 ---
 
-## 3. Listener (监听器)
+# 3. Listener (监听器)
 
-### 3.1 概念
+## 3.1 概念
 
 - **Listener**：监听器，是 JavaWeb 三大组件（Servlet，Filter，Listener）之一。
     
 - 监听器可以监听 `application`、`session`、`request` 三个对象的创建、销毁，或者往其中添加、修改、删除属性时自动执行代码的功能组件。
     
 
-### 3.2 Listener 分类
+## 3.2 Listener 分类
 
 JavaWeb 中提供了 8 个监听器，主要分为三类：
 
@@ -204,7 +204,7 @@ JavaWeb 中提供了 8 个监听器，主要分为三类：
     - `ServletRequestAttributeListener`：对 Request 对象中的属性的监听（增删改属性）。
         
 
-### 3.3 ServletContextListener 使用
+## 3.3 ServletContextListener 使用
 
 1. 定义类，实现 `ServletContextListener` 接口。
     

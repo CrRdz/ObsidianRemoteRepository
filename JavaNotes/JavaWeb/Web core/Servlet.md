@@ -86,7 +86,7 @@ Servlet 运行在 Servlet 容器（Web 服务器）中，其生命周期由容�
 4. **服务终止**：当需要释放内存或容器关闭时，容器就会调用 Servlet 实例中的 `destroy()` 方法完成资源的释放。在 `destroy()` 方法调用之后，容器会释放这个 Servlet 实例，该实例随后会被 Java 的垃圾收集器所回收。
     
 
-## 方法详细说明
+# 方法详细说明
 
 - **Init**
     
@@ -115,7 +115,7 @@ Servlet 运行在 Servlet 容器（Web 服务器）中，其生命周期由容�
     - **调用次数**：1 次。
         
 
-## Servlet 接口方法一览
+# Servlet 接口方法一览
 
 - `void init(ServletConfig servletConfig)`
     
@@ -140,7 +140,7 @@ Servlet 运行在 Servlet 容器（Web 服务器）中，其生命周期由容�
 
 # 4. Servlet 体系结构
 
-## 继承关系
+# 继承关系
 
 - **Servlet** (Servlet 体系根接口)
     
@@ -149,11 +149,11 @@ Servlet 运行在 Servlet 容器（Web 服务器）中，其生命周期由容�
         - **HttpServlet** (对 HTTP 协议封装的 Servlet 实现类)
             
 
-## 开发建议
+# 开发建议
 
 开发 B/S 架构的 Web 项目，都是针对 HTTP 协议，所以自定义 Servlet 时会继承 **HttpServlet**。
 
-## HttpServlet 原理
+# HttpServlet 原理
 
 根据请求方式的不同，进行分别的处理，获取请求方式进行不同逻辑判断。
 

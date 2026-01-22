@@ -1,4 +1,3 @@
-
 # 1. AJAX 概述
 
 - **概念**：Asynchronous JavaScript And XML（异步的 JavaScript 和 XML）。

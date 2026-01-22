@@ -1,4 +1,4 @@
-## 1. JSP 概述
+# 1. JSP 概述
 
 - **定义**：JavaServer Pages，Java 服务端页面。
     
@@ -9,7 +9,7 @@
 - **作用**：简化开发，避免了在 Servlet 中直接输出 HTML 标签。
     
 
-### JSP 原理
+## JSP 原理
 
 - JSP 本质上是一个 Servlet。
     
@@ -18,7 +18,7 @@
 
 ---
 
-## 2. JSP 脚本
+# 2. JSP 脚本
 
 - **作用**：JSP 脚本用于在 JSP 页面内定义 Java 代码。
     
@@ -31,7 +31,7 @@
     3. `<%!...%>`：内容会放到 `_jspService()` 之外，被类直接包含。
         
 
-### 案例：脚本与截断
+## 案例：脚本与截断
 
 ```Java
 <table border="1" cellspacing="0" width="800">
@@ -78,7 +78,7 @@
 </table>
 ```
 
-### JSP 的缺点
+## JSP 的缺点
 
 由于 JSP 页面内，既可以定义 HTML 标签，又可以定义 Java 代码，造成以下问题：
 
@@ -108,7 +108,7 @@
 
 ---
 
-## 3. JSP 快速入门
+# 3. JSP 快速入门
 
 1. **导入 JSP 坐标**
     
@@ -136,7 +136,7 @@
 
 ---
 
-## 4. EL 表达式
+# 4. EL 表达式
 
 - **概念**：Expression Language 表达式语言，用于简化 JSP 页面内的 Java 代码。
     
@@ -147,7 +147,7 @@
     - 例如 `${brands}`：获取域中存储的 key 为 brands 的数据。
         
 
-### 使用演示
+## 使用演示
 
 **后端 Servlet:**
 
@@ -175,7 +175,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
 ${brands}
 ```
 
-### JavaWeb 中的四大域对象
+## JavaWeb 中的四大域对象
 
 EL 表达式获取数据，会依次从这 4 个域中寻找，直到找到为止：
 
@@ -190,14 +190,14 @@ EL 表达式获取数据，会依次从这 4 个域中寻找，直到找到为�
 
 ---
 
-## 5. JSTL 标签
+# 5. JSTL 标签
 
 - **概念**：Jsp Standard Tag Library，JSP 标准标签库。使用标签取代 JSP 页面上的 Java 代码。
     
 - **常用标签**：`<c:if>`, `<c:foreach>`。
     
 
-### 5.1 JSTL 快速入门
+## 5.1 JSTL 快速入门
 
 1. **导入坐标**
     
@@ -224,7 +224,7 @@ EL 表达式获取数据，会依次从这 4 个域中寻找，直到找到为�
 3. **使用**：一般与 EL 表达式结合使用。
     
 
-### 5.2 常用标签使用
+## 5.2 常用标签使用
 
 **`<c:if>` 标签**
 
@@ -298,9 +298,9 @@ _应用场景：分页进度条_
 
 ---
 
-## 6. MVC 模式和三层架构
+# 6. MVC 模式和三层架构
 
-### MVC 模式
+## MVC 模式
 
 MVC 是一种分层开发的模式，其中：
 
@@ -320,7 +320,7 @@ MVC 是一种分层开发的模式，其中：
 - 有利于组件重组
     
 
-### 三层架构与三大框架 (SSM)
+## 三层架构与三大框架 (SSM)
 
 1. **表现层** (`com.org.web/controller`)
     
@@ -343,11 +343,11 @@ MVC 是一种分层开发的模式，其中：
 
 ---
 
-## 7. 案例：品牌增删改查
+# 7. 案例：品牌增删改查
 
 **技术栈**：Servlet / JSP / 三层架构
 
-### 7.1 准备环境
+## 7.1 准备环境
 
 - 创建新的模块 `brand_demo`，引入坐标：
     
@@ -372,7 +372,7 @@ MVC 是一种分层开发的模式，其中：
 - MyBatis 基础环境 (`Mybatis-config.xml`, `BrandMapper.xml`, `BrandMapper` 接口)。
     
 
-### 7.2 查询所有
+## 7.2 查询所有
 
 **1. Dao 层 (`BrandMapper.java`):**
 
@@ -509,7 +509,7 @@ public class SelectAllServlet extends HttpServlet {
 
 ---
 
-### 7.3 添加品牌
+## 7.3 添加品牌
 
 **1. Dao 层 (`BrandMapper.java`):**
 
@@ -608,7 +608,7 @@ _注意：增删改行为需要提交事务_
 
 ---
 
-### 7.4 修改 - 回显数据
+## 7.4 修改 - 回显数据
 
 **1. Dao 层 (`BrandMapper.java`):**
 
@@ -683,7 +683,7 @@ public class SelectByIdServlet extends HttpServlet {
 
 ---
 
-### 7.5 修改 - 修改数据
+## 7.5 修改 - 修改数据
 
 **1. Dao 层 (`BrandMapper.java`):**
 
@@ -757,6 +757,6 @@ public class UpdateServlet extends HttpServlet {
 
 ---
 
-### 7.6 删除数据
+## 7.6 删除数据
 
 - 见 `brand-demo`
