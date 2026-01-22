@@ -5,5 +5,7 @@
   "theme": "moonstone",
   "accentColor": "",
   "cssTheme": "Baseline",
-  "interfaceFontFamily": "今楷"
+  "interfaceFontFamily": "",
+  "monospaceFontFamily": "JetBrains Mono",
+  "nativeMenus": false
 }
