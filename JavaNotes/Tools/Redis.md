@@ -1989,7 +1989,7 @@ public void unLock() {
 
 ##### Redis 的原子性问题（Lua 脚本）
 
-Redis 提供了 Lua 脚本功能，在一个脚本中编写多条 Redis 命令，确保多条命令执行时的原子性。[[Javanotes|LuaScript]]
+Redis 提供了 Lua 脚本功能，在一个脚本中编写多条 Redis 命令，确保多条命令执行时的原子性。[[Tech stack|LuaScript]]
 
 **Lua 脚本实现分布式锁的释放锁逻辑**
 
