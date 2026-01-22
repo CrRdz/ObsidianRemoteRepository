@@ -59,6 +59,7 @@ git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
 - **Auto commit-and-sync interval (minutes):** `10`
     
     - _(设置 10 分钟自动备份)_
+    - _(建议搭配电脑休眠时间设置)_
         
 - **Auto commit-and-sync after stop file edits:** `ON` 
     
