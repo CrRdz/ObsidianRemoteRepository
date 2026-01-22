@@ -1,9 +1,9 @@
 {
-  "textFontFamily": "",
-  "enabledCssSnippets": [
-    "pdf"
-  ],
+  "textFontFamily": "仓耳今楷02",
+  "enabledCssSnippets": [],
   "translucency": false,
   "theme": "moonstone",
-  "accentColor": ""
+  "accentColor": "",
+  "cssTheme": "Baseline",
+  "interfaceFontFamily": "今楷"
 }
