@@ -98,9 +98,7 @@ public class BookServiceImpl implements BookService {
 
 **准备：导入坐标 (pom.xml)**
 
-XML
-
-```
+```XML
 <dependency>
   <groupId>org.springframework</groupId>
   <artifactId>spring-context</artifactId>
@@ -110,18 +108,14 @@ XML
 
 **创建配置文件 (applicationContext.xml)**
 
-XML
-
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
 <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl"/>
 ```
 
 **获取 IoC 容器并获取 Bean (App2.java)**
 
-Java
-
-```
+```Java
 public class App2 {
     public static void main(String[] args) {
         // 3.获取IoC容器
@@ -150,9 +144,7 @@ public class App2 {
 
 **BookServiceImpl.java**
 
-Java
-
-```
+```Java
 public class BookServiceImpl implements BookService {
     // 5.删除业务层中使用new的方式创建的dao对象
     private BookDao bookDao;
@@ -171,9 +163,7 @@ public class BookServiceImpl implements BookService {
 
 **applicationContext.xml**
 
-XML
-
-```
+```XML
 <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl">
     <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
     <property name="bookDao" ref="bookDao"/>
@@ -184,9 +174,8 @@ XML
 
 ### 基础配置
 
-XML
+```XML
 
-```
 <beans>
     <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
 </beans>
@@ -199,9 +188,7 @@ XML
 
 ### 别名配置
 
-XML
-
-```
+```XML
 <bean id="bookService" name="service service4 bookEbi" class="com.itheima.service.impl.BookServiceImpl">
     <property name="bookDao" ref="bookDao"/>
 </bean>
@@ -211,9 +198,7 @@ _建议使用 id 引用。_
 
 ### Bean 作用范围
 
-XML
-
-```
+```XML
 <bean id="bookDao" name="dao" class="com.itheima.dao.impl.BookDaoImpl" scope="prototype"/>
 ```
 
@@ -234,9 +219,7 @@ Bean 本质上就是对象，创建 Bean 使用构造方法完成。
 
 ### 1. 构造方法实例化 (常用)
 
-XML
-
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl"/>
 ```
 
@@ -246,9 +229,8 @@ _注意：无参构造方法如果不存在，将抛出 `BeanCreationException`�
 
 **OrderDaoFactory.java**
 
-Java
 
-```
+```Java
 public class OrderDaoFactory {
     public static OrderDao getOrderDao(){
         System.out.println("factory setup....");
@@ -259,9 +241,7 @@ public class OrderDaoFactory {
 
 **配置**
 
-XML
-
-```
+```XML
 <bean id="orderDao" class="com.itheima.factory.OrderDaoFactory" factory-method="getOrderDao"/>
 ```
 
@@ -269,9 +249,7 @@ XML
 
 **UserDaoFactory.java**
 
-Java
-
-```
+```Java
 public class UserDaoFactory {
     public UserDao getUserDao(){
         return new UserDaoImpl();
@@ -281,18 +259,16 @@ public class UserDaoFactory {
 
 **配置**
 
-XML
+```XML
 
-```
 <bean id="userFactory" class="com.itheima.factory.UserDaoFactory"/>
 <bean id="userDao" factory-method="getUserDao" factory-bean="userFactory"/>
 ```
 
 ### 4. 使用 FactoryBean (方式3的变种，实用)
 
-Java
+```Java
 
-```
 public class UserDaoFactoryBean implements FactoryBean<UserDao> {
     // 代替原始实例工厂中创建对象的方法
     public UserDao getObject() throws Exception {
@@ -310,9 +286,8 @@ public class UserDaoFactoryBean implements FactoryBean<UserDao> {
 
 **配置**
 
-XML
 
-```
+```XML
 <bean id="userDao" class="com.itheima.factory.UserDaoFactoryBean"/>
 ```
 
@@ -329,17 +304,13 @@ XML
 
 ### 方式一：配置文件控制
 
-XML
-
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl" init-method="init" destroy-method="destroy"/>
 ```
 
 **关闭容器：**
 
-Java
-
-```
+```Java
 ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
 // ... 业务操作
 // 注册关闭钩子函数，在虚拟机退出之前回调此函数，关闭容器
@@ -352,9 +323,7 @@ ctx.close();
 
 实现 `InitializingBean`, `DisposableBean` 接口。
 
-Java
-
-```
+```Java
 public class BookServiceImpl implements BookService, InitializingBean, DisposableBean {
     public void destroy() throws Exception {
         System.out.println("service destroy");
@@ -372,9 +341,7 @@ public class BookServiceImpl implements BookService, InitializingBean, Disposabl
 
 **引用类型：**
 
-Java
-
-```
+```Java
 public class BookServiceImpl implements BookService{
     private BookDao bookDao;
     public void setBookDao(BookDao bookDao) {
@@ -383,9 +350,7 @@ public class BookServiceImpl implements BookService{
 }
 ```
 
-XML
-
-```
+```XML
 <bean id="bookService" class="com.itheima.service.impl.BookServiceImpl">
     <property name="bookDao" ref="bookDao"/>
 </bean>
@@ -393,9 +358,7 @@ XML
 
 **简单类型：**
 
-Java
-
-```
+```Java
 public class BookDaoImpl implements BookDao {
     private int connectionNum;
     public void setConnectionNum(int connectionNum) {
@@ -404,9 +367,8 @@ public class BookDaoImpl implements BookDao {
 }
 ```
 
-XML
 
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
     <property name="connectionNum" value="100"/>
 </bean>
@@ -416,9 +378,7 @@ XML
 
 **配置方式：**
 
-XML
-
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
     <constructor-arg name="connectionNum" value="10"/>
     <constructor-arg name="databaseName" value="mysql"/>
@@ -459,9 +419,7 @@ XML
 
 支持数组、List、Set、Map、Properties。
 
-XML
-
-```
+```XML
 <bean id="bookDao" class="com.itheima.dao.impl.BookDaoImpl">
     <property name="array">
         <array>
@@ -500,10 +458,7 @@ XML
     
 3. 使用 `${}` 占位符读取。
     
-
-XML
-
-```
+```XML
 <context:property-placeholder location="classpath*:*.properties" system-properties-mode="NEVER"/>
 
 <bean class="com.alibaba.druid.pool.DruidDataSource">
@@ -544,9 +499,7 @@ XML
 - `@Repository`：数据层。
     
 
-Java
-
-```
+```Java
 @Service
 public class BookServiceImpl implements BookService {
     // ...
@@ -555,9 +508,7 @@ public class BookServiceImpl implements BookService {
 
 在 XML 中配置扫描：
 
-XML
-
-```
+```XML
 <context:component-scan base-package="com.itheima"/>
 ```
 
@@ -565,9 +516,7 @@ XML
 
 使用 Java 类替代 XML 配置文件。
 
-Java
-
-```
+```Java
 @Configuration
 @ComponentScan({"com.itheima.service","com.itheima.dao"})
 public class SpringConfig {
@@ -576,9 +525,7 @@ public class SpringConfig {
 
 **加载方式：**
 
-Java
-
-```
+```Java
 ApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.class);
 ```
 
@@ -606,9 +553,7 @@ ApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.cla
 
 使用 `@Bean` 注解在配置类中定义。
 
-Java
-
-```
+```Java
 public class JdbcConfig {
     @Value("${jdbc.driver}")
     private String driver;
@@ -626,9 +571,7 @@ public class JdbcConfig {
 
 **导入配置：**
 
-Java
-
-```
+```Java
 @Configuration
 @ComponentScan("com.itheima")
 @Import({JdbcConfig.class}) // 导入其他配置类
@@ -658,9 +601,7 @@ public class SpringConfig {
 
 **MybatisConfig.java**
 
-Java
-
-```
+```Java
 public class MybatisConfig {
     // 定义bean，SqlSessionFactoryBean，用于产生SqlSessionFactory对象
     @Bean
@@ -683,9 +624,7 @@ public class MybatisConfig {
 
 ## Spring 整合 JUnit
 
-Java
-
-```
+```Java
 // 设置类运行器
 @RunWith(SpringJUnit4ClassRunner.class)
 // 设置Spring环境对应的配置类
@@ -727,9 +666,7 @@ public class AccountServiceTest {
 3. **定义切面类**：
     
 
-Java
-
-```
+```Java
 @Component
 @Aspect
 public class MyAdvice {
@@ -777,9 +714,7 @@ public class MyAdvice {
 
 **环绕通知示例：**
 
-Java
-
-```
+```Java
 @Around("pt()")
 public Object around(ProceedingJoinPoint pjp) throws Throwable {
     System.out.println("around before ...");
@@ -814,10 +749,7 @@ public Object around(ProceedingJoinPoint pjp) throws Throwable {
 
 1. **配置事务管理器**：
     
-
-Java
-
-```
+```Java
 @Bean
 public PlatformTransactionManager transactionManager(DataSource dataSource){
     DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
@@ -831,9 +763,7 @@ public PlatformTransactionManager transactionManager(DataSource dataSource){
 3. **使用注解**：在接口或方法上添加 `@Transactional`。
     
 
-Java
-
-```
+```Java
 public interface AccountService {
     @Transactional
     public void transfer(String out, String in, Double money);
@@ -865,10 +795,7 @@ public interface AccountService {
 
 - 日志方法需要开启一个新的事务，不受转账事务回滚的影响。
     
-
-Java
-
-```
+```Java
 public interface LogService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     void log(String out, String in, Double money);
