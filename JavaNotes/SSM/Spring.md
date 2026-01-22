@@ -6,7 +6,7 @@
 - Spring 发展到今天已经形成一种开发生态圈，Spring 提供若干个项目，每个项目用于完成特定的功能。
 # Spring Framework
 
-Spring Framework 是 Spring 生态中最基础的项目，是其他项目的根基。的
+Spring Framework 是 Spring 生态中最基础的项目，是其他项目的根基。
 
 ## 系统架构
 
