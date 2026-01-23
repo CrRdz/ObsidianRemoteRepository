@@ -1,4 +1,5 @@
 >仓库地址：[[git@github.com:CrRdz/sky-take-out.git]]
+
 # 开发环境搭建
 ## 后端项目结构
 **sky-common** 子模块存放一些公共类 可以供其他模块使用
@@ -48,17 +49,4 @@ server {
 //对前段传来的明文密码进行md6加密处理  
 password =  DigestUtils.md5DigestAsHex(password.getBytes());
  ```
-# 导入接口文档
-## 前后端分离开发流程
 
-定制接口 - 前端开发/后端开发 - 联调（校验格式） - 提测（提测）
-# Swagger
-- 使用Swagger你只需要按照它的规范去定义接口以及接口相关的信息 就可以做到生成接口文档 以及在线接口调试页面 (https://swagger.io)
-- Knife4j 是为Java MVC框架集成Swagger生成API文档的增强解决方案
-- 导入Maven坐标
-	```xml
-	<dependency>
-		
-	```
-- 在配置类中加入knife4j相关配置
-- 设置静态资源映射 否则接口文档页面无法访问
