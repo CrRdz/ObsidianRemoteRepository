@@ -47,3 +47,9 @@
 ```
 Postman / YAPI ...是设计阶段使用的工具 管理和维护接口
 Swagger在开发阶段使用的框架 帮助后端开发人员做后端的接口测试
+# 常用注解
+通过注解可以控制生成的接口文档 使接口文档有更好的可读性 常用注解如下
+`@API` 用在类上 例如Controller 表示对类的说明
+`@ApiModel` 用在类上 例如entity DTO VO
+`@ApiModelProperty` 用在属性上 描述属性信息
+`ApiOperation` 用在方法上 例如Controller 方法 说明 方法的用途和作用
