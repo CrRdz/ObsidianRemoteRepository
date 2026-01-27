@@ -7,5 +7,6 @@
   "cssTheme": "Baseline",
   "interfaceFontFamily": "",
   "monospaceFontFamily": "JetBrains Mono",
-  "nativeMenus": false
+  "nativeMenus": false,
+  "showRibbon": true
 }
