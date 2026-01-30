@@ -19,3 +19,7 @@
 
 ---
 
+[[JavaNotes/sky-take-out/店铺营业状态设置相关接口开发/Redis|Redis]]
+[[店铺营业状态设置]]
+
+---
