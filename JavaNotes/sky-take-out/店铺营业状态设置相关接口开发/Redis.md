@@ -64,3 +64,15 @@ Redis的通用命令是不分数据类型的 都可以使用的命令
 `EXISTS key` 检查给定key是否存在
 `TYPE key` 返回key所储存的值的类型
 `DEL key` 该命令用于在key存在时删除key
+# 在java中操作redis
+## Spring Data Redis使用方法
+- 导入Spring Data Redis的maven坐标
+```xml
+<dependency>  
+    <groupId>org.springframework.boot</groupId>  
+    <artifactId>spring-boot-starter-data-redis</artifactId>  
+</dependency>
+```
+- 配置Redis数据源
+- 编写配置类 创建RedisTemplate对象
+- 通过RedisTemplate对象操作Redis
