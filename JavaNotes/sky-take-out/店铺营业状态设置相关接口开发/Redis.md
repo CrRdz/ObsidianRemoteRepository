@@ -74,5 +74,6 @@ Redis的通用命令是不分数据类型的 都可以使用的命令
 </dependency>
 ```
 - 配置Redis数据源
+	- 在`application.xml`中配置
 - 编写配置类 创建RedisTemplate对象
 - 通过RedisTemplate对象操作Redis
