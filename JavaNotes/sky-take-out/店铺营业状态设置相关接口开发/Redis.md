@@ -44,6 +44,23 @@ key - field1 ｜ value1
 `LRANGE key start stop` 获取列表指定范围内的元素
 `RPOP key` 移除并获取列表最后一个元素
 `LLEN key` 获取列表长度
-## 结合操作命令
+## 集合操作命令
+Redis set是string类型的无序集合 集合成员是唯一的 集合中不能出现重复的数据 常用命令
+`SADD key member1  [member2] ` 向集合添加一个或多个成员
+`SMEMBERS key` 返回集合中的所有成员
+`SCARD key` 获取集合的陈元素
+`SINTER key1 [key2]` 返回给定所有集合的交集
+`SUNION key1 [key2]` 返回所有给定集合的并集
+`SREM key member1 [member2]` 删除集合中一个或多个成员
 ## 有序集合操作命令
+Redis有序集合是string类型元素的集合 且不允许有重复成员 每个元素都会关联一个double类型的分数 
+`ZADD key score1 member1 [score2 member2]` 向有序集合添加一个或多个成员
+`ZRANGE key start stop [WITHSCORES]` 通过索引区间返回有序集合中指定区间内的成员
+`ZINCRBY key increment member` 有序集合中对指定成员的分数加上增量increment
+`ZREM key member [member ...]` 移除有序集合中的一个或多个成员
 ## 通用命令
+Redis的通用命令是不分数据类型的 都可以使用的命令
+`KEYS pattern` 查找所有符合给定模式（pattern）的key
+`EXISTS key` 检查给定key是否存在
+`TYPE key` 返回key所储存的值的类型
+`DEL key` 该命令用于在key存在时删除key
