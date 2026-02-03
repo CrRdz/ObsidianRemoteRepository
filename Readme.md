@@ -1,4 +1,13 @@
 # Obsidian 跨平台 Git 同步指南
+<p align="center">
+  <img src="https://img.shields.io/badge/Editor-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white" />
+  <img src="https://img.shields.io/badge/Format-Markdown-000000?style=flat-square&logo=markdown&logoColor=white" />
+  <img src="https://img.shields.io/badge/Storage-GitHub-181717?style=flat-square&logo=github&logoColor=white" />
+  <img src="https://img.shields.io/badge/Status-Syncing-brightgreen?style=flat-square" />
+	<img src="https://img.shields.io/badge/Workflow-Git--Based-F05032?style=flat-square&logo=git&logoColor=white" />
+<img src="https://img.shields.io/badge/Method-Zettelkasten-black?style=flat-square&logo=icloud&logoColor=white" />
+<img src="https://img.shields.io/badge/Sync-Automated-brightgreen?style=flat-square&logo=githubactions&logoColor=white" />
+</p>
 
 本文档规范了在 Windows 和 macOS 之间同步 Obsidian 笔记的标准流程。
 
