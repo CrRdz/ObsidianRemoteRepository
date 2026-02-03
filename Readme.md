@@ -1,4 +1,4 @@
-# Obsidian-Git-Sync-Protocol
+# Obsidian-Git-Sync-Protocol 	<img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey?style=flat-square" />
 <p align="center">
   <img src="https://img.shields.io/badge/Editor-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white" />
   <img src="https://img.shields.io/badge/Format-Markdown-000000?style=flat-square&logo=markdown&logoColor=white" />
@@ -6,6 +6,7 @@
 	<img src="https://img.shields.io/badge/Workflow-Git--Based-F05032?style=flat-square&logo=git&logoColor=white" />
 <img src="https://img.shields.io/badge/Method-Zettelkasten-black?style=flat-square&logo=icloud&logoColor=white" />
 <img src="https://img.shields.io/badge/Sync-Automated-brightgreen?style=flat-square&logo=githubactions&logoColor=white" />
+
 </p>
 
 本文档规范了在 Windows 和 macOS 之间同步 Obsidian 笔记的标准流程。
