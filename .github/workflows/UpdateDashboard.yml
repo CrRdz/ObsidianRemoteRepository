@@ -36,7 +36,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add README.md assets/heatmap.svg
+          git add Readme.md assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "docs(stats): update heatmap and stats [skip ci]"
@@ -45,21 +45,21 @@ jobs:
             echo "No changes to commit"
           fi
       
-      # 同步 README 到 template 分支
-      - name: Sync README to template branch
+      # 同步 Readme 到 template 分支
+      - name: Sync Readme to template branch
         run: |
           # 切换到 template 分支
           git fetch origin template
           git checkout template
           
-          # 从 master 分支复制更新后的 README 和 SVG
-          git checkout master -- README.md assets/heatmap.svg
+          # 从 master 分支复制更新后的 Readme 和 SVG
+          git checkout master -- Readme.md assets/heatmap.svg
           
           # 提交更改
-          git add README.md assets/heatmap.svg
+          git add Readme.md assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
-            git commit -m "sync: update README stats from master [skip ci]"
+            git commit -m "sync: update Readme stats from master [skip ci]"
             git push origin template
           else
             echo "No changes to sync"
