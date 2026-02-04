@@ -26,7 +26,7 @@ jobs:
           python-version: '3.x'
           
       - name: Run Stats Script
-        run: python update_stats.py
+        run: python .github/scripts/update_stats.py
         
       - name: Commit and Push
         run: |
