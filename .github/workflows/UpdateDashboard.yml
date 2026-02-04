@@ -31,7 +31,7 @@ jobs:
       - name: Run Stats Script
         run: python .github/scripts/update_stats.py
         
-      - name: Commit and Push to main
+      - name: Commit and Push to master
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -40,7 +40,7 @@ jobs:
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "docs(stats): update heatmap and stats [skip ci]"
-            git push origin main
+            git push origin master
           else
             echo "No changes to commit"
           fi
@@ -59,7 +59,7 @@ jobs:
           git add README.md assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
-            git commit -m "sync: update README stats from main [skip ci]"
+            git commit -m "sync: update README stats from master [skip ci]"
             git push origin template
           else
             echo "No changes to sync"
