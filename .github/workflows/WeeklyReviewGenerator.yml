@@ -28,7 +28,7 @@ jobs:
           pip install openai
           
       - name: Generate weekly review
-        id: generate  # 添加 id 用于后续步骤引用
+        id: generate  
         env:
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
@@ -66,7 +66,7 @@ jobs:
             
             - 📅 **周报文件**: `${{ steps.generate.outputs.week_file }}`
             - 🤖 **生成模型**: DeepSeek Chat
-            - ⏰ **生成时间**: ${{ github.run_id }}
+            - ⏰ **生成时间**: ${{ github.event.repository.updated_at }}
             
             ---
             
