@@ -32,7 +32,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          python .github/scripts/weekly-review-gen.py
+          python .github/scripts/generate_weekly_review.py
           
           # 提取生成的周报信息
           WEEK_FILE=$(ls Reviews/Weekly/Weekly-Review-*.md 2>/dev/null | tail -1)
@@ -46,7 +46,7 @@ jobs:
           fi
           
       - name: Create Pull Request
-        if: steps.generate.outputs.has_review == 'true'  # ✅ 只在有周报时创建 PR
+        if: steps.generate.outputs.has_review == 'true'  # 只在有周报时创建 PR
         uses: peter-evans/create-pull-request@v5
         with:
           branch: weekly-review-${{ steps.generate.outputs.week_num }}
