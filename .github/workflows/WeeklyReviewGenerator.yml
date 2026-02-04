@@ -49,6 +49,7 @@ jobs:
         if: steps.generate.outputs.has_review == 'true'  # 只在有周报时创建 PR
         uses: peter-evans/create-pull-request@v5
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           branch: weekly-review-${{ steps.generate.outputs.week_num }}
           delete-branch: true
           
