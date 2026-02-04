@@ -6,8 +6,8 @@ from openai import OpenAI
 
 # 配置
 API_BASE_URL = "https://api.deepseek.com"
-MODEL = "deepseek-chat"
-REVIEWS_DIR = "Reviews"
+MODEL = "deepseek-reasoner"
+REVIEWS_DIR = "Reviews/Weekly"
 
 # 要排除的路径
 EXCLUDE_PATHS = [
@@ -22,16 +22,22 @@ client = OpenAI(
     base_url=API_BASE_URL
 )
 
-
 def get_week_info():
-    """获取当前周信息"""
+    """智能判断：周日生成本周，其他时间生成上周"""
     today = datetime.date.today()
-    days_since_sunday = (today.weekday() + 1) % 7
-    last_sunday = today - datetime.timedelta(days=days_since_sunday)
-    last_monday = last_sunday - datetime.timedelta(days=6)
-
+    
+    if today.weekday() == 6:  # 周日
+        last_sunday = today
+        last_monday = today - datetime.timedelta(days=6)
+        print("ℹ️  Generating THIS WEEK's review")
+    else:
+        days_since_last_sunday = (today.weekday() + 1) % 7
+        last_sunday = today - datetime.timedelta(days=days_since_last_sunday)
+        last_monday = last_sunday - datetime.timedelta(days=6)
+        print("ℹ️  Generating LAST WEEK's review")
+    
     year, week, _ = last_sunday.isocalendar()
-
+    
     return {
         'year': year,
         'week': week,
@@ -39,7 +45,6 @@ def get_week_info():
         'end': last_sunday,
         'week_str': f"{year}-W{week:02d}"
     }
-
 
 def should_exclude_path(path):
     """判断路径是否应该被排除"""
@@ -203,12 +208,12 @@ def generate_review_with_ai(topics, week_info):
 
 请按以下结构输出：
 
-### 1. 📊 本周概览
+### 1. 📊 Weekly Overview
 用 2-3 句话总结：
 - 本周学了哪些主题（如 CPT203, CPT205, Java Web, Redis）
 - 整体学习强度和深度的评价
 
-### 2. 📚 学习内容
+### 2. 📚 Content
 **按主题（topic）分别总结**，直接用二级标题，例如：
 
 ## CPT203
@@ -230,7 +235,7 @@ def generate_review_with_ai(topics, week_info):
 - 专业术语保留英文，解释用中文
 - 如果某个主题学得特别深入，多写一些
 
-### 3. 💡 本周金句
+### 3. 💡 Weekly Insight Log
 从笔记中提取 1-2 句最有价值的原文或关键理解
 
 ## 🎯 语言风格
