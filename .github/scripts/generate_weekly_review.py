@@ -331,7 +331,7 @@ model: deepseek-chat
 
 # 📅 Week {week_info['week']} Learning Review
 
-> 🎓 **XJTLU** | {week_info['start'].strftime('%b %d')} - {week_info['end'].strftime('%b %d, %Y')}
+> {week_info['start'].strftime('%b %d')} - {week_info['end'].strftime('%b %d, %Y')}
 
 ---
 
