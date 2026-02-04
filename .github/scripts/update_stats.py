@@ -271,15 +271,25 @@ def update_readme(file_count, word_count):
         return
     
     print(f"Found README: {readme_path}")
+
+        # ... 前面代码不变 ...
     
-    # 获取最后一次修改 .md 文件的提交时间（更准确）
+    # 获取最后一次修改 .md 文件的提交时间，并转换为北京时间
     try:
-        cmd = ['git', 'log', '-1', '--format=%cd', '--date=format:%Y--%m--%d %H:%M', '--', '*.md']
-        last_update = subprocess.check_output(cmd).decode('utf-8').strip()
-        if not last_update:
+        # 获取 Unix 时间戳（UTC）
+        cmd = ['git', 'log', '-1', '--format=%ct', '--', '*.md']
+        timestamp = subprocess.check_output(cmd).decode('utf-8').strip()
+        
+        if timestamp:
+            # 转换为 datetime 对象（UTC）
+            utc_time = datetime.datetime.utcfromtimestamp(int(timestamp))
+            # 转换为北京时间（UTC+8）
+            beijing_time = utc_time + datetime.timedelta(hours=8)
+            last_update = beijing_time.strftime("%Y--%m--%d %H:%M")
+        else:
             raise Exception("No markdown commits found")
     except:
-        # 如果没有找到，使用当前时间
+        # 如果没有找到，使用当前北京时间
         utc_now = datetime.datetime.utcnow()
         beijing_time = utc_now + datetime.timedelta(hours=8)
         last_update = beijing_time.strftime("%Y--%m--%d %H:%M")
