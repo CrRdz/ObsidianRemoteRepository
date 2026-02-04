@@ -1,0 +1,47 @@
+name: Weekly Review Generator
+
+on:
+  schedule:
+    - cron: '0 15 * * 0'  # 每周日 UTC 15:00（北京时间 23:00）
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  generate-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install dependencies
+        run: |
+          pip install openai requests
+          
+      - name: Generate weekly review
+        env:
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python .github/scripts/generate_weekly_review.py
+          
+      - name: Commit and push review
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add Reviews/
+          
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "docs: add weekly review $(date +%Y-W%V) [skip ci]"
+            git push
+          else
+            echo "No new review generated"
+          fi
