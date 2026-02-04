@@ -137,7 +137,7 @@ def get_shield_url(label, value, color):
     return f"https://img.shields.io/badge/{label}-{safe_value}-{color}?style=flat-square"
 
 def update_readme(file_count, word_count):
-    readme_path = 'README.md'
+    readme_path = 'Readme.md'
     utc_now = datetime.datetime.utcnow()
     beijing_time = utc_now + datetime.timedelta(hours=8)
     time_str = beijing_time.strftime("%Y--%m--%d %H:%M")
