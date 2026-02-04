@@ -36,7 +36,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add Readme.md assets/heatmap.svg
+          git add Readme.md Assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "docs(stats): update heatmap and stats [skip ci]"
@@ -53,10 +53,10 @@ jobs:
           git checkout template
           
           # 从 master 分支复制更新后的 Readme 和 SVG
-          git checkout master -- Readme.md assets/heatmap.svg
+          git checkout master -- Readme.md Assets/heatmap.svg
           
           # 提交更改
-          git add Readme.md assets/heatmap.svg
+          git add Readme.md Assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
             git commit -m "sync: update Readme stats from master [skip ci]"
