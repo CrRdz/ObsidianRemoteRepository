@@ -71,6 +71,5 @@ jobs:
             git commit -m "Auto-sync: 更新 $SUMMARY" -m "涉及的具体文件变动：
             $FILES"
             
-            
-            git push origin template
+            git push origin template --force
           fi
