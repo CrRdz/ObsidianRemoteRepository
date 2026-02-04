@@ -6,8 +6,16 @@
 	<img src="https://img.shields.io/badge/Workflow-Git--Based-F05032?style=flat-square&logo=git&logoColor=white" />
 <img src="https://img.shields.io/badge/Method-Zettelkasten-black?style=flat-square&logo=icloud&logoColor=white" />
 <img src="https://img.shields.io/badge/Sync-Automated-brightgreen?style=flat-square&logo=githubactions&logoColor=white" />
-<!-- STATS START -->
-<!-- STATS END -->
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Notes-60-2ea44f?style=flat-square" />
+  <img src="https://img.shields.io/badge/Words-165.0k-007ec6?style=flat-square" />
+  <img src="https://img.shields.io/badge/Last_Update-2026--02--04%2014%3A24-critical?style=flat-square" />
+</p>
+<p align="center">
+  <img src="Assets/heatmap.svg" alt="Study Heatmap" width="100%" />
+</p>
+
 </p>
 
 本文档规范了在 Windows 和 macOS 之间同步 Obsidian 笔记的标准流程。
