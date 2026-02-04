@@ -70,6 +70,7 @@ def get_git_activity_yearly(year=None):
 def generate_github_style_heatmap(activity_data, year=None):
     """
     生成和 GitHub 完全一致的年度贡献热力图
+    支持深色/浅色模式自适应
     """
     if year is None:
         year = datetime.datetime.now().year
@@ -77,16 +78,25 @@ def generate_github_style_heatmap(activity_data, year=None):
     # GitHub 样式配置
     cell_size = 10
     cell_gap = 2
+    title_height = 20       # 增加标题高度
     month_label_height = 15
     week_label_width = 30
     
-    # 颜色方案（GitHub 2023+ 绿色 - 深色模式）
-    colors = {
+    # 颜色方案（支持深色/浅色模式）
+    colors_dark = {
         0: "#161b22",      # 深色背景
-        1: "#0e4429",      # Level 1
-        2: "#006d32",      # Level 2
-        3: "#26a641",      # Level 3
-        4: "#39d353"       # Level 4
+        1: "#0e4429",
+        2: "#006d32",
+        3: "#26a641",
+        4: "#39d353"
+    }
+    
+    colors_light = {
+        0: "#ebedf0",      # 浅色背景（灰色）
+        1: "#9be9a8",      # 浅绿
+        2: "#40c463",      # 中绿
+        3: "#30a14e",      # 深绿
+        4: "#216e39"       # 最深绿
     }
     
     # 计算从周日开始的第一天
@@ -94,7 +104,7 @@ def generate_github_style_heatmap(activity_data, year=None):
     days_to_sunday = (start_date.weekday() + 1) % 7
     first_sunday = start_date - datetime.timedelta(days=days_to_sunday)
     
-    # 计算总周数（53周）
+    # 计算总周数
     end_date = datetime.date(year, 12, 31)
     days_to_saturday = (5 - end_date.weekday()) % 7
     last_saturday = end_date + datetime.timedelta(days=days_to_saturday)
@@ -102,17 +112,16 @@ def generate_github_style_heatmap(activity_data, year=None):
     total_days = (last_saturday - first_sunday).days + 1
     num_weeks = total_days // 7
     
-    # 计算 SVG 尺寸
+    # 计算 SVG 尺寸（增加顶部空间）
     width = week_label_width + num_weeks * (cell_size + cell_gap) + 20
-    height = month_label_height + 7 * (cell_size + cell_gap) + 40
+    height = title_height + month_label_height + 7 * (cell_size + cell_gap) + 40
     
-    # 计算最大提交数（用于分级）
+    # 计算最大提交数
     max_commits = max(activity_data.values()) if activity_data.values() else 1
     if max_commits == 0:
         max_commits = 1
     
     def get_color_level(count):
-        """根据提交数返回颜色等级（0-4）"""
         if count == 0:
             return 0
         elif count <= max_commits * 0.25:
@@ -127,19 +136,48 @@ def generate_github_style_heatmap(activity_data, year=None):
     # 开始生成 SVG
     svg = []
     svg.append(f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">')
-    svg.append(f'<rect width="{width}" height="{height}" fill="#0d1117"/>')
     
-    # 标题
-    svg.append(f'<text x="10" y="12" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#c9d1d9" font-weight="600">{year} Contributions</text>')
+    # 添加 CSS 样式（支持深色/浅色模式）
+    svg.append('''
+    <style>
+        /* 默认浅色模式 */
+        .bg { fill: #ffffff; }
+        .text-primary { fill: #24292f; }
+        .text-secondary { fill: #57606a; }
+        .level-0 { fill: #ebedf0; }
+        .level-1 { fill: #9be9a8; }
+        .level-2 { fill: #40c463; }
+        .level-3 { fill: #30a14e; }
+        .level-4 { fill: #216e39; }
+        
+        /* 深色模式 */
+        @media (prefers-color-scheme: dark) {
+            .bg { fill: #0d1117; }
+            .text-primary { fill: #c9d1d9; }
+            .text-secondary { fill: #8b949e; }
+            .level-0 { fill: #161b22; }
+            .level-1 { fill: #0e4429; }
+            .level-2 { fill: #006d32; }
+            .level-3 { fill: #26a641; }
+            .level-4 { fill: #39d353; }
+        }
+    </style>
+    ''')
+    
+    # 背景
+    svg.append(f'<rect width="{width}" height="{height}" class="bg"/>')
+    
+    # 标题（调整位置，避免与月份重叠）
+    svg.append(f'<text x="10" y="15" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" class="text-primary" font-weight="600">{year} Contributions</text>')
     
     # 星期标签（左侧）
     week_labels = ['', 'Mon', '', 'Wed', '', 'Fri', '']
     for i, label in enumerate(week_labels):
         if label:
-            y = month_label_height + i * (cell_size + cell_gap) + cell_size
-            svg.append(f'<text x="5" y="{y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#8b949e" text-anchor="start">{label}</text>')
+            y = title_height + month_label_height + i * (cell_size + cell_gap) + cell_size
+            svg.append(f'<text x="5" y="{y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" class="text-secondary" text-anchor="start">{label}</text>')
     
-    # 月份标签（顶部）
+    # 月份标签（调整 Y 位置，增加间距）
     current_month = None
     month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
@@ -147,10 +185,11 @@ def generate_github_style_heatmap(activity_data, year=None):
         current_date = first_sunday + datetime.timedelta(weeks=week)
         month = current_date.month
         
-        if month != current_month:
+        if month != current_month and current_date.year == year:
             current_month = month
             x = week_label_width + week * (cell_size + cell_gap)
-            svg.append(f'<text x="{x}" y="12" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#8b949e">{month_names[month - 1]}</text>')
+            y = title_height + 12  # 调整月份标签位置
+            svg.append(f'<text x="{x}" y="{y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="10" class="text-secondary">{month_names[month - 1]}</text>')
     
     # 绘制方块网格
     for week in range(num_weeks):
@@ -164,33 +203,32 @@ def generate_github_style_heatmap(activity_data, year=None):
             
             count = activity_data.get(date_str, 0)
             color_level = get_color_level(count)
-            color = colors[color_level]
             
             x = week_label_width + week * (cell_size + cell_gap)
-            y = month_label_height + day * (cell_size + cell_gap)
+            y = title_height + month_label_height + day * (cell_size + cell_gap)
             
-            # 方块
-            svg.append(f'<rect x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" fill="{color}" rx="2" ry="2"><title>{date_str}: {count} contributions</title></rect>')
+            # 使用 CSS 类名代替硬编码颜色
+            svg.append(f'<rect x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" class="level-{color_level}" rx="2" ry="2"><title>{date_str}: {count} contributions</title></rect>')
     
     # 图例（右下角）
     legend_x = width - 180
     legend_y = height - 15
     
-    svg.append(f'<text x="{legend_x}" y="{legend_y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#8b949e">Less</text>')
+    svg.append(f'<text x="{legend_x}" y="{legend_y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" class="text-secondary">Less</text>')
     
     for i in range(5):
         x = legend_x + 30 + i * (cell_size + cell_gap)
-        svg.append(f'<rect x="{x}" y="{legend_y - cell_size + 2}" width="{cell_size}" height="{cell_size}" fill="{colors[i]}" rx="2" ry="2"/>')
+        svg.append(f'<rect x="{x}" y="{legend_y - cell_size + 2}" width="{cell_size}" height="{cell_size}" class="level-{i}" rx="2" ry="2"/>')
     
-    svg.append(f'<text x="{legend_x + 30 + 5 * (cell_size + cell_gap) + 5}" y="{legend_y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" fill="#8b949e">More</text>')
+    svg.append(f'<text x="{legend_x + 30 + 5 * (cell_size + cell_gap) + 5}" y="{legend_y}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="9" class="text-secondary">More</text>')
     
     # 统计信息
     total_contributions = sum(activity_data.values())
-    svg.append(f'<text x="10" y="{height - 5}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#8b949e">{total_contributions} contributions in {year}</text>')
+    svg.append(f'<text x="10" y="{height - 5}" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" class="text-secondary">{total_contributions} contributions in {year}</text>')
     
     svg.append('</svg>')
     return "".join(svg)
-
+    
 def count_stats(root_dir):
     total_files = 0
     total_words = 0
@@ -232,9 +270,9 @@ def update_readme(file_count, word_count):
         print("Error: README.md not found!")
         return
     
-    print(f"✅ Found README: {readme_path}")
+    print(f"Found README: {readme_path}")
     
-    # ✅ 修正 2：获取最后一次修改 .md 文件的提交时间（更准确）
+    # 获取最后一次修改 .md 文件的提交时间（更准确）
     try:
         cmd = ['git', 'log', '-1', '--format=%cd', '--date=format:%Y--%m--%d %H:%M', '--', '*.md']
         last_update = subprocess.check_output(cmd).decode('utf-8').strip()
@@ -259,7 +297,7 @@ def update_readme(file_count, word_count):
     with open(SVG_OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(svg_content)
     
-    print(f"✅ Generated heatmap: {SVG_OUTPUT_PATH}")
+    print(f"Generated heatmap: {SVG_OUTPUT_PATH}")
 
     # 2. 构造 README 内容
     stats_content = (
@@ -309,7 +347,7 @@ if __name__ == "__main__":
     print("=" * 60)
     
     files, words = count_stats('.')
-    print(f"\n📝 Counted: {files} files, {words} words")
+    print(f"\n Counted: {files} files, {words} words")
     
     update_readme(files, words)
     
