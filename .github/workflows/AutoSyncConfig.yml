@@ -1,9 +1,7 @@
 name: Sync Config to Template Branch
 
 on:
-  # 允许在 GitHub 网页上手动点击按钮触发（专门用来首次初始化或强制同步）
   workflow_dispatch: 
-
   push:
     branches:
       - master
@@ -11,6 +9,7 @@ on:
       - '.obsidian/**'
       - 'Readme.md'
       - 'LICENSE'
+      - 'Assets/**'   
       - '.github/workflows/sync-template.yml'
 
 jobs:
@@ -32,7 +31,7 @@ jobs:
 
       - name: Sync content to template branch
         run: |
-          # 1. 切换到 template 分支 (如果不存在则创建孤儿分支)
+          # 1. 切换/创建 template 分支
           if git rev-parse --verify template >/dev/null 2>&1; then
             git checkout template
           else
@@ -40,26 +39,38 @@ jobs:
             git rm -rf .
           fi
 
-          # 2. 彻底清理当前 template 分支的所有文件 确保如果 master 删除了某个插件，template 也会同步删除
-          # find 命令会保留 .git 目录，删除其他所有文件和文件夹
+          # 2. 清理旧文件
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
 
-          # 3. 从 master 分支检出你需要的特定文件/文件夹 只抓取以下三项：
-          git checkout master -- .obsidian Readme.md LICENSE
+          # 3. 从 master 检出内容
+          git checkout master -- .obsidian Readme.md LICENSE Assets
 
-          # 4. 重新生成 .gitignore
-          # 忽略所有笔记文件和包管理文件，保持模版纯净
+          # 4. 生成 .gitignore
           echo "*.md" > .gitignore
-          echo "!Readme.md" >> .gitignore  # 排除 Readme.md，让它被保留
-          echo "package-lock.json" >> .gitignore # 忽略这个文件
-          echo "Asserts/" >> .gitignore          # 忽略附件文件夹
+          echo "!Readme.md" >> .gitignore
+          echo "package-lock.json" >> .gitignore
 
-          # 5. 提交并推送
+          # 5. 提交并生成动态 Commit Message
           git add .
           
+          # 检查是否有文件变化
           if git diff --staged --quiet; then
             echo "配置没有变化，无需提交。"
           else
-            git commit -m "Auto-sync: 更新 .obsidian 配置与 Readme"
+            
+            # 获取所有变更的文件列表
+            FILES=$(git diff --staged --name-only)
+            
+            # 提取变更的顶层目录或文件作为标题 (例如: .obsidian, Readme.md)
+            # 逻辑：取路径第一段 -> 去重 -> 用逗号连接
+            SUMMARY=$(echo "$FILES" | cut -d/ -f1 | sort -u | paste -sd ", " -)
+            
+            # 提交：
+            # -m 第一行是标题 (Subject)
+            # -m 第二行及之后是详细列表 (Body)
+            git commit -m "Auto-sync: 更新 $SUMMARY" -m "涉及的具体文件变动：
+            $FILES"
+            
+            
             git push origin template
           fi
