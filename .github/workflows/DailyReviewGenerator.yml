@@ -41,6 +41,23 @@ jobs:
       - name: Install dependencies
         run: |
           pip install openai
+      
+      - name: Calculate target date
+        id: calc_date
+        run: |
+          TARGET_DATE="${{ github.event.inputs.target_date }}"
+          DAYS_AGO="${{ github.event.inputs.days_ago || '0' }}"
+          
+          # 如果指定了日期，使用日期；否则计算
+          if [ -n "$TARGET_DATE" ]; then
+            EXPECTED_DATE="$TARGET_DATE"
+          else
+            # 根据 days_ago 计算日期
+            EXPECTED_DATE=$(date -d "$DAYS_AGO days ago" '+%Y-%m-%d' 2>/dev/null || date -v-${DAYS_AGO}d '+%Y-%m-%d')
+          fi
+          
+          echo "expected_date=$EXPECTED_DATE" >> $GITHUB_OUTPUT
+          echo "📅 Expected date: $EXPECTED_DATE"
           
       - name: Generate daily review
         id: generate
@@ -57,11 +74,15 @@ jobs:
             python .github/scripts/generate_daily_review.py $DAYS_AGO
           fi
           
-          # 提取生成的日报信息
-          DAILY_FILE=$(ls Reviews/Daily/Daily-*.md 2>/dev/null | tail -1)
-          if [ -n "$DAILY_FILE" ]; then
-            DATE_STR=$(basename "$DAILY_FILE" | grep -oP '\d{4}-\d{2}-\d{2}')
-            echo "date_str=$DATE_STR" >> $GITHUB_OUTPUT
+          # 使用预期的日期来查找文件
+          EXPECTED_DATE="${{ steps.calc_date.outputs.expected_date }}"
+          DAILY_FILE="Reviews/Daily/Daily-${EXPECTED_DATE}.md"
+          
+          echo "🔍 Looking for: $DAILY_FILE"
+          
+          if [ -f "$DAILY_FILE" ]; then
+            echo "✅ Found: $DAILY_FILE"
+            echo "date_str=$EXPECTED_DATE" >> $GITHUB_OUTPUT
             echo "daily_file=$DAILY_FILE" >> $GITHUB_OUTPUT
             echo "has_review=true" >> $GITHUB_OUTPUT
             
@@ -73,7 +94,11 @@ jobs:
             TOPICS=$(grep -oP '(?<=topics: \[).*(?=\])' "$DAILY_FILE" || echo "N/A")
             echo "topics=$TOPICS" >> $GITHUB_OUTPUT
           else
+            echo "❌ File not found: $DAILY_FILE"
+            echo "📋 Available files:"
+            ls -la Reviews/Daily/ || echo "No files found"
             echo "has_review=false" >> $GITHUB_OUTPUT
+            echo "::warning::No review generated for $EXPECTED_DATE. The file was not created."
           fi
           
       - name: Create Pull Request
@@ -136,3 +161,15 @@ jobs:
             documentation
             ai-generated
             daily-review
+      
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.generate.outputs.has_review }}" == "true" ]; then
+            echo "✅ Daily review generated successfully"
+            echo "📂 File: ${{ steps.generate.outputs.daily_file }}"
+            echo "📅 Date: ${{ steps.generate.outputs.date_str }}"
+          else
+            echo "📝 No notes found for ${{ steps.calc_date.outputs.expected_date }} - skipped"
+            echo "💡 Try a different date or check your commit history"
+          fi
