@@ -52,9 +52,9 @@ jobs:
           
           # 如果指定了日期，使用日期；否则使用 days_ago
           if [ -n "$TARGET_DATE" ]; then
-            python .github/scripts/generate-daily-review.py --date "$TARGET_DATE"
+            python .github/scripts/generate_daily_review.py --date "$TARGET_DATE"
           else
-            python .github/scripts/generate-daily-review.py $DAYS_AGO
+            python .github/scripts/generate_daily_review.py $DAYS_AGO
           fi
           
           # 提取生成的日报信息
