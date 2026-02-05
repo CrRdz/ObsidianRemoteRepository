@@ -21,7 +21,12 @@
 
 </p>
 
-本文档规范了在 Windows 和 macOS 之间同步 Obsidian 笔记的标准流程。
+<div align="center">
+
+[![生成周报](https://img.shields.io/badge/📅_Weekly_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/WeeklyReviewGenerator.yml)
+[![生成日报](https://img.shields.io/badge/📝_Daily_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/DailyReviewGenerator.yml)
+
+</div>
 
 ---
 **核心原则：**
