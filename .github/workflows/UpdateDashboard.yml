@@ -39,28 +39,8 @@ jobs:
           git add Readme.md Assets/heatmap.svg
           
           if [[ -n $(git status -s) ]]; then
-            git commit -m "docs(stats): update heatmap and stats [skip ci]"
+            git commit -m "docs(stats): update heatmap and stats"
             git push origin master
           else
             echo "No changes to commit"
-          fi
-      
-      # 同步 Readme 到 template 分支
-      - name: Sync Readme to template branch
-        run: |
-          # 切换到 template 分支
-          git fetch origin template
-          git checkout template
-          
-          # 从 master 分支复制更新后的 Readme 和 SVG
-          git checkout master -- Readme.md Assets/heatmap.svg
-          
-          # 提交更改
-          git add Readme.md Assets/heatmap.svg
-          
-          if [[ -n $(git status -s) ]]; then
-            git commit -m "sync: update Readme stats from master [skip ci]"
-            git push origin template
-          else
-            echo "No changes to sync"
           fi
