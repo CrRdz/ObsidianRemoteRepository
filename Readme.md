@@ -1,345 +1,349 @@
-# Obsidian-Git-Sync-Protocol 	<img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey?style=flat-square" />
+# **ObsidianFlow**<img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey?style=flat-square" />
+
 <p align="center">
   <img src="https://img.shields.io/badge/Editor-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white" />
   <img src="https://img.shields.io/badge/Format-Markdown-000000?style=flat-square&logo=markdown&logoColor=white" />
   <img src="https://img.shields.io/badge/Storage-GitHub-181717?style=flat-square&logo=github&logoColor=white" />
-	<img src="https://img.shields.io/badge/Workflow-Git--Based-F05032?style=flat-square&logo=git&logoColor=white" />
-<img src="https://img.shields.io/badge/Method-Zettelkasten-black?style=flat-square&logo=icloud&logoColor=white" />
-<img src="https://img.shields.io/badge/Sync-Automated-brightgreen?style=flat-square&logo=githubactions&logoColor=white" />
+  <img src="https://img.shields.io/badge/Workflow-Git--Based-F05032?style=flat-square&logo=git&logoColor=white" />
+  <img src="https://img.shields.io/badge/Method-Zettelkasten-black?style=flat-square&logo=icloud&logoColor=white" />
+  <img src="https://img.shields.io/badge/Sync-Automated-brightgreen?style=flat-square&logo=githubactions&logoColor=white" />
+</p>
 
 <!-- STATS START -->
 <p align="center">
   <img src="https://img.shields.io/badge/Notes-63-2ea44f?style=flat-square" />
   <img src="https://img.shields.io/badge/Words-165.8k-007ec6?style=flat-square" />
-  <img src="https://img.shields.io/badge/Last_Update-2026--02--05%2012%3A02-critical?style=flat-square" />
+  <img src="https://img.shields.io/badge/Last_Update-2026--02--05%2011%3A29-critical?style=flat-square" />
 </p>
 <p align="center">
   <img src="Assets/heatmap.svg" alt="2026 Contribution Heatmap" />
 </p>
-
 <!-- STATS END -->
 
+> 基于 Obsidian + Git + GitHub Actions 的跨设备知识管理系统  
+> 支持自动同步、AI 生成日报/周报、配置模板化和实时统计仪表盘
+
+---
+
+## 目录
+
+- [核心特性](#核心特性)
+- [仓库结构](#仓库结构)
+- [自动化工作流](#自动化工作流)
+- [快速开始](#快速开始)
+- [同步策略](#同步策略)
+- [技术栈](#技术栈)
+
+---
+
+## 核心特性
+
+| 特性 | 说明 |
+|------|------|
+| **跨设备同步** | Windows/macOS 无缝同步，基于 Obsidian Git 插件 |
+| **AI 智能报告** | 自动生成日报/周报，使用 DeepSeek AI |
+| **动态仪表盘** | 实时统计笔记数量、字数、活跃度热力图 |
+| **配置模板化** | Template 分支自动同步 Obsidian 配置 |
+| **全自动化** | 提交/同步/统计全由 GitHub Actions 完成 |
+
+---
+
+## 仓库结构
+
+### 推荐的目录结构
+
+```
+ObsidianRemoteRepository/
+├── .github/
+│   ├── workflows/
+│   │   ├── AutoSyncConfig.yml          # 配置同步到 template 分支
+│   │   ├── UpdateDashboard.yml         # 统计数据更新
+│   │   ├── DailyReviewGenerator.yml    # AI 日报生成
+│   │   └── WeeklyReviewGenerator.yml   # AI 周报生成
+│   └── scripts/
+│       ├── update_stats.py             # 统计脚本
+│       ├── generate_daily_review.py    # 日报生成脚本
+│       └── generate_weekly_review.py   # 周报生成脚本
+│
+├── .obsidian/
+│   ├── plugins/                        # 社区插件
+│   ├── themes/                         # 主题
+│   ├── app.json                        # 应用配置
+│   ├── appearance.json                 # 外观配置
+│   ├── core-plugins.json               # 核心插件
+│   └── community-plugins.json          # 社区插件列表
+│
+├── Assets/
+│   ├── heatmap.svg                     # 自动生成的贡献热力图
+│   └── images/                         # 笔记中的图片资源
+│
+├── Reviews/
+│   ├── Daily/
+│   │   └── Daily-YYYY-MM-DD.md        # AI 生成的日报
+│   └── Weekly/
+│       └── Weekly-Review-YYYY-W##.md  # AI 生成的周报
+│
+├── Notes/                              # 你的笔记目录（可自定义）
+│   ├── Inbox/                          # 待整理笔记
+│   ├── Projects/                       # 项目笔记
+│   ├── Reference/                      # 参考资料
+│   └── Archive/                        # 归档笔记
+│
+├── .gitignore
+├── LICENSE
+└── Readme.md
+```
+
+### 分支结构
+
+```
+master (主分支 - 完整笔记库)
+├── 所有 Markdown 笔记
+├── .obsidian/ 配置
+├── .github/ 工作流
+├── Assets/ 资源
+└── Reviews/ AI 报告
+
+template (模板分支 - 仅配置)
+├── .obsidian/ 配置
+├── Readme.md
+├── LICENSE
+├── Assets/
+└── .gitignore (排除 *.md)
+```
+
+**分支用途：**
+- `master`: 完整的笔记库，包含所有内容
+- `template`: 干净的配置模板，用于新设备初始化
+
+---
+
+## 自动化工作流
+
+本项目包含 4 个自动化工作流，覆盖知识管理的完整生命周期：
+
+### 1. Update Knowledge Dashboard
+
+**触发条件：**
+- 每次 Markdown 文件推送到 master 分支
+- 每天定时运行（UTC 00:00）
+- 手动触发
+
+**功能：**
+- 统计笔记总数、总字数
+- 生成 2026 年度贡献热力图（SVG）
+- 自动更新 README 中的统计徽章
+- 同步更新到 template 分支
+
+**实现细节：**
+```yaml
+on:
+  push:
+    branches: [master]
+    paths: ['**.md']
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+```
+
+---
+
+### 2. Daily Review Generator
+
+**触发条件：**
+- 手动触发（可选择日期或几天前）
+
+**功能：**
+- 基于当天笔记内容生成 AI 日报
+- 提取学习主题和关键词
+- 自动创建 Pull Request 供审阅
+- 支持 YYYY-MM-DD 日期选择或相对天数（昨天/今天/7天前）
+
+**输入参数：**
+- `target_date`: 生成日报的日期（格式: YYYY-MM-DD）
+- `days_ago`: 或选择几天前（0=今天, 1=昨天）
+
+**生成的 PR 包含：**
+- 日期和文件路径
+- 使用的 AI 模型信息
+- 生成时间（北京时区）
+- 提取的主题列表
+
+---
+
+### 3. Weekly Review Generator
+
+**触发条件：**
+- 每周日 UTC 15:00（北京时间 23:00）自动运行
+- 手动触发
+
+**功能：**
+- 汇总本周学习内容
+- 生成结构化周报（格式: Weekly-Review-YYYY-W##.md）
+- 自动创建 PR 包含：
+  - 合并前检查清单
+  - 在线编辑指南
+  - 合并方式建议
+
+**PR 审阅检查项：**
+- 周报内容准确无误
+- 格式排版正常
+- 专业术语使用正确
+- 没有敏感信息
+
+---
+
+### 4. Sync Config to Template Branch
+
+**触发条件：**
+- `.obsidian/` 配置变更
+- `Readme.md` / `LICENSE` / `Assets/` 更新
+- 手动触发
+
+**功能：**
+- 将 Obsidian 配置同步到独立的 `template` 分支
+- 自动生成动态 Commit Message（标明变更文件）
+- 为新设备提供干净的配置模板
+- 排除笔记内容（通过 `.gitignore`）
+
+**同步内容：**
+- `.obsidian/` - 所有 Obsidian 配置
+- `Readme.md` - 项目说明
+- `LICENSE` - 许可证
+- `Assets/` - 资源文件（图片、热力图等）
+
+---
+
+## 快速开始
+
+### 新设备初始化流程
+
+#### 1. 准备环境
+
+- 安装 [Git](https://git-scm.com/)
+- 安装 [Obsidian](https://obsidian.md/)
+
+#### 2. 克隆仓库
+
+**选项 A: 完整笔记库（包含所有笔记）**
+```bash
+git clone https://github.com/CrRdz/ObsidianRemoteRepository.git
+cd ObsidianRemoteRepository
+```
+
+**选项 B: 纯净模板（仅配置文件）**
+```bash
+git clone -b template https://github.com/CrRdz/ObsidianRemoteRepository.git
+cd ObsidianRemoteRepository
+git checkout -b master
+git branch -u origin/master
+```
+
+#### 3. 配置 Obsidian
+
+1. 打开 Obsidian
+2. 选择 "Open folder as vault"
+3. 选择刚克隆的文件夹
+4. 插件会自动加载（来自 `.obsidian/` 配置）
+
+#### 4. 启用 Obsidian Git 插件
+
+进入 Settings → Community plugins → Obsidian Git
+
+**推荐配置：**
+- Auto pull on startup: 启用
+- Auto backup after file change: 启用
+- Auto backup interval: 10 分钟
+- Pull updates on startup: 启用
+
+---
+
+## 工作流程图
+
+### 日常使用流程
+
+```
+编辑笔记
+    ↓
+10分钟自动同步
+    ↓
+Git 插件自动提交
+    ↓
+触发 GitHub Actions
+    ├── 更新统计数据
+    ├── 同步配置到 template
+    └── 更新 README 徽章
+```
+
+### 周报生成流程
+
+```
+每周日 23:00 (北京时间)
+    ↓
+扫描本周新增/修改的笔记
+    ↓
+调用 DeepSeek AI 生成周报
+    ↓
+创建 Pull Request
+    ↓
+人工审阅 & 编辑
+    ↓
+合并到 master 分支
+```
+
+### 配置同步机制
+
+```
+修改 .obsidian/ 配置
+    ↓
+推送到 master 分支
+    ↓
+触发 AutoSyncConfig workflow
+    ↓
+├── 切换到 template 分支
+├── 复制配置文件
+├── 生成 .gitignore
+└── Force push 到 template
+```
+
+---
+
+## 同步策略
+
+### 核心原则
+
+1. **初始化阶段**：使用命令行（CLI）进行仓库克隆
+2. **日常使用**：完全依赖 Obsidian Git 插件自动化管理
+3. **同步频率**：10分钟无操作自动同步 + 启动时自动拉取
+4. **冲突处理**：避免同时多设备编辑同一文档
+5. **配置隔离**：本地状态文件不纳入版本控制
+
+### 文件管理规则
+
+**纳入版本控制：**
+- 所有 Markdown 笔记（`*.md`）
+- Obsidian 配置（`.obsidian/`）
+- 资源文件（`Assets/`）
+- 工作流脚本（`.github/`）
+
+**排除版本控制：**
+- 本地缓存（`.obsidian/workspace.json`）
+- 插件数据（`.obsidian/plugins/*/data.json`）
+- 临时文件（`.DS_Store`, `Thumbs.db`）
+
+---
+
+## 技术栈
+
+| 组件 | 用途 |
+|------|------|
+| **Obsidian** | Markdown 笔记编辑器 |
+| **Obsidian Git** | 自动 Git 同步插件 |
+| **GitHub Actions** | CI/CD 自动化 |
+| **DeepSeek AI** | LLM 驱动的报告生成 |
+| **Python** | 统计脚本 + AI 交互 |
+
+---
+<p align="center">
+  Created by <a href="https://github.com/CrRdz">CrRdz</a>
 </p>
-
-<div align="center">
-
-[![生成周报](https://img.shields.io/badge/📅_Weekly_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/WeeklyReviewGenerator.yml)
-[![生成日报](https://img.shields.io/badge/📝_Daily_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/DailyReviewGenerator.yml)
-
-</div>
-
----
-**核心原则：**
-
-1. **初始化阶段**：使用命令行（CLI）进行仓库克隆。
-
-2. **日常使用**：完全依赖 **Obsidian Git 插件** 自动化管理 避免同时多个设备编辑同一文档。
-
-3. **同步策略**：10分钟无操作自动同步 + 启动时自动拉取。
-
-4. Git 只用于管理**笔记内容和必要配置**，不管理本地状态
-
-5. Obsidian 的部分配置文件**不适合纳入版本控制**
-
----
-
-## 一、新设备初始化流程 
-
-当你在一台**从未安装过**此笔记库的新电脑（Mac 或 PC）上配置时，请严格按照以下步骤操作：
-
-### 1. 准备环境
-
-- 安装 [Git](https://git-scm.com/)。
-    
-- 安装 [Obsidian](https://obsidian.md/)。
-    
-### 2. 克隆仓库 (使用命令行)
-
-打开终端 (Mac Terminal 或 Win PowerShell)，进入你想存放笔记的目录：
-
-```Bash
-# 1. 进入目录
-cd ~/Documents  # 或其他你想要的位置
-
-# 2. 克隆远程仓库
-git clone git@github.com:CrRdz/ObsidianRemoteRepository.git
-```
-
-### 3. 打开与插件配置
-
-1. 打开 Obsidian，选择 **"打开现有仓库" (Open folder as vault)**，选中刚才克隆下来的文件夹。
-    
-2. Obsidian 会自动加载 `.obsidian` 中的插件（如果你同步了插件文件夹）。
-    
-3. **检查 Obsidian Git 插件配置**（见下文 "插件核心设置"），确保每台设备配置一致。
-
----
-## 二、Obsidian Git 插件核心设置 
-
-在clone完成之后 请先检查obsidian插件是否成功同步 如未按照预期 执行以下步骤
-
-为了实现自动化和统一的日志格式，请在 **Settings -> Obsidian Git** 中进行如下设置：
-
-### 1. 自动化策略
-
-- **Auto commit-and-sync interval (minutes):** `10`
-    
-    - _(设置 10 分钟自动备份)_
-    - _(建议搭配电脑休眠时间设置)_
-        
-- **Auto commit-and-sync after stop file edits:** `ON` 
-    
-    - _(配合上一条，确保是有变动才备份)_
-        
-- **Auto pull interval(minutes):** `30`
-    
-    - _(设置30分钟拉取远程仓库)_
-        
-- **Specify custom commit message on auto commit-and-sync**:`ON`
-    
-    - _(指定commit的message)_
-	      
-- **Pull on startup:**`ON`
-
-### 2. 提交信息格式 (Commit Message)
-
-请严格复制以下内容填入对应设置项，以保持日志整洁：
-
-- **Commit Message:**
-	```Plaintext
-	vault sync: {{date}} | {{hostname}} | {{numFiles}} files
-	```
-	- _(Hostname: mac | windows 后续如有扩展 另行规范)_
-	
-- **List filenames affected by commit in commit body:** `开启`
-    
-    - _(这会自动在 commit message 下一行附带 affected files 列表)_
-        
-- **Date format:** `YYYY-MM-DD HH:mm
-
----
-
-## 三、日常使用指南
-
-### 正常工作流
-
-1. **打开 Obsidian**：插件自动运行 `Pull`。
-    
-2. **写作/编辑**：正常使用 注意遵守命名规范。
-    
-3. **自动同步**：每隔 10 分钟，如果有变动，插件会自动 `Commit` 并 `Push`。
-    
-4. **手动同步 (可选)**：
-    
-    - 如果你写完想立刻关机，按 `Cmd/Ctrl + P` 调出命令面板。
-        
-    - 输入并执行：`Git: Create backup`。
-### **更推荐的工作流**   
-
-1. **打开 Obsidian**：插件自动运行 `Pull`。
-    
-2. **写作/编辑**：仅单个设备对仓库进行操作 注意遵守命名规范。
-    
-3. **自动同步**：每隔 10 分钟，如果有变动，插件会自动 `Commit` 并 `Push`。
-	
-4. **手动同步**：在完成一次笔记编辑之后 手动进行一次commit-and-sync 
-	
-5. **关闭程序**：每次短期的完成笔记任务后 关闭程序 以便于在打开时候运行一次pull 
-
----
-## 四、跨平台命名/使用规范
-
-由于 macOS 和 Windows 文件系统底层逻辑不同，在 Mac 上操作时必须遵守以下规则，否则会导致 Windows 端同步失败或文件无法打开。
-
-### 1. 严禁使用的特殊字符
-
-Windows 文件名不支持以下字符。**在 Mac 上创建笔记或附件时，绝对不能包含：**
-
-| **字符** | **名称** | **替代方案**         |
-| ------ | ------ | ---------------- |
-| `/`    | 斜杠     | 使用 `-` 或空格       |
-| `\`    | 反斜杠    | 使用 `-` 或空格       |
-| `:`    | 冒号     | 使用中文冒号 `：` 或 `-` |
-| `*`    | 星号     | (无)              |
-| `?`    | 问号     | 使用中文问号 `？`       |
-| `"`    | 双引号    | 使用单引号 `'`        |
-| `<`    | 小于号    | (无)              |
-| `>`    | 大于号    | (无)              |
-| `      | `      | ｜                |
-
-> **例子**：在 Mac 上命名 `2024/01/01:会议记录` 是合法的，但在 Windows 上会直接报错。请改为 `2024-01-01-会议记录`。
-
-### 2. 文件名大小写敏感问题
-
-- **Windows**: 不区分大小写 (`Note.md` 和 `note.md` 是同一个文件)。
-    
-- **Git/Linux**: 区分大小写。
-    
-- **操作禁忌**：不要在 Obsidian 中直接**仅修改文件名的大小写**（例如把 `Work.md` 重命名为 `work.md`）。
-    
-    - **后果**：这极易导致 Git 识别错误，产生两个看起来一样的文件，或者导致 Windows 端同步死循环。
-        
-    - **正确做法**：如果必须修改大小写，先重命名为其他名字（如 `Work_tmp.md`），提交一次，再改回 `work.md`。
-        
-
-### 3. 避免超长路径
-
-Windows 对文件路径长度有限制（默认 260 字符）。尽量避免创建过深的文件夹层级（例如超过 5-6 层嵌套），防止同步失败。
-
----
-## 五、推荐的 `.gitignore`
-
-在仓库根目录创建或编辑 `.gitignore`：
-
-```gitignore
-# macOS
-.DS_Store
-
-# Obsidian local state
-.obsidian/workspace*
-.obsidian/graph.json
-.obsidian/cache
-```
-
-  
-
-说明：
-
-- `workspace*`：窗口与面板布局，不同设备必然冲突
-
-- `cache`：缓存文件，不具备同步意义
-
-- 这里比较推荐将/plugin pull上去 以便同步插件
-
-
----
-
-  
-
-## 六、已经误提交上述文件的修复方法
-
-  
-
-`.gitignore` 只对**尚未被跟踪的文件**生效，已提交文件需要手动移除其 Git 记录。
-
-  
-
-```bash
-git rm -r --cached .DS_Store
-git rm -r --cached .obsidian/workspace*
-git rm -r --cached .obsidian/cache
-```
-
-  
-
-然后提交并推送：
-
-  
-
-```bash
-
-git add .gitignore
-git commit -m "chore: remove local Obsidian and OS files"
-git push
-
-```
-
-
----
-
-  
-
-## 六、常见问题与处理方案
-
-### 1. 推送时提示 rejected / diverged (插件无法推送)
-
-**场景**：远程版本比本地新，且历史分叉。 **修复**（强制以远程为准，注意备份本地未保存内容）：
-若确认以远程仓库为准，可直接重置本地：
-```bash
-git reset --hard
-git clean -fd
-git fetch origin
-git reset --hard origin/master
-```
-> 若你的主分支不是 `master`，请替换为实际分支名
----
-### 2. 插件提示 "Pull failed" 或冲突
-
-**场景**：本地和远程修改了同一个文件的同一行。 **修复**：
-
-
-```Bash
-# 1. 尝试手动拉取（可能会提示合并）
-git pull
-
-# 2. 如果提示冲突 (Conflict)，打开对应的 .md 文件
-# 手动搜索 "<<<<<<<" 标记，修改内容后保存。
-
-# 3. 提交修复
-git add .
-git commit -m "manual fix: resolve merge conflict"
-git push
-```
----
-## 七、推荐仓库结构
-
-```text
-
-Vault/
-
-├─ README.md
-
-├─ .gitignore
-
-├─ y3s1/
-
-│ ├─ course1.md
-
-│ ├─ course2.md
-
-│ └─ ...
-
-├─ .../
-
-├─ .obsidian/
-
-├─ Asserts
-
-├─ plugins/ # 可选同步
-
-└─ core-plugins.json
-
-```
-
-  
-
----
-## 八、快捷键指南
-
-`F11` 创建代码块
-
-`Ctrl + F` 正则查找/替换（依赖Regex Find/replace)
-
-`Ctrl + Shift + F` 原生查找/替换
-
----
-## 九、字体asserts
-
-代码块： Jetbrain mono
-
-正文：仓耳今楷02-W04
-
----
-## 十、总结
-
-  
-
-- Git 用于内容版本管理，而非环境同步
-
-- 避免提交系统文件与 Obsidian 本地状态
-
-- 严格遵循 `pull → edit → commit → push` 的工作流
-
-  
-
-当出现问题时，本 README 中的命令可直接用于恢复仓库状态。
