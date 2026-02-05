@@ -1,0 +1,20 @@
+/* === 强制在 PDF 中显示列表连接线 === */
+@media print {
+  /* 给嵌套的子列表添加左侧竖线 */
+  li > ul, li > ol {
+    /* 1px 宽的实线，颜色是浅灰色(#ccc)，!important 强制生效 */
+    border-left: 1px solid #ccc !important;
+    
+    /* 调整一下线和文字的距离 */
+    padding-left: 15px !important; 
+    margin-left: 5px !important;
+  }
+
+  /* 如果你觉得列表项之间太松散，想紧凑一点（像连在一起），加上这句 */
+  li {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+}
