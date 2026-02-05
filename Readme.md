@@ -352,4 +352,3 @@ Git 插件自动提交
 <p align="center">
   Created by <a href="https://github.com/CrRdz">CrRdz</a>
 </p>
-测试触发同步template
