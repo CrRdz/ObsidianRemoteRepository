@@ -1,4 +1,4 @@
-# **ObsidianFlow**<img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey?style=flat-square" />
+# **ObsidianFlow** <img src="https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey?style=flat-square" />
 
 <p align="center">
   <img src="https://img.shields.io/badge/Editor-Obsidian-483699?style=flat-square&logo=obsidian&logoColor=white" />
@@ -20,11 +20,13 @@
 </p>
 
 <!-- STATS END -->
+
+<div align="center">
+
 [![生成周报](https://img.shields.io/badge/📅_Weekly_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/WeeklyReviewGenerator.yml)
 [![生成日报](https://img.shields.io/badge/📝_Daily_Review-ffffff?style=for-the-badge&labelColor=000000&color=000000)](https://github.com/CrRdz/ObsidianRemoteRepository/actions/workflows/DailyReviewGenerator.yml)
 
-> 基于 Obsidian + Git + GitHub Actions 的跨设备知识管理系统  
-> 支持自动同步、AI 生成日报/周报、配置模板化和实时统计仪表盘
+</div>
 
 ---
 
