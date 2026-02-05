@@ -11,12 +11,18 @@ on:
       - 'LICENSE'
       - 'Assets/**'
       - '.github/workflows/AutoSyncConfig.yml'
+  workflow_run:                           
+    workflows: ["Update Knowledge Dashboard"]
+    types:
+      - completed
 
 jobs:
   update-template:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # 只在 workflow 成功时运行
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
 
     steps:
       - name: Checkout repository
@@ -32,53 +38,37 @@ jobs:
 
       - name: Sync content to template branch
         run: |
-          echo "Starting sync process..."
-          
           git branch -D template 2>/dev/null || true
           
           if git ls-remote --exit-code --heads origin template >/dev/null 2>&1; then
-            echo "Remote template branch exists, fetching..."
             git fetch origin template:template
             git checkout template
           else
-            echo "Creating new template branch..."
             git checkout --orphan template
             git rm -rf . 2>/dev/null || true
           fi
 
-          echo "Cleaning old files..."
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} + 2>/dev/null || true
-
-          echo "Copying files from master..."
           git checkout master -- .obsidian Readme.md LICENSE Assets 2>/dev/null || true
 
-          echo "Generating .gitignore..."
           echo "*.md" > .gitignore
           echo "!Readme.md" >> .gitignore
           echo "package-lock.json" >> .gitignore
 
-          echo "Staging changes..."
           git add -A
           
-          echo "Checking for changes..."
           if git diff --staged --quiet; then
             echo "No changes detected"
             exit 0
           fi
           
-          echo "Changes detected, preparing commit..."
           FILES=$(git diff --staged --name-only)
           SUMMARY=$(echo "$FILES" | cut -d/ -f1 | sort -u | paste -sd ", " -)
           
-          echo "Committing changes..."
           git commit -m "sync: update $SUMMARY" -m "Changed files:
           
           $FILES"
           
-          echo "Pushing to template branch..."
           if ! git push origin template --force-with-lease; then
-            echo "Force-with-lease failed, using force..."
             git push origin template --force
           fi
-          
-          echo "Sync completed successfully"
