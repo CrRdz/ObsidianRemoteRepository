@@ -347,7 +347,7 @@ Git 插件自动提交
 | **GitHub Actions** | CI/CD 自动化 |
 | **DeepSeek AI** | LLM 驱动的报告生成 |
 | **Python** | 统计脚本 + AI 交互 |
-这是测试
+
 ---
 <p align="center">
   Created by <a href="https://github.com/CrRdz">CrRdz</a>
