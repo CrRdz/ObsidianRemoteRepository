@@ -1,0 +1,71 @@
+name: Sync Config to Template Branch
+
+on:
+  workflow_dispatch: 
+  push:
+    branches:
+      - master
+    paths:
+      - '.obsidian/**'
+      - 'Readme.md'
+      - 'LICENSE'
+      - 'Assets/**'
+      - '.github/**'
+      - '.gitignore'
+  workflow_run:                           
+    workflows: ["Update Knowledge Dashboard"]
+    types:
+      - completed
+
+jobs:
+  update-template:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync content to template branch
+        run: |
+          git branch -D template 2>/dev/null || true
+          
+          if git ls-remote --exit-code --heads origin template >/dev/null 2>&1; then
+            git fetch origin template:template
+            git checkout template
+          else
+            git checkout --orphan template
+            git rm -rf . 2>/dev/null || true
+          fi
+
+          find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} + 2>/dev/null || true
+          
+          git checkout master -- .obsidian Readme.md LICENSE Assets .github .gitignore 2>/dev/null || true
+
+          git add -A
+          
+          if git diff --staged --quiet; then
+            echo "No changes detected"
+            exit 0
+          fi
+          
+          FILES=$(git diff --staged --name-only)
+          SUMMARY=$(echo "$FILES" | cut -d/ -f1 | sort -u | paste -sd ", " -)
+          
+          git commit -m "sync: update $SUMMARY" -m "Changed files:
+          
+          $FILES"
+          
+          if ! git push origin template --force-with-lease; then
+            git push origin template --force
+          fi

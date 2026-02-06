@@ -1,3 +1,7 @@
-*.md
-!Readme.md
-package-lock.json
+# macOS
+.DS_Store
+
+# Obsidian local state
+.obsidian/workspace*
+.obsidian/graph.json
+.obsidian/cache
