@@ -10,7 +10,8 @@ on:
       - 'Readme.md'
       - 'LICENSE'
       - 'Assets/**'
-      - '.github/workflows/AutoSyncConfig.yml'
+      - '.github/**'
+      - '.gitignore'
   workflow_run:                           
     workflows: ["Update Knowledge Dashboard"]
     types:
@@ -21,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # 只在 workflow 成功时运行
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
 
     steps:
@@ -49,11 +49,8 @@ jobs:
           fi
 
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} + 2>/dev/null || true
-          git checkout master -- .obsidian Readme.md LICENSE Assets 2>/dev/null || true
-
-          echo "*.md" > .gitignore
-          echo "!Readme.md" >> .gitignore
-          echo "package-lock.json" >> .gitignore
+          
+          git checkout master -- .obsidian Readme.md LICENSE Assets .github .gitignore 2>/dev/null || true
 
           git add -A
           
