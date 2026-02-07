@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - '**.md'
-  workflow_dispatch:  # 允许手动触发
 
 jobs:
   add-frontmatter:
@@ -18,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史，用于提取日期
+          fetch-depth: 0
       
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -27,7 +26,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install openai pyyaml
+          pip install openai
       
       - name: Run Frontmatter AutoWired
         env:
@@ -47,6 +46,7 @@ jobs:
             exit 0
           fi
           
-          git commit -m "chore: auto-add frontmatter [skip ci]"
           git pull --rebase origin master
-          git push          
+          
+          git commit -m "chore: auto-add frontmatter [skip ci]"
+          git push
