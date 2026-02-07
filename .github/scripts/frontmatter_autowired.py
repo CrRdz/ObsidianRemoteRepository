@@ -84,10 +84,8 @@ def get_modified_time(file_path: str) -> str:
 def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
     """使用 AI 生成语义化标签"""
     
-    # 取前 800 字（增加上下文）
     preview = content[:800]
     
-    # 提取路径信息（辅助 AI 理解上下文）
     path_parts = file_path.split('/')
     context_hint = ""
     if len(path_parts) > 1:
@@ -151,18 +149,15 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
         
         print(f"  [AI DEBUG] Raw response: '{tags_str}'")
         
-        # 清理格式
         tags_str = re.sub(r'^(标签|Tags?)[：:：\s]*', '', tags_str, flags=re.IGNORECASE)
         tags_str = tags_str.strip('[](){}「」《》""\'`')
         
         print(f"  [AI DEBUG] After cleanup: '{tags_str}'")
         
-        # 分割标签
         tags = [t.strip() for t in re.split(r'[,，、;；]', tags_str) if t.strip()]
         
         print(f"  [AI DEBUG] After split: {tags}")
         
-        # 过滤：长度 2-10，最多 5 个
         tags = [t for t in tags if 2 <= len(t) <= 10][:5]
         
         print(f"  [AI DEBUG] After filter: {tags}")
@@ -178,7 +173,6 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
         print(f"  [AI ERROR] Exception occurred: {type(e).__name__}")
         print(f"  [AI ERROR] Error message: {str(e)}")
         
-        # 打印详细的错误堆栈
         import traceback
         print(f"  [AI ERROR] Full traceback:")
         for line in traceback.format_exc().split('\n'):
@@ -192,44 +186,34 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
 def extract_keywords_from_content(content: str, top_n=15) -> list:
     """从内容中提取高频技术关键词"""
     
-    # 移除代码块和行内代码
     text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
     text = re.sub(r'`[^`]+`', '', text)
     
     keywords = []
     
-    # 1. 提取驼峰命名（SpringBoot, MyBatis, ArrayList）
     camel_case = re.findall(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b', text)
     keywords.extend(camel_case)
     
-    # 2. 提取大写缩写（IoC, API, HTTP, REST, 2-6 个字母）
     acronyms = re.findall(r'\b[A-Z]{2,6}\b', text)
     keywords.extend(acronyms)
     
-    # 3. 提取首字母大写单词（Spring, Java, Git）
     capitalized = re.findall(r'\b[A-Z][a-z]{2,12}\b', text)
     keywords.extend(capitalized)
     
-    # 4. 提取中文技术词（2-6 个字）
     chinese_terms = re.findall(r'[\u4e00-\u9fa5]{2,6}', text)
     keywords.extend(chinese_terms)
     
-    # 统计频率
     word_freq = Counter(keywords)
     
-    # 过滤停用词
     stopwords = {
-        # 中文
         '的', '了', '是', '在', '和', '有', '我', '你', '他', '她', '这个', '那个',
         '可以', '需要', '如果', '因为', '所以', '但是', '然后', '就是', '一个',
         '我们', '它们', '什么', '怎么', '为什么', '这样', '那样',
-        # 英文
         'The', 'This', 'That', 'These', 'Those', 'And', 'But', 'For', 'With',
         'From', 'Into', 'When', 'Where', 'Which', 'What', 'How', 'Why',
         'Can', 'Will', 'Should', 'Would', 'Could', 'May', 'Might',
     }
     
-    # 过滤
     filtered = [
         word for word, count in word_freq.most_common(top_n * 2)
         if word not in stopwords and len(word) >= 2
@@ -243,22 +227,17 @@ def extract_technical_keywords(file_path: str, topic: str, content: str) -> list
     
     keywords = []
     
-    # 1. 从路径提取
     path_parts = file_path.split('/')
-    for part in path_parts[:-1]:  # 排除文件名
-        # 提取目录名中的技术词
+    for part in path_parts[:-1]:
         tech_words = re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', part)
         keywords.extend(tech_words)
     
-    # 2. 从文件名提取
     topic_words = re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', topic)
     keywords.extend(topic_words)
     
-    # 3. 从内容提取高频词
     content_keywords = extract_keywords_from_content(content, top_n=10)
     keywords.extend(content_keywords)
     
-    # 去重（保持顺序）
     seen = set()
     unique_keywords = []
     for kw in keywords:
@@ -275,37 +254,25 @@ def match_tech_categories(keywords: list, content: str) -> list:
     
     categories = []
     
-    # 技术分类规则
     tech_map = {
-        # 编程语言
         'Java': ['java', 'jvm', 'spring', 'maven', 'mybatis'],
         'Python': ['python', 'django', 'flask', 'numpy', 'pandas'],
         'JavaScript': ['javascript', 'js', 'node', 'vue', 'react', 'typescript'],
-        
-        # 框架
         'Spring': ['spring', 'springboot', 'ioc', 'aop', 'mvc'],
         'Vue': ['vue', 'vuex', 'router', '响应式', 'composition'],
         'React': ['react', 'jsx', 'hooks', 'redux'],
-        
-        # 数据库
         'MySQL': ['mysql', 'sql', '数据库', 'select', 'join'],
         'Redis': ['redis', '缓存', 'nosql', 'key-value'],
-        
-        # 工具
         'Git': ['git', 'github', 'commit', 'branch', '版本控制'],
         'Docker': ['docker', '容器', 'dockerfile', 'compose'],
         'Linux': ['linux', 'shell', 'bash', 'ubuntu', 'centos'],
-        
-        # 概念
         'API': ['api', 'rest', 'restful', 'http', '接口'],
         '算法': ['算法', 'algorithm', '时间复杂度', '动态规划', '排序'],
         '设计模式': ['设计模式', 'pattern', '单例', '工厂', '观察者'],
     }
     
-    # 组合所有文本（小写）
     all_text = ' '.join(keywords).lower() + ' ' + content.lower()
     
-    # 匹配
     for category, patterns in tech_map.items():
         for pattern in patterns:
             if pattern in all_text:
@@ -324,29 +291,23 @@ def fallback_tags(topic: str, content: str, file_path: str) -> list:
     print(f"  [FALLBACK DEBUG] File path: {file_path}")
     print(f"  [FALLBACK DEBUG] Content length: {len(content)} chars")
     
-    # 1. 提取所有技术关键词
     keywords = extract_technical_keywords(file_path, topic, content)
     print(f"  [FALLBACK DEBUG] Extracted keywords: {keywords[:10]}")
     
-    # 2. 匹配技术分类
     categories = match_tech_categories(keywords, content)
     print(f"  [FALLBACK DEBUG] Matched categories: {categories}")
     
-    # 3. 组合 tags（分类优先）
     tags = []
     
-    # 优先加分类标签
     tags.extend(categories[:3])
     print(f"  [FALLBACK DEBUG] Tags after categories: {tags}")
     
-    # 补充关键词（避免重复）
     for kw in keywords:
         if kw not in tags and len(tags) < 5:
             tags.append(kw)
     
     print(f"  [FALLBACK DEBUG] Tags after keywords: {tags}")
     
-    # 4. 如果还是空，用文件名
     if not tags:
         tags = [topic]
         print(f"  [FALLBACK DEBUG] No tags found, using topic")
@@ -372,9 +333,7 @@ def parse_frontmatter(content: str) -> dict:
             key = key.strip()
             value = value.strip()
             
-            # 处理 tags 数组
             if key == 'tags' and value.startswith('[') and value.endswith(']'):
-                # 提取标签列表
                 tags_str = value[1:-1]
                 tags = [t.strip() for t in tags_str.split(',') if t.strip()]
                 frontmatter_dict[key] = tags
@@ -389,7 +348,6 @@ def build_frontmatter(data: dict) -> str:
     
     frontmatter = "---\n"
     
-    # 按固定顺序输出
     order = ['topic', 'created', 'modified', 'tags']
     
     for key in order:
@@ -401,7 +359,6 @@ def build_frontmatter(data: dict) -> str:
             else:
                 frontmatter += f"{key}: {value}\n"
     
-    # 添加其他字段
     for key, value in data.items():
         if key not in order:
             if isinstance(value, list):
@@ -415,49 +372,30 @@ def build_frontmatter(data: dict) -> str:
 
 
 def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False) -> tuple:
-    """
-    更新或添加 frontmatter
+    """更新或添加 frontmatter"""
     
-    参数：
-        force_rebuild: 是否完全重建（重新生成 tags）
-    
-    返回: (new_content, status)
-        status: 'added' | 'updated' | 'rebuilt' | 'unchanged'
-    """
-    
-    # 检查是否已有 frontmatter
     existing_fm = parse_frontmatter(content)
     
     if existing_fm and not force_rebuild:
-        # 已有 frontmatter，只更新 modified
-        
-        # 获取最新的 modified 时间
         new_modified = get_modified_time(file_path)
         old_modified = existing_fm.get('modified', '')
         
-        # 如果时间没变，跳过
         if old_modified == new_modified:
             return (content, 'unchanged')
         
         print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
         
-        # 更新数据
         existing_fm['modified'] = new_modified
         
-        # 提取 body
         match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
         body = content[match.end():] if match else content
         
-        # 重建 frontmatter
         new_frontmatter = build_frontmatter(existing_fm)
         new_content = new_frontmatter + body
         
         return (new_content, 'updated')
     
     else:
-        # 没有 frontmatter 或强制重建
-        
-        # 提取 body
         body = content
         if existing_fm:
             match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
@@ -465,10 +403,8 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False)
                 body = content[match.end():]
             print(f"  [REBUILD] Regenerating frontmatter")
         
-        # 生成新数据
         topic = extract_topic(file_path)
         
-        # 保留原有的 created 时间
         created = existing_fm.get('created') if existing_fm else get_created_time(file_path)
         modified = get_modified_time(file_path)
         
@@ -476,10 +412,8 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False)
         print(f"  [INFO] Created: {created}")
         print(f"  [INFO] Modified: {modified}")
         
-        # 生成 tags
         tags = generate_tags_by_ai(topic, body, file_path)
         
-        # 构建新的 frontmatter
         data = {
             'topic': topic,
             'created': created,
@@ -495,11 +429,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False)
 
 
 def process_file(file_path: str, force_rebuild=False) -> str:
-    """
-    处理单个文件
-    
-    返回: 'added' | 'updated' | 'rebuilt' | 'unchanged' | None (error)
-    """
+    """处理单个文件"""
     
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -508,14 +438,12 @@ def process_file(file_path: str, force_rebuild=False) -> str:
         print(f"  [ERROR] Read failed: {e}")
         return None
     
-    # 更新或添加 frontmatter
     new_content, status = update_or_add_frontmatter(file_path, content, force_rebuild)
     
     if status == 'unchanged':
         print(f"  [SKIP] No changes needed")
         return 'unchanged'
     
-    # 写入文件
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
@@ -534,18 +462,9 @@ def process_file(file_path: str, force_rebuild=False) -> str:
 
 
 def get_changed_files():
-    """
-    获取变更的文件（支持 merge commit 和 GitHub push 事件）
-    
-    策略：
-    1. 尝试从 GitHub Actions 环境变量获取 push 的 SHA 范围
-    2. 如果是 merge commit，获取所有合并的变更
-    3. 降级到 HEAD~2 HEAD（覆盖大部分场景）
-    4. 最后兜底到 HEAD~1 HEAD
-    """
+    """获取变更的文件"""
     
     try:
-        # 策略1: 从 GitHub Actions 事件获取精确的 SHA 范围
         event_path = os.environ.get('GITHUB_EVENT_PATH')
         if event_path and os.path.exists(event_path):
             import json
@@ -570,14 +489,12 @@ def get_changed_files():
             except Exception as e:
                 print(f"[WARN] Failed to parse GitHub event: {e}")
         
-        # 策略2: 检查是否是 merge commit
         cmd_check = ['git', 'rev-parse', '--verify', 'HEAD^2']
         is_merge = subprocess.run(cmd_check, capture_output=True, text=True).returncode == 0
         
         if is_merge:
             print(f"\n[INFO] Detected merge commit")
             
-            # 尝试获取 merge 的所有变更
             cmd = ['git', 'diff', '--name-only', 'HEAD^1...HEAD^2', '--', '*.md']
             result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
             
@@ -587,7 +504,6 @@ def get_changed_files():
                     print(f"  - {f}")
                 return [f.strip() for f in result.split('\n') if f.strip()]
             
-            # 如果上面没找到，尝试 HEAD^1 HEAD
             cmd = ['git', 'diff', '--name-only', 'HEAD^1', 'HEAD', '--', '*.md']
             result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
             
@@ -597,7 +513,6 @@ def get_changed_files():
                     print(f"  - {f}")
                 return [f.strip() for f in result.split('\n') if f.strip()]
         
-        # 策略3: 使用 HEAD~2 HEAD（覆盖最近2次提交的变更）
         print(f"\n[INFO] Using HEAD~2...HEAD")
         cmd = ['git', 'diff', '--name-only', 'HEAD~2', 'HEAD', '--', '*.md']
         result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
@@ -608,7 +523,6 @@ def get_changed_files():
                 print(f"  - {f}")
             return [f.strip() for f in result.split('\n') if f.strip()]
         
-        # 策略4: 降级到 HEAD~1 HEAD
         print(f"\n[INFO] Fallback to HEAD~1...HEAD")
         cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
         result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
@@ -641,7 +555,6 @@ def test_api_connection():
     print(f"[DEBUG] Model: {MODEL}")
     
     try:
-        # 简单的测试请求
         print("[DEBUG] Sending test request...")
         response = client.chat.completions.create(
             model=MODEL,
@@ -667,7 +580,6 @@ def main():
     print("Frontmatter AutoWired")
     print("=" * 70)
     
-    # 配置 Git 正确处理中文文件名
     try:
         subprocess.run(
             ['git', 'config', 'core.quotepath', 'false'],
@@ -677,10 +589,8 @@ def main():
     except:
         pass
     
-    # 测试 API 连接
     test_api_connection()
     
-    # 检查是否强制重建（从环境变量）
     force_rebuild = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
     
     if force_rebuild:
@@ -688,24 +598,41 @@ def main():
     else:
         print("\n[MODE] Update: Will only update modified time for existing frontmatter")
     
-    # 获取变更的 .md 文件
+    # 获取 PR 中已修改的文件
+    pr_modified_files = os.environ.get('PR_MODIFIED_FILES', '').strip()
+    pr_files_set = set()
+    
+    if pr_modified_files:
+        pr_files_set = set(line.strip() for line in pr_modified_files.split('\n') if line.strip())
+        if pr_files_set:
+            print(f"\n[INFO] Files already in PR: {len(pr_files_set)}")
+            for f in pr_files_set:
+                print(f"  - {f}")
+    
     files = get_changed_files()
     
     if not files:
         print("\n[INFO] No .md files changed")
         return
     
-    # 过滤
     files = [f for f in files if should_process_file(f)]
     
+    # 过滤掉 PR 中已处理的文件
+    if pr_files_set:
+        original_count = len(files)
+        files = [f for f in files if f not in pr_files_set]
+        skipped = original_count - len(files)
+        if skipped > 0:
+            print(f"\n[INFO] Skipped {skipped} file(s) already in PR")
+    
     if not files:
-        print("\n[INFO] No files to process (after filtering)")
-        print(f"[INFO] Exclusion patterns: {EXCLUDE_PATTERNS}")
+        print("\n[INFO] No new files to process")
+        if pr_files_set:
+            print("[INFO] All changed files are already in the open PR")
         return
     
     print(f"\n[INFO] Files to process: {len(files)}")
     
-    # 处理
     added = 0
     updated = 0
     rebuilt = 0
