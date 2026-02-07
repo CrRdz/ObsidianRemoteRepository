@@ -19,37 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      # 🔧 新增: 同步 auto-update 分支到最新 master
-      - name: Sync auto-update branch with master
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 检查远程分支是否存在
-          if git ls-remote --heads origin frontmatter-auto-update | grep -q frontmatter-auto-update; then
-            echo "Branch exists, syncing with master..."
-            
-            # 切换到 auto-update 分支
-            git fetch origin frontmatter-auto-update
-            git checkout -b frontmatter-auto-update origin/frontmatter-auto-update
-            
-            # 合并最新的 master (使用 theirs 策略避免冲突)
-            git merge origin/master --no-edit -X theirs || {
-              echo "Merge conflict detected, using master version"
-              git checkout --theirs .
-              git add .
-              git commit -m "chore: sync with master" || true
-            }
-            
-            # 推送更新
-            git push origin frontmatter-auto-update
-            
-            # 切回 master 继续处理
-            git checkout master
-          else
-            echo "Branch does not exist, will be created later"
-          fi
+          ref: master  # 🔧 确保基于最新 master
       
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -60,35 +30,68 @@ jobs:
         run: |
           pip install openai
       
-      # 🔧 新增: 获取 PR 中已处理的文件
+      # 🔧 获取 PR 中已处理的文件
       - name: Get existing PR files
         id: pr_files
         run: |
-          # 检查是否有开放的 PR
           PR_NUMBER=$(gh pr list --head frontmatter-auto-update --base master --state open --json number --jq '.[0].number')
           
           if [ -n "$PR_NUMBER" ]; then
             echo "Found open PR #$PR_NUMBER"
             
-            # 获取 PR 中修改的文件
-            PR_FILES=$(gh pr view $PR_NUMBER --json files --jq '.files[].path' | grep '\.md$' || echo "")
+            # 获取 PR 中所有变更的文件
+            PR_FILES=$(gh pr diff $PR_NUMBER --name-only | grep '\.md$' || echo "")
             
             if [ -n "$PR_FILES" ]; then
               echo "Files already in PR:"
               echo "$PR_FILES" | sed 's/^/  - /'
               
-              # 保存到环境变量 (多行处理)
               echo "PR_MODIFIED_FILES<<EOF" >> $GITHUB_ENV
               echo "$PR_FILES" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
-            else
-              echo "No files in PR yet"
+              
+              echo "has_existing_pr=true" >> $GITHUB_OUTPUT
             fi
           else
             echo "No open PR found"
+            echo "has_existing_pr=false" >> $GITHUB_OUTPUT
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 🔧 如果 PR 已存在,先拉取 PR 分支的内容
+      - name: Merge PR branch changes
+        if: steps.pr_files.outputs.has_existing_pr == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 拉取 PR 分支
+          git fetch origin frontmatter-auto-update
+          
+          # 创建临时分支合并 PR 的修改
+          git checkout -b temp-merge
+          git merge origin/frontmatter-auto-update --no-commit --no-ff || true
+          
+          # 应用 PR 分支的文件修改到当前工作区
+          git checkout origin/frontmatter-auto-update -- '*.md' 2>/dev/null || true
+          
+          # 回到 master
+          git checkout master
+          
+          # 复制已处理的文件
+          if [ -n "$PR_MODIFIED_FILES" ]; then
+            while IFS= read -r file; do
+              if [ -f "$file" ]; then
+                git checkout temp-merge -- "$file" 2>/dev/null || true
+                echo "  ✓ Restored from PR: $file"
+              fi
+            done <<< "$PR_MODIFIED_FILES"
+          fi
+          
+          git branch -D temp-merge 2>/dev/null || true
+        env:
+          PR_MODIFIED_FILES: ${{ env.PR_MODIFIED_FILES }}
       
       - name: Run Frontmatter AutoWired
         env:
@@ -99,14 +102,18 @@ jobs:
       - name: Get file info
         id: info
         run: |
-          # 获取修改的文件列表
-          CHANGED_FILES=$(git diff --name-only | grep '\.md$' || echo "")
+          CHANGED_FILES=$(git diff --name-only HEAD | grep '\.md$' || echo "")
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            # 检查未追踪的文件
+            CHANGED_FILES=$(git ls-files --others --exclude-standard | grep '\.md$' || echo "")
+          fi
+          
           if [ -n "$CHANGED_FILES" ]; then
             FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
             echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
             echo "has_changes=true" >> $GITHUB_OUTPUT
             
-            # 生成文件列表
             FILE_LIST=""
             while IFS= read -r file; do
               FILE_LIST="${FILE_LIST}- \`${file}\`\n"
@@ -115,8 +122,12 @@ jobs:
             echo "file_list<<EOF" >> $GITHUB_OUTPUT
             echo -e "$FILE_LIST" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
+            
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected"
           fi
       
       - name: Create or Update Pull Request
@@ -126,14 +137,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: frontmatter-auto-update
           delete-branch: false
+          base: master
           
+          # 🔧 关键: 追加模式,不重置分支
           commit-message: |
             chore: auto-add frontmatter for ${{ steps.info.outputs.file_count }} file(s)
             
-            Generated by Frontmatter AutoWired
+            Trigger: ${{ github.sha }}
             
           title: 'Frontmatter 自动更新'
-                    
+          
+          # 🔧 更新 PR body 显示累计信息
           body: |
             ## 概述
             
@@ -143,9 +157,9 @@ jobs:
             
             ---
             
-            ## 本次更新内容
+            ## 本次推送变更
             
-            **修改文件数:** ${{ steps.info.outputs.file_count }}
+            **本次修改文件数:** ${{ steps.info.outputs.file_count }}
             
             ${{ steps.info.outputs.file_list }}
             
@@ -163,42 +177,12 @@ jobs:
             
             ---
             
-            ## 修改 Frontmatter
-            
-            如需调整生成的元数据:
-            
-            1. 切换到 **Files changed** 标签页
-            2. 点击要修改的文件
-            3. 点击右上角菜单图标(⋯)并选择 **Edit file**
-            4. 完成修改后直接提交到本 PR
-            
-            ---
-            
             ## 生成信息
             
-            - **AI 模型:** DeepSeek Chat
-            - **触发方式:** 推送到 master 分支
-            - **触发提交:** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
-            - **更新时间:** ${{ github.event.head_commit.timestamp }}
-            
-            ---
-            
-            ## 工作流程说明
-            
-            本自动化流程的处理步骤:
-            
-            1. 检测 master 分支中的 Markdown 文件变更
-            2. 同步 `frontmatter-auto-update` 分支到最新 master
-            3. 使用 AI 提取语义化标签并生成 frontmatter
-            4. 将变更累积到本 PR 中以便批量审阅
-            5. 保留现有文件的 `created` 时间戳
-            6. 后续编辑时自动更新 `modified` 时间戳
-            
-            已在本 PR 中处理过的文件将被跳过,避免重复处理和冲突。
+            - **最后触发提交:** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
+            - **最后更新时间:** ${{ github.event.head_commit.timestamp }}
             
           labels: |
             automated
             documentation
             chore
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
