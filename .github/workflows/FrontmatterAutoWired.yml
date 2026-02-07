@@ -1,3 +1,4 @@
+```yaml
 name: Frontmatter AutoWired
 
 on:
@@ -20,6 +21,37 @@ jobs:
         with:
           fetch-depth: 0
       
+      # 🔧 新增: 同步 auto-update 分支到最新 master
+      - name: Sync auto-update branch with master
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 检查远程分支是否存在
+          if git ls-remote --heads origin frontmatter-auto-update | grep -q frontmatter-auto-update; then
+            echo "Branch exists, syncing with master..."
+            
+            # 切换到 auto-update 分支
+            git fetch origin frontmatter-auto-update
+            git checkout -b frontmatter-auto-update origin/frontmatter-auto-update
+            
+            # 合并最新的 master (使用 theirs 策略避免冲突)
+            git merge origin/master --no-edit -X theirs || {
+              echo "Merge conflict detected, using master version"
+              git checkout --theirs .
+              git add .
+              git commit -m "chore: sync with master" || true
+            }
+            
+            # 推送更新
+            git push origin frontmatter-auto-update
+            
+            # 切回 master 继续处理
+            git checkout master
+          else
+            echo "Branch does not exist, will be created later"
+          fi
+      
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -28,6 +60,36 @@ jobs:
       - name: Install dependencies
         run: |
           pip install openai
+      
+      # 🔧 新增: 获取 PR 中已处理的文件
+      - name: Get existing PR files
+        id: pr_files
+        run: |
+          # 检查是否有开放的 PR
+          PR_NUMBER=$(gh pr list --head frontmatter-auto-update --base master --state open --json number --jq '.[0].number')
+          
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Found open PR #$PR_NUMBER"
+            
+            # 获取 PR 中修改的文件
+            PR_FILES=$(gh pr view $PR_NUMBER --json files --jq '.files[].path' | grep '\.md$' || echo "")
+            
+            if [ -n "$PR_FILES" ]; then
+              echo "Files already in PR:"
+              echo "$PR_FILES" | sed 's/^/  - /'
+              
+              # 保存到环境变量 (多行处理)
+              echo "PR_MODIFIED_FILES<<EOF" >> $GITHUB_ENV
+              echo "$PR_FILES" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            else
+              echo "No files in PR yet"
+            fi
+          else
+            echo "No open PR found"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Run Frontmatter AutoWired
         env:
@@ -78,13 +140,13 @@ jobs:
             
             本 PR 使用 AI 自动为 Markdown 文件生成或更新 frontmatter 元数据。
             
-            **注意：** 本 PR 采用持续更新模式。每次向 master 分支推送时，新的变更会自动追加到此 PR，直到合并为止。
+            **注意:** 本 PR 采用持续更新模式。每次向 master 分支推送时,新的变更会自动追加到此 PR,直到合并为止。
             
             ---
             
             ## 本次更新内容
             
-            **修改文件数：** ${{ steps.info.outputs.file_count }}
+            **修改文件数:** ${{ steps.info.outputs.file_count }}
             
             ${{ steps.info.outputs.file_list }}
             
@@ -92,7 +154,7 @@ jobs:
             
             ## 审阅检查项
             
-            合并前请确认：
+            合并前请确认:
             
             - [ ] Frontmatter 语法正确
             - [ ] `topic` 字段准确反映文件内容
@@ -104,35 +166,36 @@ jobs:
             
             ## 修改 Frontmatter
             
-            如需调整生成的元数据：
+            如需调整生成的元数据:
             
             1. 切换到 **Files changed** 标签页
             2. 点击要修改的文件
-            3. 点击右上角菜单图标（⋯）并选择 **Edit file**
+            3. 点击右上角菜单图标(⋯)并选择 **Edit file**
             4. 完成修改后直接提交到本 PR
             
             ---
             
             ## 生成信息
             
-            - **AI 模型：** DeepSeek Chat
-            - **触发方式：** 推送到 master 分支
-            - **触发提交：** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
-            - **更新时间：** ${{ github.event.head_commit.timestamp }}
+            - **AI 模型:** DeepSeek Chat
+            - **触发方式:** 推送到 master 分支
+            - **触发提交:** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
+            - **更新时间:** ${{ github.event.head_commit.timestamp }}
             
             ---
             
             ## 工作流程说明
             
-            本自动化流程的处理步骤：
+            本自动化流程的处理步骤:
             
             1. 检测 master 分支中的 Markdown 文件变更
-            2. 使用 AI 提取语义化标签并生成 frontmatter
-            3. 将变更累积到本 PR 中以便批量审阅
-            4. 保留现有文件的 `created` 时间戳
-            5. 后续编辑时自动更新 `modified` 时间戳
+            2. 同步 `frontmatter-auto-update` 分支到最新 master
+            3. 使用 AI 提取语义化标签并生成 frontmatter
+            4. 将变更累积到本 PR 中以便批量审阅
+            5. 保留现有文件的 `created` 时间戳
+            6. 后续编辑时自动更新 `modified` 时间戳
             
-            已在本 PR 中处理过的文件将被跳过，避免重复处理和冲突。
+            已在本 PR 中处理过的文件将被跳过,避免重复处理和冲突。
             
           labels: |
             automated
@@ -140,3 +203,4 @@ jobs:
             chore
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
