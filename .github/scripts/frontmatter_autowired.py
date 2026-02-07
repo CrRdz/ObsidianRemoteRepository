@@ -61,7 +61,7 @@ def get_created_time(file_path: str) -> str:
             dt = datetime.fromisoformat(first_commit.replace('Z', '+00:00'))
             return dt.strftime('%Y-%m-%d %H:%M')
     except Exception as e:
-        print(f"  ⚠️  Git log failed: {e}")
+        print(f"  [WARN] Git log failed: {e}")
     
     return datetime.now().strftime('%Y-%m-%d %H:%M')
 
@@ -76,7 +76,7 @@ def get_modified_time(file_path: str) -> str:
             dt = datetime.fromisoformat(result.replace('Z', '+00:00'))
             return dt.strftime('%Y-%m-%d %H:%M')
     except Exception as e:
-        print(f"  ⚠️  Git log failed: {e}")
+        print(f"  [WARN] Git log failed: {e}")
     
     return datetime.now().strftime('%Y-%m-%d %H:%M')
 
@@ -147,13 +147,13 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
         tags = [t for t in tags if 2 <= len(t) <= 10][:5]
         
         if tags:
-            print(f"  🤖 AI tags: {tags}")
+            print(f"  [AI] Generated tags: {tags}")
             return tags
         else:
             raise ValueError("AI returned empty tags")
     
     except Exception as e:
-        print(f"  ⚠️  AI failed ({e}), using fallback")
+        print(f"  [WARN] AI failed ({e}), using fallback")
         return fallback_tags(topic, content, file_path)
 
 
@@ -239,7 +239,7 @@ def extract_technical_keywords(file_path: str, topic: str, content: str) -> list
 
 
 def match_tech_categories(keywords: list, content: str) -> list:
-    """匹配技术分类标签"""
+    """匹配技术分���标签"""
     
     categories = []
     
@@ -287,7 +287,7 @@ def match_tech_categories(keywords: list, content: str) -> list:
 def fallback_tags(topic: str, content: str, file_path: str) -> list:
     """完善的兜底规则"""
     
-    print(f"  📏 Using fallback rules...")
+    print(f"  [FALLBACK] Using rule-based extraction")
     
     # 1. 提取所有技术关键词
     keywords = extract_technical_keywords(file_path, topic, content)
@@ -310,67 +310,186 @@ def fallback_tags(topic: str, content: str, file_path: str) -> list:
     if not tags:
         tags = [topic]
     
-    print(f"  📏 Fallback tags: {tags[:5]}")
+    print(f"  [FALLBACK] Generated tags: {tags[:5]}")
     return tags[:5]
 
 
-def generate_frontmatter(file_path: str, content: str) -> str:
-    """生成 frontmatter"""
+def parse_frontmatter(content: str) -> dict:
+    """解析 frontmatter 为字典"""
     
-    print(f"\n📄 {file_path}")
+    match = re.match(r'^---\n(.*?)\n---\n', content, re.DOTALL)
+    if not match:
+        return None
     
-    # 1. Topic：文件名
-    topic = extract_topic(file_path)
-    print(f"  📝 Topic: {topic}")
+    frontmatter_text = match.group(1)
+    frontmatter_dict = {}
     
-    # 2. 时间：从 Git 获取
-    created = get_created_time(file_path)
-    modified = get_modified_time(file_path)
-    print(f"  📅 Created: {created}")
-    print(f"  📅 Modified: {modified}")
+    for line in frontmatter_text.split('\n'):
+        line = line.strip()
+        if ':' in line:
+            key, value = line.split(':', 1)
+            key = key.strip()
+            value = value.strip()
+            
+            # 处理 tags 数组
+            if key == 'tags' and value.startswith('[') and value.endswith(']'):
+                # 提取标签列表
+                tags_str = value[1:-1]
+                tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+                frontmatter_dict[key] = tags
+            else:
+                frontmatter_dict[key] = value
     
-    # 3. Tags：优先 AI，失败则用完善的规则
-    tags = generate_tags_by_ai(topic, content, file_path)
-    
-    # 构建 frontmatter
-    frontmatter = f"""---
-topic: {topic}
-created: {created}
-modified: {modified}
-tags: [{', '.join(tags)}]
----
+    return frontmatter_dict
 
-"""
+
+def build_frontmatter(data: dict) -> str:
+    """从字典构建 frontmatter 文本"""
+    
+    frontmatter = "---\n"
+    
+    # 按固定顺序输出
+    order = ['topic', 'created', 'modified', 'tags']
+    
+    for key in order:
+        if key in data:
+            value = data[key]
+            
+            if key == 'tags' and isinstance(value, list):
+                frontmatter += f"{key}: [{', '.join(value)}]\n"
+            else:
+                frontmatter += f"{key}: {value}\n"
+    
+    # 添加其他字段
+    for key, value in data.items():
+        if key not in order:
+            if isinstance(value, list):
+                frontmatter += f"{key}: [{', '.join(value)}]\n"
+            else:
+                frontmatter += f"{key}: {value}\n"
+    
+    frontmatter += "---\n\n"
     
     return frontmatter
 
 
-def process_file(file_path: str) -> bool:
-    """处理单个文件"""
+def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False) -> tuple:
+    """
+    更新或添加 frontmatter
+    
+    参数：
+        force_rebuild: 是否完全重建（重新生成 tags）
+    
+    返回: (new_content, status)
+        status: 'added' | 'updated' | 'rebuilt' | 'unchanged'
+    """
+    
+    # 检查是否已有 frontmatter
+    existing_fm = parse_frontmatter(content)
+    
+    if existing_fm and not force_rebuild:
+        # 已有 frontmatter，只更新 modified
+        
+        # 获取最新的 modified 时间
+        new_modified = get_modified_time(file_path)
+        old_modified = existing_fm.get('modified', '')
+        
+        # 如果时间没变，跳过
+        if old_modified == new_modified:
+            return (content, 'unchanged')
+        
+        print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
+        
+        # 更新数据
+        existing_fm['modified'] = new_modified
+        
+        # 提取 body
+        match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
+        body = content[match.end():] if match else content
+        
+        # 重建 frontmatter
+        new_frontmatter = build_frontmatter(existing_fm)
+        new_content = new_frontmatter + body
+        
+        return (new_content, 'updated')
+    
+    else:
+        # 没有 frontmatter 或强制重建
+        
+        # 提取 body
+        body = content
+        if existing_fm:
+            match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
+            if match:
+                body = content[match.end():]
+            print(f"  [REBUILD] Regenerating frontmatter")
+        
+        # 生成新数据
+        topic = extract_topic(file_path)
+        
+        # 保留原有的 created 时间
+        created = existing_fm.get('created') if existing_fm else get_created_time(file_path)
+        modified = get_modified_time(file_path)
+        
+        print(f"  [INFO] Topic: {topic}")
+        print(f"  [INFO] Created: {created}")
+        print(f"  [INFO] Modified: {modified}")
+        
+        # 生成 tags
+        tags = generate_tags_by_ai(topic, body, file_path)
+        
+        # 构建新的 frontmatter
+        data = {
+            'topic': topic,
+            'created': created,
+            'modified': modified,
+            'tags': tags
+        }
+        
+        new_frontmatter = build_frontmatter(data)
+        new_content = new_frontmatter + body
+        
+        status = 'rebuilt' if existing_fm else 'added'
+        return (new_content, status)
+
+
+def process_file(file_path: str, force_rebuild=False) -> str:
+    """
+    处理单个文件
+    
+    返回: 'added' | 'updated' | 'rebuilt' | 'unchanged' | None (error)
+    """
     
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
     except Exception as e:
-        print(f"  ❌ Read error: {e}")
-        return False
+        print(f"  [ERROR] Read failed: {e}")
+        return None
     
-    if has_frontmatter(content):
-        print(f"  ⏭️  Skip (already has frontmatter)")
-        return False
+    # 更新或添加 frontmatter
+    new_content, status = update_or_add_frontmatter(file_path, content, force_rebuild)
     
-    frontmatter = generate_frontmatter(file_path, content)
+    if status == 'unchanged':
+        print(f"  [SKIP] No changes needed")
+        return 'unchanged'
     
-    new_content = frontmatter + content
-    
+    # 写入文件
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        print(f"  ✅ Added")
-        return True
+        
+        if status == 'added':
+            print(f"  [SUCCESS] Added frontmatter")
+        elif status == 'updated':
+            print(f"  [SUCCESS] Updated frontmatter")
+        elif status == 'rebuilt':
+            print(f"  [SUCCESS] Rebuilt frontmatter")
+        
+        return status
     except Exception as e:
-        print(f"  ❌ Write error: {e}")
-        return False
+        print(f"  [ERROR] Write failed: {e}")
+        return None
 
 
 def get_changed_files():
@@ -396,35 +515,35 @@ def get_changed_files():
                     after_sha = event.get('after', 'HEAD')
                     
                     if before_sha and before_sha != '0000000000000000000000000000000000000000':
-                        print(f"\n🎯 Using GitHub push event SHAs:")
-                        print(f"   Before: {before_sha[:7]}")
-                        print(f"   After:  {after_sha[:7]}")
+                        print(f"\n[INFO] Using GitHub push event")
+                        print(f"[INFO] Range: {before_sha[:7]}...{after_sha[:7]}")
                         
                         cmd = ['git', 'diff', '--name-only', before_sha, after_sha, '--', '*.md']
                         result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
                         
                         if result:
-                            print(f"\n📝 Files from push event:")
-                            print(result)
+                            print(f"[INFO] Files from push event:")
+                            for f in result.split('\n'):
+                                print(f"  - {f}")
                             return [f.strip() for f in result.split('\n') if f.strip()]
             except Exception as e:
-                print(f"  ⚠️  Failed to parse GitHub event: {e}")
+                print(f"[WARN] Failed to parse GitHub event: {e}")
         
         # 策略2: 检查是否是 merge commit
         cmd_check = ['git', 'rev-parse', '--verify', 'HEAD^2']
         is_merge = subprocess.run(cmd_check, capture_output=True, text=True).returncode == 0
         
         if is_merge:
-            print(f"\n🔀 Detected merge commit")
+            print(f"\n[INFO] Detected merge commit")
             
             # 尝试获取 merge 的所有变更
-            # 使用 git diff HEAD^1...HEAD^2 来获取两个分支之间的差异
             cmd = ['git', 'diff', '--name-only', 'HEAD^1...HEAD^2', '--', '*.md']
             result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
             
             if result:
-                print(f"\n📝 Files from merge:")
-                print(result)
+                print(f"[INFO] Files from merge:")
+                for f in result.split('\n'):
+                    print(f"  - {f}")
                 return [f.strip() for f in result.split('\n') if f.strip()]
             
             # 如果上面没找到，尝试 HEAD^1 HEAD
@@ -432,40 +551,43 @@ def get_changed_files():
             result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
             
             if result:
-                print(f"\n📝 Files from merge (fallback):")
-                print(result)
+                print(f"[INFO] Files from merge (fallback):")
+                for f in result.split('\n'):
+                    print(f"  - {f}")
                 return [f.strip() for f in result.split('\n') if f.strip()]
         
         # 策略3: 使用 HEAD~2 HEAD（覆盖最近2次提交的变更）
-        print(f"\n🔍 Using HEAD~2 HEAD")
+        print(f"\n[INFO] Using HEAD~2...HEAD")
         cmd = ['git', 'diff', '--name-only', 'HEAD~2', 'HEAD', '--', '*.md']
         result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
         
         if result:
-            print(f"\n📝 Files from HEAD~2:")
-            print(result)
+            print(f"[INFO] Files from HEAD~2:")
+            for f in result.split('\n'):
+                print(f"  - {f}")
             return [f.strip() for f in result.split('\n') if f.strip()]
         
         # 策略4: 降级到 HEAD~1 HEAD
-        print(f"\n🔍 Fallback to HEAD~1 HEAD")
+        print(f"\n[INFO] Fallback to HEAD~1...HEAD")
         cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
         result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
         
         if result:
-            print(f"\n📝 Files from HEAD~1:")
-            print(result)
+            print(f"[INFO] Files from HEAD~1:")
+            for f in result.split('\n'):
+                print(f"  - {f}")
             return [f.strip() for f in result.split('\n') if f.strip()]
         
         return []
         
     except Exception as e:
-        print(f"\n❌ Git diff failed: {e}")
+        print(f"\n[ERROR] Git diff failed: {e}")
         return []
 
 
 def main():
     print("=" * 70)
-    print("🔧 Frontmatter AutoWired")
+    print("Frontmatter AutoWired")
     print("=" * 70)
     
     # 配置 Git 正确处理中文文件名
@@ -478,46 +600,61 @@ def main():
     except:
         pass
     
-    # 获取变更的 .md 文件（使用新的智能检测���
+    # 检查是否强制重建（从环境变量）
+    force_rebuild = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
+    
+    if force_rebuild:
+        print("\n[MODE] Force rebuild: Will regenerate all frontmatter including tags")
+    else:
+        print("\n[MODE] Update: Will only update modified time for existing frontmatter")
+    
+    # 获取变更的 .md 文件
     files = get_changed_files()
     
     if not files:
-        print("\n⚠️  No .md files changed")
+        print("\n[INFO] No .md files changed")
         return
     
     # 过滤
     files = [f for f in files if should_process_file(f)]
     
     if not files:
-        print("\n⚠️  No files to process (after filtering)")
-        print(f"   Exclusion patterns: {EXCLUDE_PATTERNS}")
+        print("\n[INFO] No files to process (after filtering)")
+        print(f"[INFO] Exclusion patterns: {EXCLUDE_PATTERNS}")
         return
     
-    print(f"\n📊 Files to process: {len(files)}")
-    print("🤖 AI mode: enabled (all files)")
+    print(f"\n[INFO] Files to process: {len(files)}")
     
     # 处理
-    processed = 0
-    skipped = 0
+    added = 0
+    updated = 0
+    rebuilt = 0
+    unchanged = 0
     failed = 0
     
     for i, file in enumerate(files, 1):
-        print(f"\n[{i}/{len(files)}]", end=' ')
-        result = process_file(file)
+        print(f"\n[{i}/{len(files)}] Processing: {file}")
+        result = process_file(file, force_rebuild)
         
-        if result is True:
-            processed += 1
-        elif result is False:
-            skipped += 1
+        if result == 'added':
+            added += 1
+        elif result == 'updated':
+            updated += 1
+        elif result == 'rebuilt':
+            rebuilt += 1
+        elif result == 'unchanged':
+            unchanged += 1
         else:
             failed += 1
     
     print("\n" + "=" * 70)
-    print(f"📊 Summary:")
-    print(f"   ✅ Added: {processed}")
-    print(f"   ⏭️  Skipped: {skipped}")
-    print(f"   ❌ Failed: {failed}")
-    print(f"   📁 Total: {len(files)}")
+    print(f"Summary:")
+    print(f"  Added:     {added}")
+    print(f"  Updated:   {updated}")
+    print(f"  Rebuilt:   {rebuilt}")
+    print(f"  Unchanged: {unchanged}")
+    print(f"  Failed:    {failed}")
+    print(f"  Total:     {len(files)}")
     print("=" * 70)
 
 
