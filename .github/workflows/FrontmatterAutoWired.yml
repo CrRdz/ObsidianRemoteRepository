@@ -1,0 +1,51 @@
+name: Frontmatter AutoWired
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '**.md'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  add-frontmatter:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，用于提取日期
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install openai pyyaml
+      
+      - name: Run Frontmatter AutoWired
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python .github/scripts/frontmatter_autowired.py
+      
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          git add -A
+          
+          if git diff --staged --quiet; then
+            echo "No frontmatter changes"
+            exit 0
+          fi
+          
+          git commit -m "chore: auto-add frontmatter [skip ci]"
+          git push
