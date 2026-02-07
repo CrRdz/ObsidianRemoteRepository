@@ -1,3 +1,10 @@
+---
+topic: Linux笔记提交测试3
+created: 2026-02-07 20:36
+modified: 2026-02-07 20:36
+tags: [Linux, 虚拟机, FinalShell, 命令行, 远程连接]
+---
+
 
 
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
