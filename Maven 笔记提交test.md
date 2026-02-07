@@ -10,7 +10,7 @@ tags: [Java, Spring, MySQL, Maven, 私服]
 - 提供一套标准化的构建流程（编译，测试，打包，发布）
 - 提供一套依赖（第三方资源 插件 jar包）管理机制
 - 测试 测试提交触发
-- test for update 时间 modified
+- test for update 时间 modified 22
 
 # Maven简介
 
