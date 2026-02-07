@@ -30,7 +30,7 @@ jobs:
       
       - name: Run Frontmatter AutoWired
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           python .github/scripts/frontmatter_autowired.py
       
