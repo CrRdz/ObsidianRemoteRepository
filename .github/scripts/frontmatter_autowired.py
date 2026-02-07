@@ -158,15 +158,7 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
 
 
 def extract_keywords_from_content(content: str, top_n=15) -> list:
-    """
-    从内容中提取高频技术关键词
-    
-    改进：
-    1. 提取驼峰命名（SpringBoot, MyBatis）
-    2. 提取大写缩写（IoC, API, HTTP）
-    3. 提取中文技术词（依赖注入、控制反转）
-    4. 统计频率，返回高频词
-    """
+    """从内容中提取高频技术关键词"""
     
     # 移除代码块和行内代码
     text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
@@ -215,14 +207,7 @@ def extract_keywords_from_content(content: str, top_n=15) -> list:
 
 
 def extract_technical_keywords(file_path: str, topic: str, content: str) -> list:
-    """
-    综合提取技术关键词
-    
-    来源：
-    1. 文件路径（JavaNotes/SSM → Java, SSM）
-    2. 文件名（SpringBoot → Spring, Boot）
-    3. 内容高频词
-    """
+    """综合提取技术关键词"""
     
     keywords = []
     
@@ -234,8 +219,6 @@ def extract_technical_keywords(file_path: str, topic: str, content: str) -> list
         keywords.extend(tech_words)
     
     # 2. 从文件名提取
-    # "SpringBoot" → ["Spring", "Boot"]
-    # "MySQL" → ["MySQL"]
     topic_words = re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', topic)
     keywords.extend(topic_words)
     
@@ -256,11 +239,7 @@ def extract_technical_keywords(file_path: str, topic: str, content: str) -> list
 
 
 def match_tech_categories(keywords: list, content: str) -> list:
-    """
-    匹配技术分类标签
-    
-    根据关键词和内容，推断技术栈分类
-    """
+    """匹配技术分类标签"""
     
     categories = []
     
@@ -306,15 +285,7 @@ def match_tech_categories(keywords: list, content: str) -> list:
 
 
 def fallback_tags(topic: str, content: str, file_path: str) -> list:
-    """
-    完善的兜底规则
-    
-    策略：
-    1. 提取技术关键词（路径 + 文件名 + 内容）
-    2. 匹配技术分类
-    3. 组合去重
-    4. 智能排序（优先级：分类 > 关键词）
-    """
+    """完善的兜底规则"""
     
     print(f"  📏 Using fallback rules...")
     
@@ -400,7 +371,98 @@ def process_file(file_path: str) -> bool:
     except Exception as e:
         print(f"  ❌ Write error: {e}")
         return False
+
+
+def get_changed_files():
+    """
+    获取变更的文件（支持 merge commit 和 GitHub push 事件）
+    
+    策略：
+    1. 尝试从 GitHub Actions 环境变量获取 push 的 SHA 范围
+    2. 如果是 merge commit，获取所有合并的变更
+    3. 降级到 HEAD~2 HEAD（覆盖大部分场景）
+    4. 最后兜底到 HEAD~1 HEAD
+    """
+    
+    try:
+        # 策略1: 从 GitHub Actions 事件获取精确的 SHA 范围
+        event_path = os.environ.get('GITHUB_EVENT_PATH')
+        if event_path and os.path.exists(event_path):
+            import json
+            try:
+                with open(event_path) as f:
+                    event = json.load(f)
+                    before_sha = event.get('before')
+                    after_sha = event.get('after', 'HEAD')
+                    
+                    if before_sha and before_sha != '0000000000000000000000000000000000000000':
+                        print(f"\n🎯 Using GitHub push event SHAs:")
+                        print(f"   Before: {before_sha[:7]}")
+                        print(f"   After:  {after_sha[:7]}")
+                        
+                        cmd = ['git', 'diff', '--name-only', before_sha, after_sha, '--', '*.md']
+                        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
+                        
+                        if result:
+                            print(f"\n📝 Files from push event:")
+                            print(result)
+                            return [f.strip() for f in result.split('\n') if f.strip()]
+            except Exception as e:
+                print(f"  ⚠️  Failed to parse GitHub event: {e}")
         
+        # 策略2: 检查是否是 merge commit
+        cmd_check = ['git', 'rev-parse', '--verify', 'HEAD^2']
+        is_merge = subprocess.run(cmd_check, capture_output=True, text=True).returncode == 0
+        
+        if is_merge:
+            print(f"\n🔀 Detected merge commit")
+            
+            # 尝试获取 merge 的所有变更
+            # 使用 git diff HEAD^1...HEAD^2 来获取两个分支之间的差异
+            cmd = ['git', 'diff', '--name-only', 'HEAD^1...HEAD^2', '--', '*.md']
+            result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
+            
+            if result:
+                print(f"\n📝 Files from merge:")
+                print(result)
+                return [f.strip() for f in result.split('\n') if f.strip()]
+            
+            # 如果上面没找到，尝试 HEAD^1 HEAD
+            cmd = ['git', 'diff', '--name-only', 'HEAD^1', 'HEAD', '--', '*.md']
+            result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
+            
+            if result:
+                print(f"\n📝 Files from merge (fallback):")
+                print(result)
+                return [f.strip() for f in result.split('\n') if f.strip()]
+        
+        # 策略3: 使用 HEAD~2 HEAD（覆盖最近2次提交的变更）
+        print(f"\n🔍 Using HEAD~2 HEAD")
+        cmd = ['git', 'diff', '--name-only', 'HEAD~2', 'HEAD', '--', '*.md']
+        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
+        
+        if result:
+            print(f"\n📝 Files from HEAD~2:")
+            print(result)
+            return [f.strip() for f in result.split('\n') if f.strip()]
+        
+        # 策略4: 降级到 HEAD~1 HEAD
+        print(f"\n🔍 Fallback to HEAD~1 HEAD")
+        cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
+        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
+        
+        if result:
+            print(f"\n📝 Files from HEAD~1:")
+            print(result)
+            return [f.strip() for f in result.split('\n') if f.strip()]
+        
+        return []
+        
+    except Exception as e:
+        print(f"\n❌ Git diff failed: {e}")
+        return []
+
+
 def main():
     print("=" * 70)
     print("🔧 Frontmatter AutoWired")
@@ -414,36 +476,14 @@ def main():
             capture_output=True
         )
     except:
-        pass  # 忽略配置失败
+        pass
     
-    # 获取变更的 .md 文件
-    try:
-        cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
-        result = subprocess.check_output(
-            cmd, 
-            text=True, 
-            encoding='utf-8'  # 确保使用 UTF-8
-        ).strip()
-        
-        print(f"\n🔍 Git diff result:")
-        print(f"{result}")
-        
-        if not result:
-            print("\n⚠️  No .md files changed in last commit")
-            return
-        
-        files = result.split('\n')
-        print(f"\n📝 Files from git diff: {files}")
-        
-    except Exception as e:
-        print(f"\n❌ Git diff failed: {e}")
-        print("⚠️  Falling back to processing all .md files")
-        files = []
-        for root, dirs, filenames in os.walk('.'):
-            for filename in filenames:
-                if filename.endswith('.md'):
-                    file_path = os.path.join(root, filename).lstrip('./')
-                    files.append(file_path)
+    # 获取变更的 .md 文件（使用新的智能检测���
+    files = get_changed_files()
+    
+    if not files:
+        print("\n⚠️  No .md files changed")
+        return
     
     # 过滤
     files = [f for f in files if should_process_file(f)]
@@ -458,12 +498,26 @@ def main():
     
     # 处理
     processed = 0
-    for file in files:
-        if process_file(file):
+    skipped = 0
+    failed = 0
+    
+    for i, file in enumerate(files, 1):
+        print(f"\n[{i}/{len(files)}]", end=' ')
+        result = process_file(file)
+        
+        if result is True:
             processed += 1
+        elif result is False:
+            skipped += 1
+        else:
+            failed += 1
     
     print("\n" + "=" * 70)
-    print(f"✅ Processed: {processed}/{len(files)}")
+    print(f"📊 Summary:")
+    print(f"   ✅ Added: {processed}")
+    print(f"   ⏭️  Skipped: {skipped}")
+    print(f"   ❌ Failed: {failed}")
+    print(f"   📁 Total: {len(files)}")
     print("=" * 70)
 
 
