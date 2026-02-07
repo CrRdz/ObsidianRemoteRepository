@@ -401,7 +401,6 @@ def process_file(file_path: str) -> bool:
         print(f"  ❌ Write error: {e}")
         return False
 
-
 def main():
     print("=" * 70)
     print("🔧 Frontmatter AutoWired")
@@ -411,12 +410,15 @@ def main():
     try:
         cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
         result = subprocess.check_output(cmd, text=True).strip()
+
+        print(f"\n🔍 Git diff result:\n{result}")  # debug
         
         if not result:
             print("\n⚠️  No .md files changed in last commit")
             return
         
         files = result.split('\n')
+        print(f"\n📝 Files from git diff: {files}")  # debug
     except:
         print("\n⚠️  Git diff failed, processing all .md files")
         files = []
