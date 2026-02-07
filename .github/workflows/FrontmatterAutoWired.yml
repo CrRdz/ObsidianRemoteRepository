@@ -46,7 +46,6 @@ jobs:
             exit 0
           fi
           
-          git pull --rebase origin master
-          
+          git pull --rebase --autostash origin master
           git commit -m "chore: auto-add frontmatter [skip ci]"
           git push
