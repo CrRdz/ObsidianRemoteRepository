@@ -1,3 +1,10 @@
+---
+topic: Maven 笔记提交test
+created: 2026-02-07 12:35
+modified: 2026-02-07 14:26
+tags: [Java, Spring, MySQL, Maven, 私服]
+---
+
 - Maven是专门用于管理和构建Java项目的工具
 - 提供一套标准化的项目结构
 - 提供一套标准化的构建流程（编译，测试，打包，发布）
