@@ -39,13 +39,23 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          git add -A
-          
-          if git diff --staged --quiet; then
-            echo "No frontmatter changes"
+          # 检查是否有修改
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes detected"
             exit 0
           fi
           
+          # Pull 最新代码
           git pull --rebase --autostash origin master
+          
+          # pull 后再次 add
+          git add -A
+          
+          # 检查是否有需要提交的内容
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
           git commit -m "chore: auto-add frontmatter [skip ci]"
           git push
