@@ -19,55 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: master
-      
-      - name: Check and merge PR branch
-        id: check_branch
-        run: |
-          # 检查 PR 分支是否存在
-          if git ls-remote --exit-code --heads origin frontmatter-auto-update > /dev/null 2>&1; then
-            echo "branch_exists=true" >> $GITHUB_OUTPUT
-            echo "[INFO] Found existing PR branch"
-            
-            # Fetch PR 分支
-            git fetch origin frontmatter-auto-update:frontmatter-auto-update
-            
-            # 获取 PR 分支已修改的文件列表
-            PR_MODIFIED_FILES=$(git diff --name-only master frontmatter-auto-update | grep '\.md$' || echo "")
-            
-            if [ -n "$PR_MODIFIED_FILES" ]; then
-              echo "pr_modified_files<<EOF" >> $GITHUB_OUTPUT
-              echo "$PR_MODIFIED_FILES" >> $GITHUB_OUTPUT
-              echo "EOF" >> $GITHUB_OUTPUT
-              
-              echo "[INFO] Files already in PR:"
-              echo "$PR_MODIFIED_FILES"
-              
-              # ⭐ 关键：切换到 PR 分支并 merge master 的最新内容
-              git checkout frontmatter-auto-update
-              echo "[INFO] Checked out PR branch"
-              
-              # 合并 master 的最新内容（保留 PR 分支的 frontmatter 修改）
-              git merge origin/master -m "chore: merge latest master changes" || {
-                echo "[WARN] Merge conflict, using ours strategy for .md files"
-                # 如果有冲突，.md 文件保留 PR 分支的版本（已有 frontmatter）
-                git checkout --ours '*.md'
-                git add -A
-                git commit -m "chore: merge latest master changes (resolved conflicts)"
-              }
-              
-              echo "[INFO] Merged master into PR branch"
-            else
-              echo "[INFO] PR branch has no changes, starting fresh"
-              git checkout -b frontmatter-auto-update
-            fi
-          else
-            echo "branch_exists=false" >> $GITHUB_OUTPUT
-            echo "[INFO] No existing PR branch, will create new one"
-            
-            # 创建新分支（基于 master）
-            git checkout -b frontmatter-auto-update
-          fi
       
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -81,21 +32,20 @@ jobs:
       - name: Run Frontmatter AutoWired
         env:
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          PR_MODIFIED_FILES: ${{ steps.check_branch.outputs.pr_modified_files }}
         run: |
           python .github/scripts/frontmatter_autowired.py
       
       - name: Get file info
         id: info
         run: |
-          # 检查是否有新的修改
+          # 获取修改的文件列表
           CHANGED_FILES=$(git diff --name-only | grep '\.md$' || echo "")
-          
           if [ -n "$CHANGED_FILES" ]; then
             FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
             echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
             echo "has_changes=true" >> $GITHUB_OUTPUT
             
+            # 生成文件列表
             FILE_LIST=""
             while IFS= read -r file; do
               FILE_LIST="${FILE_LIST}- \`${file}\`\n"
@@ -104,41 +54,25 @@ jobs:
             echo "file_list<<EOF" >> $GITHUB_OUTPUT
             echo -e "$FILE_LIST" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
-            
-            echo "[INFO] Changed files:"
-            echo "$CHANGED_FILES"
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "[INFO] No changes detected"
           fi
       
-      - name: Commit and push to PR branch
+      - name: Create or Update Pull Request
         if: steps.info.outputs.has_changes == 'true'
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          git add -A
-          
-          git commit -m "chore: 自动更新 ${{ steps.info.outputs.file_count }} 个文件的 frontmatter
-
-          由 Frontmatter AutoWired 自动生成"
-          
-          # Push 到 PR 分支
-          git push origin frontmatter-auto-update
-          
-          echo "[SUCCESS] Pushed changes to PR branch"
-      
-      - name: Create Pull Request (if not exists)
-        if: steps.info.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists != 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: frontmatter-auto-update
-          base: master
+          delete-branch: false
           
-          title: 'chore: 自动更新 frontmatter 元数据'
-          
+          commit-message: |
+            chore: auto-add frontmatter for ${{ steps.info.outputs.file_count }} file(s)
+            
+            Generated by Frontmatter AutoWired
+            
+          title: 'Frontmatter 自动更新'
+                    
           body: |
             ## 概述
             
@@ -204,27 +138,5 @@ jobs:
             automated
             documentation
             chore
-      
-      - name: Update PR description (if exists)
-        if: steps.info.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true'
-        run: |
-          # 获取 PR 号
-          PR_NUMBER=$(gh pr list --head frontmatter-auto-update --json number --jq '.[0].number')
-          
-          if [ -n "$PR_NUMBER" ]; then
-            echo "[INFO] Updating PR #$PR_NUMBER"
-            
-            # 添加评论说明本次更新
-            gh pr comment $PR_NUMBER --body "## 📝 自动更新
-
-            **本次修改文件数：** ${{ steps.info.outputs.file_count }}
-
-            ${{ steps.info.outputs.file_list }}
-
-            **触发提交：** [\`${{ github.sha }}\`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
-            **更新时间：** ${{ github.event.head_commit.timestamp }}"
-            
-            echo "[SUCCESS] Added comment to PR #$PR_NUMBER"
-          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
