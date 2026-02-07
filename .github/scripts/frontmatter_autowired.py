@@ -400,27 +400,44 @@ def process_file(file_path: str) -> bool:
     except Exception as e:
         print(f"  ❌ Write error: {e}")
         return False
-
+        
 def main():
     print("=" * 70)
     print("🔧 Frontmatter AutoWired")
     print("=" * 70)
     
+    # 配置 Git 正确处理中文文件名
+    try:
+        subprocess.run(
+            ['git', 'config', 'core.quotepath', 'false'],
+            check=False,
+            capture_output=True
+        )
+    except:
+        pass  # 忽略配置失败
+    
     # 获取变更的 .md 文件
     try:
         cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
-        result = subprocess.check_output(cmd, text=True).strip()
-
-        print(f"\n🔍 Git diff result:\n{result}")  # debug
+        result = subprocess.check_output(
+            cmd, 
+            text=True, 
+            encoding='utf-8'  # 确保使用 UTF-8
+        ).strip()
+        
+        print(f"\n🔍 Git diff result:")
+        print(f"{result}")
         
         if not result:
             print("\n⚠️  No .md files changed in last commit")
             return
         
         files = result.split('\n')
-        print(f"\n📝 Files from git diff: {files}")  # debug
-    except:
-        print("\n⚠️  Git diff failed, processing all .md files")
+        print(f"\n📝 Files from git diff: {files}")
+        
+    except Exception as e:
+        print(f"\n❌ Git diff failed: {e}")
+        print("⚠️  Falling back to processing all .md files")
         files = []
         for root, dirs, filenames in os.walk('.'):
             for filename in filenames:
@@ -432,7 +449,8 @@ def main():
     files = [f for f in files if should_process_file(f)]
     
     if not files:
-        print("\n⚠️  No files to process")
+        print("\n⚠️  No files to process (after filtering)")
+        print(f"   Exclusion patterns: {EXCLUDE_PATTERNS}")
         return
     
     print(f"\n📊 Files to process: {len(files)}")
