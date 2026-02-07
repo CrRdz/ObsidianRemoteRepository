@@ -120,7 +120,16 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
 
 标签:"""
     
+    print(f"  [AI DEBUG] Starting AI tag generation")
+    print(f"  [AI DEBUG] API Base URL: {API_BASE_URL}")
+    print(f"  [AI DEBUG] Model: {MODEL}")
+    print(f"  [AI DEBUG] API Key present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
+    print(f"  [AI DEBUG] Topic: {topic}")
+    print(f"  [AI DEBUG] Content preview length: {len(preview)} chars")
+    
     try:
+        print(f"  [AI DEBUG] Sending request to API...")
+        
         response = client.chat.completions.create(
             model=MODEL,
             messages=[
@@ -134,26 +143,49 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
             max_tokens=60
         )
         
+        print(f"  [AI DEBUG] API response received")
+        print(f"  [AI DEBUG] Response ID: {response.id if hasattr(response, 'id') else 'N/A'}")
+        print(f"  [AI DEBUG] Model used: {response.model if hasattr(response, 'model') else 'N/A'}")
+        
         tags_str = response.choices[0].message.content.strip()
+        
+        print(f"  [AI DEBUG] Raw response: '{tags_str}'")
         
         # 清理格式
         tags_str = re.sub(r'^(标签|Tags?)[：:：\s]*', '', tags_str, flags=re.IGNORECASE)
         tags_str = tags_str.strip('[](){}「」《》""\'`')
         
+        print(f"  [AI DEBUG] After cleanup: '{tags_str}'")
+        
         # 分割标签
         tags = [t.strip() for t in re.split(r'[,，、;；]', tags_str) if t.strip()]
         
+        print(f"  [AI DEBUG] After split: {tags}")
+        
         # 过滤：长度 2-10，最多 5 个
         tags = [t for t in tags if 2 <= len(t) <= 10][:5]
+        
+        print(f"  [AI DEBUG] After filter: {tags}")
         
         if tags:
             print(f"  [AI] Generated tags: {tags}")
             return tags
         else:
+            print(f"  [AI DEBUG] Tags empty after filter, raising error")
             raise ValueError("AI returned empty tags")
     
     except Exception as e:
-        print(f"  [WARN] AI failed ({e}), using fallback")
+        print(f"  [AI ERROR] Exception occurred: {type(e).__name__}")
+        print(f"  [AI ERROR] Error message: {str(e)}")
+        
+        # 打印详细的错误堆栈
+        import traceback
+        print(f"  [AI ERROR] Full traceback:")
+        for line in traceback.format_exc().split('\n'):
+            if line.strip():
+                print(f"    {line}")
+        
+        print(f"  [WARN] AI failed, using fallback")
         return fallback_tags(topic, content, file_path)
 
 
@@ -239,7 +271,7 @@ def extract_technical_keywords(file_path: str, topic: str, content: str) -> list
 
 
 def match_tech_categories(keywords: list, content: str) -> list:
-    """匹配技术分���标签"""
+    """匹配技术分类标签"""
     
     categories = []
     
@@ -288,27 +320,36 @@ def fallback_tags(topic: str, content: str, file_path: str) -> list:
     """完善的兜底规则"""
     
     print(f"  [FALLBACK] Using rule-based extraction")
+    print(f"  [FALLBACK DEBUG] Topic: {topic}")
+    print(f"  [FALLBACK DEBUG] File path: {file_path}")
+    print(f"  [FALLBACK DEBUG] Content length: {len(content)} chars")
     
     # 1. 提取所有技术关键词
     keywords = extract_technical_keywords(file_path, topic, content)
+    print(f"  [FALLBACK DEBUG] Extracted keywords: {keywords[:10]}")
     
     # 2. 匹配技术分类
     categories = match_tech_categories(keywords, content)
+    print(f"  [FALLBACK DEBUG] Matched categories: {categories}")
     
     # 3. 组合 tags（分类优先）
     tags = []
     
     # 优先加分类标签
     tags.extend(categories[:3])
+    print(f"  [FALLBACK DEBUG] Tags after categories: {tags}")
     
     # 补充关键词（避免重复）
     for kw in keywords:
         if kw not in tags and len(tags) < 5:
             tags.append(kw)
     
+    print(f"  [FALLBACK DEBUG] Tags after keywords: {tags}")
+    
     # 4. 如果还是空，用文件名
     if not tags:
         tags = [topic]
+        print(f"  [FALLBACK DEBUG] No tags found, using topic")
     
     print(f"  [FALLBACK] Generated tags: {tags[:5]}")
     return tags[:5]
@@ -585,6 +626,42 @@ def get_changed_files():
         return []
 
 
+def test_api_connection():
+    """测试 API 连接"""
+    print("\n[DEBUG] Testing API connection...")
+    
+    api_key = os.environ.get('OPENAI_API_KEY')
+    
+    if not api_key:
+        print("[ERROR] OPENAI_API_KEY not set!")
+        return False
+    
+    print(f"[DEBUG] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
+    print(f"[DEBUG] API Base URL: {API_BASE_URL}")
+    print(f"[DEBUG] Model: {MODEL}")
+    
+    try:
+        # 简单的测试请求
+        print("[DEBUG] Sending test request...")
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "user", "content": "测试连接，请回复'OK'"}
+            ],
+            max_tokens=10
+        )
+        
+        result = response.choices[0].message.content
+        print(f"[DEBUG] Test response: {result}")
+        print("[SUCCESS] API connection successful!")
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR] API connection failed: {type(e).__name__}")
+        print(f"[ERROR] Error message: {str(e)}")
+        return False
+
+
 def main():
     print("=" * 70)
     print("Frontmatter AutoWired")
@@ -599,6 +676,9 @@ def main():
         )
     except:
         pass
+    
+    # 测试 API 连接
+    test_api_connection()
     
     # 检查是否强制重建（从环境变量）
     force_rebuild = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
