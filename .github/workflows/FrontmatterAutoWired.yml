@@ -48,4 +48,5 @@ jobs:
           fi
           
           git commit -m "chore: auto-add frontmatter [skip ci]"
-          git push
+          git pull --rebase origin master
+          git push          
