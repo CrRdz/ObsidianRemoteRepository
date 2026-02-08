@@ -230,6 +230,25 @@ CAMEL_CASE_RE = re.compile(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b')
 ACRONYM_RE = re.compile(r'\b[A-Z]{2,6}\b')
 CAPITALIZED_RE = re.compile(r'\b[A-Z][a-z]{2,12}\b')
 CHINESE_WORD_RE = re.compile(r'[\u4e00-\u9fa5]{2,6}')
+PATH_EXTRACTION_RE = re.compile(r'[A-Z][a-z]+|[A-Z]{2,}')
+
+# Pre-compiled tech category patterns for matching
+TECH_CATEGORY_PATTERNS = {
+    'Java': re.compile(r'\b(?:java|jvm|spring|maven|mybatis)\b', re.IGNORECASE),
+    'Python': re.compile(r'\b(?:python|django|flask|numpy|pandas)\b', re.IGNORECASE),
+    'JavaScript': re.compile(r'\b(?:javascript|js|node|vue|react|typescript)\b', re.IGNORECASE),
+    'Spring': re.compile(r'\b(?:spring|springboot|ioc|aop|mvc)\b', re.IGNORECASE),
+    'Vue': re.compile(r'\b(?:vue|vuex|router|响应式|composition)\b', re.IGNORECASE),
+    'React': re.compile(r'\b(?:react|jsx|hooks|redux)\b', re.IGNORECASE),
+    'MySQL': re.compile(r'\b(?:mysql|sql|数据库|select|join)\b', re.IGNORECASE),
+    'Redis': re.compile(r'\b(?:redis|缓存|nosql|key-value)\b', re.IGNORECASE),
+    'Git': re.compile(r'\b(?:git|github|commit|branch|版本控制)\b', re.IGNORECASE),
+    'Docker': re.compile(r'\b(?:docker|容器|dockerfile|compose)\b', re.IGNORECASE),
+    'Linux': re.compile(r'\b(?:linux|shell|bash|ubuntu|centos)\b', re.IGNORECASE),
+    'API': re.compile(r'\b(?:api|rest|restful|http|接口)\b', re.IGNORECASE),
+    '算法': re.compile(r'\b(?:算法|algorithm|时间复杂度|动态规划|排序)\b', re.IGNORECASE),
+    '设计模式': re.compile(r'\b(?:设计模式|pattern|单例|工厂|观察者)\b', re.IGNORECASE),
+}
 
 def extract_keywords_from_content(content: str, top_n: int = 15) -> list:
     """从内容中提取高频技术关键词"""
@@ -261,30 +280,11 @@ def extract_keywords_from_content(content: str, top_n: int = 15) -> list:
 
 def match_tech_categories(keywords: list, content: str) -> list:
     """匹配技术分类标签"""
-    tech_map = {
-        'Java': ['java', 'jvm', 'spring', 'maven', 'mybatis'],
-        'Python': ['python', 'django', 'flask', 'numpy', 'pandas'],
-        'JavaScript': ['javascript', 'js', 'node', 'vue', 'react', 'typescript'],
-        'Spring': ['spring', 'springboot', 'ioc', 'aop', 'mvc'],
-        'Vue': ['vue', 'vuex', 'router', '响应式', 'composition'],
-        'React': ['react', 'jsx', 'hooks', 'redux'],
-        'MySQL': ['mysql', 'sql', '数据库', 'select', 'join'],
-        'Redis': ['redis', '缓存', 'nosql', 'key-value'],
-        'Git': ['git', 'github', 'commit', 'branch', '版本控制'],
-        'Docker': ['docker', '容器', 'dockerfile', 'compose'],
-        'Linux': ['linux', 'shell', 'bash', 'ubuntu', 'centos'],
-        'API': ['api', 'rest', 'restful', 'http', '接口'],
-        '算法': ['算法', 'algorithm', '时间复杂度', '动态规划', '排序'],
-        '设计模式': ['设计模式', 'pattern', '单例', '工厂', '观察者'],
-    }
-
     all_text = (' '.join(keywords) + ' ' + content).lower()
     categories = []
     
-    # Build compiled pattern for each category once
-    for category, patterns in tech_map.items():
-        # Use word boundaries for better matching
-        pattern = re.compile(r'\b(?:' + '|'.join(re.escape(p) for p in patterns) + r')\b', re.IGNORECASE)
+    # Use pre-compiled patterns for each category
+    for category, pattern in TECH_CATEGORY_PATTERNS.items():
         if pattern.search(all_text):
             categories.append(category)
     
@@ -296,14 +296,12 @@ def fallback_tags(topic: str, content: str, file_path: str) -> list:
     print(f"  [FALLBACK] Rule-based extraction for: {topic}")
 
     keywords = []
-    # Pre-compiled patterns for fallback (reuse from extract_keywords_from_content)
-    path_pattern = re.compile(r'[A-Z][a-z]+|[A-Z]{2,}')
     
     # 从路径提取
     for part in file_path.split('/')[:-1]:
-        keywords.extend(path_pattern.findall(part))
+        keywords.extend(PATH_EXTRACTION_RE.findall(part))
     # 从标题提取
-    keywords.extend(path_pattern.findall(topic))
+    keywords.extend(PATH_EXTRACTION_RE.findall(topic))
     # 从内容提取
     keywords.extend(extract_keywords_from_content(content, top_n=10))
 
