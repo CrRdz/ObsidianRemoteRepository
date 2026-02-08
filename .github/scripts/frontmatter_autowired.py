@@ -15,6 +15,15 @@ API_BASE_URL = "https://api.deepseek.com"
 MODEL = "deepseek-chat"
 CONTEXT_LENGTH = 200  # 内容长度阈值，用于判断是否调用AI生成标签
 
+# 支持的完成标记（用于判断笔记是否完成）
+COMPLETION_MARKERS = [
+    r'@done',
+    r'@endnote',
+    r'//==end==',
+    r'==end==',
+    r'\[end\]',
+]
+
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
     base_url=API_BASE_URL,
@@ -86,17 +95,9 @@ def has_completion_marker(body: str) -> tuple:
     - found: 是否找到完成标记
     - cleaned_body: 移除标记后的正文
     """
-    # 定义完成标记的正则模式（大小写不敏感）
-    markers = [
-        r'@done',
-        r'@endnote',
-        r'//==end==',
-        r'==end==',
-        r'\[end\]',
-    ]
-    
+    # 使用模块级别定义的完成标记列表
     # 构建匹配模式：标记出现在结尾，且其后只有空白字符
-    for marker in markers:
+    for marker in COMPLETION_MARKERS:
         # 使用 re.IGNORECASE 进行大小写不敏感匹配
         pattern = r'\s*' + marker + r'\s*$'
         match = re.search(pattern, body, re.IGNORECASE)
