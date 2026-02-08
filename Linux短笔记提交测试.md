@@ -1,10 +1,14 @@
 ---
 topic: Linux短笔记提交测试
 created: 2026-02-08 22:49
-modified: 2026-02-08 22:49
-status: draft
+modified: 2026-02-08 22:53
+status: complete
 tags:
-- 待分类
+- Linux
+- 虚拟化
+- VMware
+- FinalShell
+- 命令行
 ---
 
 1-1
