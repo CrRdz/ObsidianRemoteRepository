@@ -1,13 +1,13 @@
 ---
-topic: Linux 笔记提交测试1-1
-created: 2026-02-08 15:25
-modified: 2026-02-08 15:25
+topic: Linux 笔记提交测试1-2
+created: 2026-02-08 15:44
+modified: 2026-02-08 15:44
 tags:
 - Linux
 - 虚拟机
-- 远程连接
+- VMware
 - FinalShell
-- 命令行
+- 远程连接
 ---
 
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
