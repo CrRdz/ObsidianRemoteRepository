@@ -1,7 +1,7 @@
 ---
 topic: Maven提交测试1-2
 created: 2026-02-08 15:54
-modified: 2026-02-08 15:54
+modified: 2026-02-08 07:55
 tags:
 - Maven
 - Java
@@ -9,7 +9,6 @@ tags:
 - 依赖管理
 - 构建工具
 ---
-
 
 - Maven是专门用于管理和构建Java项目的工具
 - 提供一套标准化的项目结构
