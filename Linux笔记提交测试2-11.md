@@ -1,3 +1,15 @@
+---
+topic: Linux笔记提交测试2-11
+created: 2026-02-08 14:52
+modified: 2026-02-08 14:52
+tags:
+- Linux
+- 虚拟化
+- VMware
+- FinalShell
+- 命令行
+---
+
 
 
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
