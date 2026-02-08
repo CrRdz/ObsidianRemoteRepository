@@ -38,6 +38,8 @@ EXCLUDE_PATTERN_COMPILED = re.compile('|'.join(f'(?:{p})' for p in EXCLUDE_PATTE
 
 # Cache for git times to avoid redundant git commands
 # Using dict instead of lru_cache to allow tuple keys
+# Note: Python 3.7+ dicts maintain insertion order, so first 100 entries are oldest
+# For GitHub Actions workflow (single run per push), cache won't grow unbounded
 _git_time_cache = {}
 _GIT_CACHE_MAX_SIZE = 1000  # Limit cache size for long-running processes
 
@@ -243,10 +245,10 @@ CHINESE_WORD_RE = re.compile(r'[\u4e00-\u9fa5]{2,6}')
 PATH_EXTRACTION_RE = re.compile(r'[A-Z][a-z]+|[A-Z]{2,}')
 
 # Pre-compiled tech category patterns for matching
-# Note: Categories are intentionally separated to allow fine-grained tagging
-# (e.g., 'Java' for general Java content, 'Spring' specifically for Spring framework)
+# Note: Categories are designed to be mutually exclusive where possible to avoid redundant tags
+# Framework-specific terms (Spring, Vue, React) are separated from language tags (Java, JavaScript)
 TECH_CATEGORY_PATTERNS = {
-    'Java': re.compile(r'\b(?:java|jvm|maven|mybatis)\b', re.IGNORECASE),  # Removed 'spring' to avoid overlap
+    'Java': re.compile(r'\b(?:java|jvm|maven|mybatis)\b', re.IGNORECASE),
     'Python': re.compile(r'\b(?:python|django|flask|numpy|pandas)\b', re.IGNORECASE),
     'JavaScript': re.compile(r'\b(?:javascript|js|node|vue|react|typescript)\b', re.IGNORECASE),
     'Spring': re.compile(r'\b(?:spring|springboot|ioc|aop|mvc)\b', re.IGNORECASE),
