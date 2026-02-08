@@ -26,22 +26,50 @@ jobs:
           fetch-depth: 0
           ref: master
       
+      - name: Check if should skip
+        id: skip_check
+        run: |
+          COMMIT_AUTHOR=$(git log -1 --format='%an' HEAD)
+          COMMIT_MSG=$(git log -1 --format='%s' HEAD)
+          
+          echo "Commit author: $COMMIT_AUTHOR"
+          echo "Commit message: $COMMIT_MSG"
+          
+          SHOULD_SKIP=false
+          
+          if [[ "$COMMIT_AUTHOR" == "github-actions[bot]" ]]; then
+            echo "Skipping: commit by bot"
+            SHOULD_SKIP=true
+          elif [[ "$COMMIT_MSG" == *"auto-add frontmatter"* ]]; then
+            echo "Skipping: frontmatter auto-commit"
+            SHOULD_SKIP=true
+          elif [[ "$COMMIT_MSG" == "Merge pull request"* && "$COMMIT_MSG" == *"frontmatter-auto-update"* ]]; then
+            echo "Skipping: merge of frontmatter PR"
+            SHOULD_SKIP=true
+          fi
+          
+          echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
+      
       - name: Setup Python
+        if: steps.skip_check.outputs.should_skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
       - name: Install dependencies
+        if: steps.skip_check.outputs.should_skip != 'true'
         run: |
           pip install openai python-frontmatter pyyaml
       
       - name: Run Frontmatter AutoWired
+        if: steps.skip_check.outputs.should_skip != 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           python .github/scripts/frontmatter_autowired.py
       
       - name: Detect all changes
+        if: steps.skip_check.outputs.should_skip != 'true'
         id: info
         run: |
           echo "=== Detecting all changes ==="
@@ -83,7 +111,7 @@ jobs:
           fi
       
       - name: Commit and push to PR branch
-        if: steps.info.outputs.has_changes == 'true'
+        if: steps.skip_check.outputs.should_skip != 'true' && steps.info.outputs.has_changes == 'true'
         id: push_changes
         run: |
           git config user.name "github-actions[bot]"
@@ -137,7 +165,7 @@ jobs:
           fi
       
       - name: Create or update PR
-        if: steps.info.outputs.has_changes == 'true' && steps.push_changes.outputs.has_new_commit == 'true'
+        if: steps.skip_check.outputs.should_skip != 'true' && steps.info.outputs.has_changes == 'true' && steps.push_changes.outputs.has_new_commit == 'true'
         run: |
           # 检查是否已有 open 的 PR
           EXISTING_PR=$(gh pr list --head frontmatter-auto-update --base master --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
