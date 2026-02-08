@@ -29,15 +29,21 @@ EXCLUDE_PATTERNS = [
     r'(?:^|/)Reviews/',
 ]
 
+# Pre-compiled regex for performance
+EXCLUDE_PATTERN_COMPILED = re.compile('|'.join(f'(?:{p})' for p in EXCLUDE_PATTERNS), re.IGNORECASE)
+
 
 # ── 工具函数 ──────────────────────────────────────────────────────────────────
+
+# Cache for git times to avoid redundant git commands
+_git_time_cache = {}
 
 def should_process_file(file_path: str) -> bool:
     """判断文件是否需要处理"""
     if not file_path.endswith('.md'):
         return False
     file_lower = file_path.lower()
-    return not any(re.search(p, file_lower, re.IGNORECASE) for p in EXCLUDE_PATTERNS)
+    return not EXCLUDE_PATTERN_COMPILED.search(file_lower)
 
 
 def extract_topic(file_path: str) -> str:
@@ -48,16 +54,26 @@ def extract_topic(file_path: str) -> str:
 
 def _git_log_time(file_path: str, fmt_args: list) -> str:
     """通用的 git log 时间获取"""
+    # Check cache first
+    cache_key = (file_path, tuple(fmt_args))
+    if cache_key in _git_time_cache:
+        return _git_time_cache[cache_key]
+    
     try:
         cmd = ['git', 'log'] + fmt_args + ['--', file_path]
         result = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
         if result:
             line = result.split('\n')[0]
             dt = datetime.fromisoformat(line.replace('Z', '+00:00'))
-            return dt.strftime('%Y-%m-%d %H:%M')
+            time_str = dt.strftime('%Y-%m-%d %H:%M')
+            _git_time_cache[cache_key] = time_str
+            return time_str
     except Exception as e:
         print(f"  [WARN] Git log failed for {file_path}: {e}")
-    return datetime.now().strftime('%Y-%m-%d %H:%M')
+    
+    fallback_time = datetime.now().strftime('%Y-%m-%d %H:%M')
+    _git_time_cache[cache_key] = fallback_time
+    return fallback_time
 
 
 def get_created_time(file_path: str) -> str:
@@ -209,16 +225,22 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
 
 # ── 兜底标签生成 ──────────────────────────────────────────────────────────────
 
+# Pre-compiled regex patterns for keyword extraction
+CAMEL_CASE_RE = re.compile(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b')
+ACRONYM_RE = re.compile(r'\b[A-Z]{2,6}\b')
+CAPITALIZED_RE = re.compile(r'\b[A-Z][a-z]{2,12}\b')
+CHINESE_WORD_RE = re.compile(r'[\u4e00-\u9fa5]{2,6}')
+
 def extract_keywords_from_content(content: str, top_n: int = 15) -> list:
     """从内容中提取高频技术关键词"""
     text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
     text = re.sub(r'`[^`]+`', '', text)
 
     keywords = []
-    keywords.extend(re.findall(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b', text))  # CamelCase
-    keywords.extend(re.findall(r'\b[A-Z]{2,6}\b', text))                    # 缩写
-    keywords.extend(re.findall(r'\b[A-Z][a-z]{2,12}\b', text))              # 首字母大写
-    keywords.extend(re.findall(r'[\u4e00-\u9fa5]{2,6}', text))              # 中文词
+    keywords.extend(CAMEL_CASE_RE.findall(text))  # CamelCase
+    keywords.extend(ACRONYM_RE.findall(text))     # 缩写
+    keywords.extend(CAPITALIZED_RE.findall(text)) # 首字母大写
+    keywords.extend(CHINESE_WORD_RE.findall(text))# 中文词
 
     word_freq = Counter(keywords)
 
@@ -258,9 +280,14 @@ def match_tech_categories(keywords: list, content: str) -> list:
 
     all_text = (' '.join(keywords) + ' ' + content).lower()
     categories = []
+    
+    # Build compiled pattern for each category once
     for category, patterns in tech_map.items():
-        if any(p in all_text for p in patterns):
+        # Use word boundaries for better matching
+        pattern = re.compile(r'\b(?:' + '|'.join(re.escape(p) for p in patterns) + r')\b', re.IGNORECASE)
+        if pattern.search(all_text):
             categories.append(category)
+    
     return categories
 
 
@@ -269,11 +296,14 @@ def fallback_tags(topic: str, content: str, file_path: str) -> list:
     print(f"  [FALLBACK] Rule-based extraction for: {topic}")
 
     keywords = []
+    # Pre-compiled patterns for fallback (reuse from extract_keywords_from_content)
+    path_pattern = re.compile(r'[A-Z][a-z]+|[A-Z]{2,}')
+    
     # 从路径提取
     for part in file_path.split('/')[:-1]:
-        keywords.extend(re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', part))
+        keywords.extend(path_pattern.findall(part))
     # 从标题提取
-    keywords.extend(re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', topic))
+    keywords.extend(path_pattern.findall(topic))
     # 从内容提取
     keywords.extend(extract_keywords_from_content(content, top_n=10))
 
