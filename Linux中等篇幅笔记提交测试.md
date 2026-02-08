@@ -1,14 +1,11 @@
 ---
 topic: Linux中等篇幅笔记提交测试
+author: Crzhu
 created: 2026-02-08 23:03
-modified: 2026-02-09 00:14
-status: complete
+modified: 2026-02-09 00:48
+status: draft
 tags:
-- Linux
-- 内核
-- 虚拟化
-- VMware
-- CentOS
+- 待分类
 ---
 
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
