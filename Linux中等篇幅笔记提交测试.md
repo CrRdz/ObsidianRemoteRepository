@@ -1,10 +1,14 @@
 ---
 topic: Linux中等篇幅笔记提交测试
 created: 2026-02-08 23:03
-modified: 2026-02-09 00:13
-status: draft
+modified: 2026-02-09 00:14
+status: complete
 tags:
-- 待分类
+- Linux
+- 内核
+- 虚拟化
+- VMware
+- CentOS
 ---
 
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
@@ -24,4 +28,3 @@ tags:
 
 - 对于操作系统的使用，有2种使用形式：图形化页面使用操作系统/以命令的形式使用操作系统。不论是Windows还是Linux亦或是MacOS系统，都是支持这两种使用形式。
 - 图形化：使用操作系统提供
-@done
