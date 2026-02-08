@@ -110,7 +110,7 @@ def parse_frontmatter_safe(content: str) -> tuple:
 
 def build_frontmatter_str(data: dict) -> str:
     """从字典构建标准 YAML frontmatter"""
-    order = ['topic', 'created', 'modified', 'tags']
+    order = ['topic', 'created', 'modified', 'status', 'tags']
     ordered_data = {}
 
     for key in order:
@@ -305,22 +305,87 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
     """
     更新或添加 frontmatter。
     返回 (new_content, status) ，status 为 'added' / 'updated' / 'rebuilt' / 'unchanged'
+    
+    状态逻辑：
+    - 内容长度 < 200字符：设置为 draft，标签为 [待分类]
+    - 内容长度 ≥ 200字符：
+      - 如果现有状态为 draft：升级为 complete 并重新生成标签
+      - 如果现有状态为 complete 或无状态：设置为 complete，只更新 modified
     """
     existing_fm, body = parse_frontmatter_safe(content)
-
+    
+    # 计算内容长度（去除空白字符后）
+    content_length = len(body.strip())
+    
     if existing_fm and not force_rebuild:
-        # 已有 frontmatter，仅更新 modified 时间
+        # 已有 frontmatter
         new_modified = get_modified_time(file_path)
         old_modified = str(existing_fm.get('modified', ''))
-
-        if old_modified == new_modified:
-            return (content, 'unchanged')
-
-        print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
-        existing_fm['modified'] = new_modified
-
-        new_content = build_frontmatter_str(existing_fm) + body
-        return (new_content, 'updated')
+        old_status = existing_fm.get('status', 'complete')  # 默认为 complete
+        
+        # 判断内容是否充足
+        is_sufficient = content_length >= 200
+        
+        if is_sufficient and old_status == 'draft':
+            # 内容充足且之前是 draft，升级为 complete 并重新生成标签
+            print(f"  [UPGRADE] Content sufficient ({content_length} chars), upgrading draft to complete")
+            topic = existing_fm.get('topic', extract_topic(file_path))
+            created = existing_fm.get('created', get_created_time(file_path))
+            
+            # 确保 created 是字符串
+            if not isinstance(created, str):
+                created = str(created)
+            
+            print(f"  [INFO] Regenerating tags for upgraded note")
+            tags = generate_tags_by_ai(topic, body, file_path)
+            
+            data = {
+                'topic': topic,
+                'created': created,
+                'modified': new_modified,
+                'status': 'complete',
+                'tags': tags,
+            }
+            
+            new_content = build_frontmatter_str(data) + body
+            return (new_content, 'updated')
+        
+        elif not is_sufficient and old_status != 'draft':
+            # 内容不足但状态不是 draft，降级为 draft
+            print(f"  [DOWNGRADE] Content insufficient ({content_length} chars), setting to draft")
+            existing_fm['modified'] = new_modified
+            existing_fm['status'] = 'draft'
+            existing_fm['tags'] = ['待分类']
+            
+            new_content = build_frontmatter_str(existing_fm) + body
+            return (new_content, 'updated')
+        
+        elif not is_sufficient and old_status == 'draft':
+            # 内容仍然不足，保持 draft 状态
+            if old_modified == new_modified:
+                return (content, 'unchanged')
+            
+            print(f"  [UPDATE] Content still insufficient ({content_length} chars), keeping draft status")
+            existing_fm['modified'] = new_modified
+            existing_fm['status'] = 'draft'
+            existing_fm['tags'] = ['待分类']
+            
+            new_content = build_frontmatter_str(existing_fm) + body
+            return (new_content, 'updated')
+        
+        else:
+            # 内容充足且状态为 complete，只更新 modified
+            if old_modified == new_modified:
+                return (content, 'unchanged')
+            
+            print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
+            existing_fm['modified'] = new_modified
+            # 确保 status 字段存在
+            if 'status' not in existing_fm:
+                existing_fm['status'] = 'complete'
+            
+            new_content = build_frontmatter_str(existing_fm) + body
+            return (new_content, 'updated')
 
     else:
         # 新建或强制重建
@@ -338,19 +403,32 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
         print(f"  [INFO] Topic: {topic}")
         print(f"  [INFO] Created: {created}")
         print(f"  [INFO] Modified: {modified}")
-
-        tags = generate_tags_by_ai(topic, body, file_path)
+        
+        # 判断内容是否充足
+        is_sufficient = content_length >= 200
+        
+        if is_sufficient:
+            # 内容充足，使用 AI 生成标签
+            print(f"  [INFO] Content sufficient ({content_length} chars), generating tags")
+            tags = generate_tags_by_ai(topic, body, file_path)
+            status = 'complete'
+        else:
+            # 内容不足，设为 draft
+            print(f"  [INFO] Content insufficient ({content_length} chars), setting as draft")
+            tags = ['待分类']
+            status = 'draft'
 
         data = {
             'topic': topic,
             'created': created,
             'modified': modified,
+            'status': status,
             'tags': tags,
         }
 
         new_content = build_frontmatter_str(data) + body
-        status = 'rebuilt' if existing_fm else 'added'
-        return (new_content, status)
+        result_status = 'rebuilt' if existing_fm else 'added'
+        return (new_content, result_status)
 
 
 def process_file(file_path: str, force_rebuild: bool = False) -> str:
