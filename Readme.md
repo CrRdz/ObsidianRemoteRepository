@@ -11,9 +11,9 @@
 
 <!-- STATS START -->
 <p align="center">
-  <img src="https://img.shields.io/badge/Notes-70-2ea44f?style=flat-square" />
-  <img src="https://img.shields.io/badge/Words-198.5k-007ec6?style=flat-square" />
-  <img src="https://img.shields.io/badge/Last_Update-2026--02--09%2000%3A25-critical?style=flat-square" />
+  <img src="https://img.shields.io/badge/Notes-73-2ea44f?style=flat-square" />
+  <img src="https://img.shields.io/badge/Words-198.8k-007ec6?style=flat-square" />
+  <img src="https://img.shields.io/badge/Last_Update-2026--02--09%2000%3A45-critical?style=flat-square" />
 </p>
 <p align="center">
   <img src="Assets/heatmap.svg" alt="2026 Contribution Heatmap" />
