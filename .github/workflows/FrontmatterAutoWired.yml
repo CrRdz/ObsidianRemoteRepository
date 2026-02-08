@@ -35,89 +35,9 @@ jobs:
         run: |
           pip install openai python-frontmatter pyyaml
       
-      # 核心修复：将 PR 分支中已有的 frontmatter 改动合并到当前工作区
-      - name: Restore PR branch changes
-        id: pr_restore
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 检查是否有已打开的 PR
-          PR_NUMBER=$(gh pr list --head frontmatter-auto-update --base master --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
-          
-          if [ -n "$PR_NUMBER" ]; then
-            echo "Found open PR #$PR_NUMBER"
-            echo "has_existing_pr=true" >> $GITHUB_OUTPUT
-            
-            # 拉取 PR 分支，避免使用 exit 0
-            if git fetch origin frontmatter-auto-update 2>/dev/null; then
-              echo "PR branch fetched successfully"
-              
-              # 使用 merge-base 显式确定比较基准
-              MERGE_BASE=$(git merge-base origin/master origin/frontmatter-auto-update 2>/dev/null || echo "")
-              
-              if [ -n "$MERGE_BASE" ]; then
-                echo "Merge base found: $MERGE_BASE"
-                PR_FILES=$(git diff --name-only "$MERGE_BASE" origin/frontmatter-auto-update 2>/dev/null | grep '\.md$' || true)
-              else
-                echo "No merge base, using two-dot diff"
-                PR_FILES=$(git diff --name-only origin/master origin/frontmatter-auto-update 2>/dev/null | grep '\.md$' || true)
-              fi
-              
-              if [ -n "$PR_FILES" ]; then
-                FILE_COUNT=$(echo "$PR_FILES" | wc -l | tr -d ' ')
-                echo "Files already processed in PR ($FILE_COUNT):"
-                echo "$PR_FILES" | sed 's/^/  - /'
-                
-                RESTORED_COUNT=0
-                # 将 PR 分支中已处理的文件逐个 checkout 到当前工作区
-                while IFS= read -r file; do
-                  [ -z "$file" ] && continue
-                  if git show "origin/frontmatter-auto-update:$file" > /dev/null 2>&1; then
-                    # 确保目录存在
-                    mkdir -p "$(dirname "$file")"
-                    git show "origin/frontmatter-auto-update:$file" > "$file"
-                    echo "  ✓ Restored: $file"
-                    RESTORED_COUNT=$((RESTORED_COUNT + 1))
-                  fi
-                done <<< "$PR_FILES"
-                
-                echo "Successfully restored $RESTORED_COUNT file(s)"
-                
-                echo "PR_RESTORED_FILES<<EOF" >> $GITHUB_ENV
-                echo "$PR_FILES" >> $GITHUB_ENV
-                echo "EOF" >> $GITHUB_ENV
-              else
-                echo "No .md files found in PR branch"
-              fi
-            else
-              echo "PR branch not found remotely, treating as new"
-              echo "has_existing_pr=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "No open PR found"
-            echo "has_existing_pr=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Debug workspace state
-        run: |
-          echo "=== Files different from HEAD ==="
-          git diff --name-only HEAD 2>/dev/null | grep '\.md$' || echo "(none)"
-          echo ""
-          echo "=== Untracked .md files ==="
-          git ls-files --others --exclude-standard 2>/dev/null | grep '\.md$' || echo "(none)"
-          echo ""
-          echo "=== PR_RESTORED_FILES env ==="
-          echo "${PR_RESTORED_FILES:-(empty)}"
-        env:
-          PR_RESTORED_FILES: ${{ env.PR_RESTORED_FILES }}
-      
       - name: Run Frontmatter AutoWired
         env:
           OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          PR_RESTORED_FILES: ${{ env.PR_RESTORED_FILES }}
         run: |
           python .github/scripts/frontmatter_autowired.py
       
@@ -166,23 +86,87 @@ jobs:
             echo "No changes detected"
           fi
       
-      - name: Create or Update Pull Request
+      - name: Commit and push to PR branch
         if: steps.info.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: frontmatter-auto-update
-          delete-branch: true
-          base: master
+        id: push_changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          commit-message: |
-            chore: auto-update frontmatter for ${{ steps.info.outputs.file_count }} file(s)
-            
-            Trigger: ${{ github.sha }}
-            
-          title: 'Frontmatter 自动更新'
+          # 1. 保存 Python 脚本修改后的文件（使用 git stash）
+          git add -A '*.md'
+          git stash --include-untracked
           
-          body: |
+          # 2. 切换到 PR 分支
+          BRANCH_EXISTS=$(git ls-remote --heads origin frontmatter-auto-update | wc -l | tr -d ' ')
+          
+          if [ "$BRANCH_EXISTS" -gt 0 ]; then
+            echo "Checking out existing PR branch..."
+            git fetch origin frontmatter-auto-update
+            git checkout frontmatter-auto-update
+            
+            # 合并 master 的最新变更到 PR 分支
+            git merge origin/master -m "Merge master into frontmatter-auto-update" --no-edit || {
+              echo "Auto-merge failed, resolving by keeping master's version for conflicts"
+              git checkout --theirs .
+              git add .
+              git commit -m "Merge master (resolve conflicts with master's version)" --no-edit || true
+            }
+          else
+            echo "Creating new PR branch from master..."
+            git checkout -b frontmatter-auto-update origin/master
+          fi
+          
+          # 3. 应用 stash（把 Python 脚本的修改恢复到 PR 分支上）
+          git stash pop || {
+            echo "Stash pop had conflicts, resolving..."
+            git checkout --theirs . 2>/dev/null || true
+            git add .
+          }
+          
+          # 4. 提交变更
+          git add -A '*.md'
+          
+          # 检查是否有变更需要提交
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "has_new_commit=false" >> $GITHUB_OUTPUT
+          else
+            CHANGED_COUNT=$(git diff --cached --name-only | grep '\.md$' | wc -l | tr -d ' ')
+            git commit -m "chore: auto-add frontmatter for ${CHANGED_COUNT} file(s)" \
+                       -m "" \
+                       -m "Trigger: ${{ github.sha }}"
+            
+            # 5. Push（普通 push，不是 force push！）
+            git push origin frontmatter-auto-update
+            echo "has_new_commit=true" >> $GITHUB_OUTPUT
+            echo "Successfully pushed to frontmatter-auto-update branch"
+          fi
+      
+      - name: Create or update PR
+        if: steps.info.outputs.has_changes == 'true' && steps.push_changes.outputs.has_new_commit == 'true'
+        run: |
+          # 检查是否已有 open 的 PR
+          EXISTING_PR=$(gh pr list --head frontmatter-auto-update --base master --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+          
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Updating existing PR #$EXISTING_PR body..."
+            
+            # 获取 PR 分支相对于 master 的所有变更文件
+            ALL_FILES=$(git diff --name-only origin/master...origin/frontmatter-auto-update | grep '\.md$' || echo "")
+            TOTAL_COUNT=0
+            FILE_LIST=""
+            
+            if [ -n "$ALL_FILES" ]; then
+              TOTAL_COUNT=$(echo "$ALL_FILES" | wc -l | tr -d ' ')
+              while IFS= read -r file; do
+                [ -z "$file" ] && continue
+                FILE_LIST="${FILE_LIST}- \`${file}\`"$'\n'
+              done <<< "$ALL_FILES"
+            fi
+            
+            # 使用临时文件存储 PR body
+            cat > /tmp/pr_body.md << 'EOF_BODY'
             ## 概述
             
             本 PR 使用 AI 自动为 Markdown 文件生成或更新 frontmatter 元数据。
@@ -193,9 +177,9 @@ jobs:
             
             ## 累计变更文件
             
-            **总文件数:** ${{ steps.info.outputs.file_count }}
+            **总文件数:** TOTAL_COUNT_PLACEHOLDER
             
-            ${{ steps.info.outputs.file_list }}
+            FILE_LIST_PLACEHOLDER
             
             ---
             
@@ -215,7 +199,82 @@ jobs:
             
             - **最后触发提交:** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
             - **最后更新时间:** ${{ github.event.head_commit.timestamp }}
+            EOF_BODY
             
-          labels: |
-            automated
-            documentation
+            # 替换占位符
+            sed -i "s/TOTAL_COUNT_PLACEHOLDER/$TOTAL_COUNT/" /tmp/pr_body.md
+            # 使用 perl 来处理换行符替换
+            FILE_LIST_ESCAPED=$(echo "$FILE_LIST" | sed 's/[&/\]/\\&/g')
+            perl -i -pe "s/FILE_LIST_PLACEHOLDER/$FILE_LIST_ESCAPED/" /tmp/pr_body.md
+            
+            gh pr edit "$EXISTING_PR" --body-file /tmp/pr_body.md
+            echo "Updated PR #$EXISTING_PR"
+          else
+            echo "Creating new PR..."
+            
+            # 获取所有变更文件
+            ALL_FILES=$(git diff --name-only origin/master...origin/frontmatter-auto-update | grep '\.md$' || echo "")
+            TOTAL_COUNT=0
+            FILE_LIST=""
+            
+            if [ -n "$ALL_FILES" ]; then
+              TOTAL_COUNT=$(echo "$ALL_FILES" | wc -l | tr -d ' ')
+              while IFS= read -r file; do
+                [ -z "$file" ] && continue
+                FILE_LIST="${FILE_LIST}- \`${file}\`"$'\n'
+              done <<< "$ALL_FILES"
+            fi
+            
+            # 使用临时文件存储 PR body
+            cat > /tmp/pr_body.md << 'EOF_BODY'
+            ## 概述
+            
+            本 PR 使用 AI 自动为 Markdown 文件生成或更新 frontmatter 元数据。
+            
+            **注意:** 本 PR 采用持续更新模式。每次向 master 分支推送 `.md` 文件时，新的变更会自动追加到此 PR。
+            
+            ---
+            
+            ## 累计变更文件
+            
+            **总文件数:** TOTAL_COUNT_PLACEHOLDER
+            
+            FILE_LIST_PLACEHOLDER
+            
+            ---
+            
+            ## 审阅检查项
+            
+            合并前请确认:
+            
+            - [ ] Frontmatter 语法正确
+            - [ ] `topic` 字段准确反映文件内容
+            - [ ] `tags` 标签相关且分类合理
+            - [ ] `created` 和 `modified` 时间戳正确
+            - [ ] 原始内容未被破坏
+            
+            ---
+            
+            ## 生成信息
+            
+            - **最后触发提交:** [`${{ github.sha }}`](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
+            - **最后更新时间:** ${{ github.event.head_commit.timestamp }}
+            EOF_BODY
+            
+            # 替换占位符
+            sed -i "s/TOTAL_COUNT_PLACEHOLDER/$TOTAL_COUNT/" /tmp/pr_body.md
+            FILE_LIST_ESCAPED=$(echo "$FILE_LIST" | sed 's/[&/\]/\\&/g')
+            perl -i -pe "s/FILE_LIST_PLACEHOLDER/$FILE_LIST_ESCAPED/" /tmp/pr_body.md
+            
+            gh pr create \
+              --head frontmatter-auto-update \
+              --base master \
+              --title "Frontmatter 自动更新" \
+              --body-file /tmp/pr_body.md \
+              --label "automated" \
+              --label "documentation"
+            
+            echo "Created new PR"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -476,37 +476,15 @@ def main():
     force_rebuild = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
     print(f"\n[MODE] {'Force rebuild' if force_rebuild else 'Update'}")
 
-    # 获取 PR 中已恢复到工作区的文件（由 workflow 的 Restore 步骤注入）
-    # 这些文件已经在工作区中了，不需要再跳过，只需要处理本次 push 的新文件
-    pr_restored = os.environ.get('PR_RESTORED_FILES', '').strip()
-    pr_restored_set = set()
-    if pr_restored:
-        pr_restored_set = {line.strip() for line in pr_restored.split('\n') if line.strip()}
-        print(f"\n[INFO] {len(pr_restored_set)} file(s) restored from PR branch (already in working tree)")
-
     # 获取本次 push 变更的文件
     changed_files = get_changed_files()
 
     if not changed_files:
         print("\n[INFO] No .md files changed in this push")
-        if pr_restored_set:
-            print("[INFO] PR branch files are preserved in working tree")
         return
 
     # 过滤排除文件
-    changed_files = [f for f in changed_files if should_process_file(f)]
-
-    # 只处理本次 push 中新变更的文件（不重复处理 PR 中已有的文件）
-    # 但如果 PR 中的文件在本次 push 中也被修改了，则需要重新处理
-    files_to_process = []
-    for f in changed_files:
-        if f in pr_restored_set:
-            # 文件在 PR 中已处理过，但本次 push 又修改了它
-            # 需要用 master 上的最新内容重新处理
-            print(f"  [INFO] {f} was in PR but changed again, will re-process")
-            files_to_process.append(f)
-        else:
-            files_to_process.append(f)
+    files_to_process = [f for f in changed_files if should_process_file(f)]
 
     if not files_to_process:
         print("\n[INFO] No new files to process")
