@@ -1,3 +1,15 @@
+---
+topic: Linux 笔记提交测试1-5
+created: 2026-02-08 17:43
+modified: 2026-02-08 17:43
+tags:
+- Linux
+- 内核
+- 虚拟机
+- VMware
+- FinalShell
+---
+
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
 - Linux系统的组成：Linux系统内核 & 系统级应用程序
 - 内核提供系统最核心的功能内核提供系统最核心的功能，如：调度CPU、调度内存、调度文件系统、调度网络通讯、调度IO等。
