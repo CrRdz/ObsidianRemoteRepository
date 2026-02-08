@@ -1,96 +1,148 @@
 import os
 import re
+import json
 import subprocess
 from datetime import datetime
 from collections import Counter
+
+import yaml
+import frontmatter
+
 from openai import OpenAI
 
-# 配置
+# ── 配置 ──────────────────────────────────────────────────────────────────────
 API_BASE_URL = "https://api.deepseek.com"
 MODEL = "deepseek-chat"
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
-    base_url=API_BASE_URL
+    base_url=API_BASE_URL,
 )
 
-# 排除文件
+# 排除规则（统一用 basename 或全路径匹配）
 EXCLUDE_PATTERNS = [
-    r'readme\.md$',
-    r'^test\d*\.md$',
-    r'^\.obsidian/',
-    r'^\.github/',
-    r'^Assets/',
-    r'^Reviews/',
+    r'(?:^|/)readme\.md$',          # 任意目录下的 readme.md
+    r'(?:^|/)test\d*\.md$',         # 任意目录下的 test.md / test1.md
+    r'(?:^|/)\.obsidian/',
+    r'(?:^|/)\.github/',
+    r'(?:^|/)Assets/',
+    r'(?:^|/)Reviews/',
 ]
 
 
-def should_process_file(file_path):
+# ── 工具函数 ──────────────────────────────────────────────────────────────────
+
+def should_process_file(file_path: str) -> bool:
     """判断文件是否需要处理"""
     if not file_path.endswith('.md'):
         return False
-    
     file_lower = file_path.lower()
-    for pattern in EXCLUDE_PATTERNS:
-        if re.search(pattern, file_lower, re.IGNORECASE):
-            return False
-    
-    return True
-
-
-def has_frontmatter(content):
-    """检查是否已有 frontmatter"""
-    return content.startswith('---\n') or content.startswith('---\r\n')
+    return not any(re.search(p, file_lower, re.IGNORECASE) for p in EXCLUDE_PATTERNS)
 
 
 def extract_topic(file_path: str) -> str:
     """从文件名提取 topic"""
     filename = os.path.basename(file_path)
-    topic = os.path.splitext(filename)[0]
-    return topic
+    return os.path.splitext(filename)[0]
+
+
+def _git_log_time(file_path: str, fmt_args: list) -> str:
+    """通用的 git log 时间获取"""
+    try:
+        cmd = ['git', 'log'] + fmt_args + ['--', file_path]
+        result = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
+        if result:
+            line = result.split('\n')[0]
+            dt = datetime.fromisoformat(line.replace('Z', '+00:00'))
+            return dt.strftime('%Y-%m-%d %H:%M')
+    except Exception as e:
+        print(f"  [WARN] Git log failed for {file_path}: {e}")
+    return datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
 def get_created_time(file_path: str) -> str:
-    """获取创建时间（Git 最早 commit，精确到分钟）"""
-    try:
-        cmd = ['git', 'log', '--follow', '--format=%aI', '--reverse', '--', file_path]
-        result = subprocess.check_output(cmd, text=True).strip()
-        
-        if result:
-            first_commit = result.split('\n')[0]
-            dt = datetime.fromisoformat(first_commit.replace('Z', '+00:00'))
-            return dt.strftime('%Y-%m-%d %H:%M')
-    except Exception as e:
-        print(f"  [WARN] Git log failed: {e}")
-    
-    return datetime.now().strftime('%Y-%m-%d %H:%M')
+    """获取创建时间（Git 最早 commit）"""
+    return _git_log_time(file_path, ['--follow', '--format=%aI', '--reverse'])
 
 
 def get_modified_time(file_path: str) -> str:
-    """获取最后修改时间（Git 最新 commit，精确到分钟）"""
-    try:
-        cmd = ['git', 'log', '-1', '--format=%aI', '--', file_path]
-        result = subprocess.check_output(cmd, text=True).strip()
-        
-        if result:
-            dt = datetime.fromisoformat(result.replace('Z', '+00:00'))
-            return dt.strftime('%Y-%m-%d %H:%M')
-    except Exception as e:
-        print(f"  [WARN] Git log failed: {e}")
-    
-    return datetime.now().strftime('%Y-%m-%d %H:%M')
+    """获取最后修改时间（Git 最新 commit）"""
+    return _git_log_time(file_path, ['-1', '--format=%aI'])
 
+
+# ── YAML 安全值包装 ────────────────────────────────────────────────────────────
+
+def _yaml_safe_str(value: str) -> str:
+    """对 YAML 中可能引起解析问题的字符串加引号"""
+    dangerous_chars = [':', '#', '[', ']', '{', '}', '&', '*', '?', '|', '-', '<', '>', '=', '!', '%', '@', '`']
+    if any(c in value for c in dangerous_chars):
+        # 用双引号包裹，内部双引号转义
+        escaped = value.replace('\\', '\\\\').replace('"', '\\"')
+        return f'"{escaped}"'
+    return value
+
+
+# ── Frontmatter 解析/构建（使用 python-frontmatter 库）──────────────────────────
+
+def parse_frontmatter_safe(content: str) -> tuple:
+    """
+    安全解析 frontmatter。
+    返回 (metadata_dict, body_str) 或 (None, content) 。
+    """
+    try:
+        post = frontmatter.loads(content)
+        if post.metadata:
+            return (dict(post.metadata), post.content)
+    except Exception as e:
+        print(f"  [WARN] python-frontmatter parse failed: {e}")
+        # 兜底：尝试手动正则
+        match = re.match(r'^---\n(.*?)\n---\n\n?', content, re.DOTALL)
+        if match:
+            try:
+                meta = yaml.safe_load(match.group(1))
+                if isinstance(meta, dict):
+                    body = content[match.end():]
+                    return (meta, body)
+            except yaml.YAMLError:
+                pass
+    return (None, content)
+
+
+def build_frontmatter_str(data: dict) -> str:
+    """从字典构建标准 YAML frontmatter"""
+    order = ['topic', 'created', 'modified', 'tags']
+    ordered_data = {}
+
+    for key in order:
+        if key in data:
+            ordered_data[key] = data[key]
+    for key, value in data.items():
+        if key not in order:
+            ordered_data[key] = value
+
+    # 使用 yaml.dump 生成标准 YAML
+    yaml_str = yaml.dump(
+        ordered_data,
+        default_flow_style=False,
+        allow_unicode=True,
+        sort_keys=False,
+        width=1000,  # 避免自动换行
+    )
+
+    return f"---\n{yaml_str}---\n\n"
+
+
+# ── AI 标签生成 ──────────────────────────────────────────────────────────────
 
 def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
     """使用 AI 生成语义化标签"""
-    
     preview = content[:800]
-    
+
     path_parts = file_path.split('/')
     context_hint = ""
     if len(path_parts) > 1:
         context_hint = f"\n文件路径: {'/'.join(path_parts[:-1])}"
-    
+
     prompt = f"""你是一个专业的技术笔记标签生成助手。
 
 笔记标题: {topic}{context_hint}
@@ -117,94 +169,59 @@ def generate_tags_by_ai(topic: str, content: str, file_path: str) -> list:
 - 算法笔记 → 算法, 动态规划, 时间复杂度
 
 标签:"""
-    
-    print(f"  [AI DEBUG] Starting AI tag generation")
-    print(f"  [AI DEBUG] API Base URL: {API_BASE_URL}")
-    print(f"  [AI DEBUG] Model: {MODEL}")
-    print(f"  [AI DEBUG] API Key present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
-    print(f"  [AI DEBUG] Topic: {topic}")
-    print(f"  [AI DEBUG] Content preview length: {len(preview)} chars")
-    
+
+    print(f"  [AI] Generating tags for: {topic}")
+
     try:
-        print(f"  [AI DEBUG] Sending request to API...")
-        
         response = client.chat.completions.create(
             model=MODEL,
             messages=[
                 {
                     "role": "system",
-                    "content": "你是专业的技术标签生成助手，精准提取核心技术概念标签。"
+                    "content": "你是专业的技术标签生成助手，精准提取核心技术概念标签。只返回标签，用逗号分隔。"
                 },
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
             max_tokens=60
         )
-        
-        print(f"  [AI DEBUG] API response received")
-        print(f"  [AI DEBUG] Response ID: {response.id if hasattr(response, 'id') else 'N/A'}")
-        print(f"  [AI DEBUG] Model used: {response.model if hasattr(response, 'model') else 'N/A'}")
-        
+
         tags_str = response.choices[0].message.content.strip()
-        
-        print(f"  [AI DEBUG] Raw response: '{tags_str}'")
-        
+        print(f"  [AI] Raw response: '{tags_str}'")
+
+        # 清理 AI 返回格式
         tags_str = re.sub(r'^(标签|Tags?)[：:：\s]*', '', tags_str, flags=re.IGNORECASE)
         tags_str = tags_str.strip('[](){}「」《》""\'`')
-        
-        print(f"  [AI DEBUG] After cleanup: '{tags_str}'")
-        
+
         tags = [t.strip() for t in re.split(r'[,，、;；]', tags_str) if t.strip()]
-        
-        print(f"  [AI DEBUG] After split: {tags}")
-        
         tags = [t for t in tags if 2 <= len(t) <= 10][:5]
-        
-        print(f"  [AI DEBUG] After filter: {tags}")
-        
+
         if tags:
             print(f"  [AI] Generated tags: {tags}")
             return tags
-        else:
-            print(f"  [AI DEBUG] Tags empty after filter, raising error")
-            raise ValueError("AI returned empty tags")
-    
+        raise ValueError("AI returned empty tags after filtering")
+
     except Exception as e:
-        print(f"  [AI ERROR] Exception occurred: {type(e).__name__}")
-        print(f"  [AI ERROR] Error message: {str(e)}")
-        
-        import traceback
-        print(f"  [AI ERROR] Full traceback:")
-        for line in traceback.format_exc().split('\n'):
-            if line.strip():
-                print(f"    {line}")
-        
-        print(f"  [WARN] AI failed, using fallback")
+        print(f"  [AI ERROR] {type(e).__name__}: {e}")
+        print(f"  [WARN] Falling back to rule-based extraction")
         return fallback_tags(topic, content, file_path)
 
 
-def extract_keywords_from_content(content: str, top_n=15) -> list:
+# ── 兜底标签生成 ──────────────────────────────────────────────────────────────
+
+def extract_keywords_from_content(content: str, top_n: int = 15) -> list:
     """从内容中提取高频技术关键词"""
-    
     text = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
     text = re.sub(r'`[^`]+`', '', text)
-    
+
     keywords = []
-    
-    camel_case = re.findall(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b', text)
-    keywords.extend(camel_case)
-    
-    acronyms = re.findall(r'\b[A-Z]{2,6}\b', text)
-    keywords.extend(acronyms)
-    
-    capitalized = re.findall(r'\b[A-Z][a-z]{2,12}\b', text)
-    keywords.extend(capitalized)
-    
-    chinese_terms = re.findall(r'[\u4e00-\u9fa5]{2,6}', text)
-    keywords.extend(chinese_terms)
-    
+    keywords.extend(re.findall(r'\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b', text))  # CamelCase
+    keywords.extend(re.findall(r'\b[A-Z]{2,6}\b', text))                    # 缩写
+    keywords.extend(re.findall(r'\b[A-Z][a-z]{2,12}\b', text))              # 首字母大写
+    keywords.extend(re.findall(r'[\u4e00-\u9fa5]{2,6}', text))              # 中文词
+
     word_freq = Counter(keywords)
-    
+
     stopwords = {
         '的', '了', '是', '在', '和', '有', '我', '你', '他', '她', '这个', '那个',
         '可以', '需要', '如果', '因为', '所以', '但是', '然后', '就是', '一个',
@@ -213,47 +230,15 @@ def extract_keywords_from_content(content: str, top_n=15) -> list:
         'From', 'Into', 'When', 'Where', 'Which', 'What', 'How', 'Why',
         'Can', 'Will', 'Should', 'Would', 'Could', 'May', 'Might',
     }
-    
-    filtered = [
-        word for word, count in word_freq.most_common(top_n * 2)
+
+    return [
+        word for word, _ in word_freq.most_common(top_n * 2)
         if word not in stopwords and len(word) >= 2
-    ]
-    
-    return filtered[:top_n]
-
-
-def extract_technical_keywords(file_path: str, topic: str, content: str) -> list:
-    """综合提取技术关键词"""
-    
-    keywords = []
-    
-    path_parts = file_path.split('/')
-    for part in path_parts[:-1]:
-        tech_words = re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', part)
-        keywords.extend(tech_words)
-    
-    topic_words = re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', topic)
-    keywords.extend(topic_words)
-    
-    content_keywords = extract_keywords_from_content(content, top_n=10)
-    keywords.extend(content_keywords)
-    
-    seen = set()
-    unique_keywords = []
-    for kw in keywords:
-        kw_lower = kw.lower()
-        if kw_lower not in seen and len(kw) >= 2:
-            seen.add(kw_lower)
-            unique_keywords.append(kw)
-    
-    return unique_keywords
+    ][:top_n]
 
 
 def match_tech_categories(keywords: list, content: str) -> list:
     """匹配技术分类标签"""
-    
-    categories = []
-    
     tech_map = {
         'Java': ['java', 'jvm', 'spring', 'maven', 'mybatis'],
         'Python': ['python', 'django', 'flask', 'numpy', 'pandas'],
@@ -270,398 +255,287 @@ def match_tech_categories(keywords: list, content: str) -> list:
         '算法': ['算法', 'algorithm', '时间复杂度', '动态规划', '排序'],
         '设计模式': ['设计模式', 'pattern', '单例', '工厂', '观察者'],
     }
-    
-    all_text = ' '.join(keywords).lower() + ' ' + content.lower()
-    
+
+    all_text = (' '.join(keywords) + ' ' + content).lower()
+    categories = []
     for category, patterns in tech_map.items():
-        for pattern in patterns:
-            if pattern in all_text:
-                if category not in categories:
-                    categories.append(category)
-                break
-    
+        if any(p in all_text for p in patterns):
+            categories.append(category)
     return categories
 
 
 def fallback_tags(topic: str, content: str, file_path: str) -> list:
-    """完善的兜底规则"""
-    
-    print(f"  [FALLBACK] Using rule-based extraction")
-    print(f"  [FALLBACK DEBUG] Topic: {topic}")
-    print(f"  [FALLBACK DEBUG] File path: {file_path}")
-    print(f"  [FALLBACK DEBUG] Content length: {len(content)} chars")
-    
-    keywords = extract_technical_keywords(file_path, topic, content)
-    print(f"  [FALLBACK DEBUG] Extracted keywords: {keywords[:10]}")
-    
-    categories = match_tech_categories(keywords, content)
-    print(f"  [FALLBACK DEBUG] Matched categories: {categories}")
-    
-    tags = []
-    
-    tags.extend(categories[:3])
-    print(f"  [FALLBACK DEBUG] Tags after categories: {tags}")
-    
+    """规则兜底标签"""
+    print(f"  [FALLBACK] Rule-based extraction for: {topic}")
+
+    keywords = []
+    # 从路径提取
+    for part in file_path.split('/')[:-1]:
+        keywords.extend(re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', part))
+    # 从标题提取
+    keywords.extend(re.findall(r'[A-Z][a-z]+|[A-Z]{2,}', topic))
+    # 从内容提取
+    keywords.extend(extract_keywords_from_content(content, top_n=10))
+
+    # 去重
+    seen = set()
+    unique = []
     for kw in keywords:
+        if kw.lower() not in seen and len(kw) >= 2:
+            seen.add(kw.lower())
+            unique.append(kw)
+
+    categories = match_tech_categories(unique, content)
+
+    tags = categories[:3]
+    for kw in unique:
         if kw not in tags and len(tags) < 5:
             tags.append(kw)
-    
-    print(f"  [FALLBACK DEBUG] Tags after keywords: {tags}")
-    
+
     if not tags:
         tags = [topic]
-        print(f"  [FALLBACK DEBUG] No tags found, using topic")
-    
-    print(f"  [FALLBACK] Generated tags: {tags[:5]}")
+
+    print(f"  [FALLBACK] Generated: {tags[:5]}")
     return tags[:5]
 
 
-def parse_frontmatter(content: str) -> dict:
-    """解析 frontmatter 为字典"""
-    
-    match = re.match(r'^---\n(.*?)\n---\n', content, re.DOTALL)
-    if not match:
-        return None
-    
-    frontmatter_text = match.group(1)
-    frontmatter_dict = {}
-    
-    for line in frontmatter_text.split('\n'):
-        line = line.strip()
-        if ':' in line:
-            key, value = line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-            
-            if key == 'tags' and value.startswith('[') and value.endswith(']'):
-                tags_str = value[1:-1]
-                tags = [t.strip() for t in tags_str.split(',') if t.strip()]
-                frontmatter_dict[key] = tags
-            else:
-                frontmatter_dict[key] = value
-    
-    return frontmatter_dict
+# ── 核心处理逻辑 ──────────────────────────────────────────────────────────────
 
+def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool = False) -> tuple:
+    """
+    更新或添加 frontmatter。
+    返回 (new_content, status) ，status 为 'added' / 'updated' / 'rebuilt' / 'unchanged'
+    """
+    existing_fm, body = parse_frontmatter_safe(content)
 
-def build_frontmatter(data: dict) -> str:
-    """从字典构建 frontmatter 文本"""
-    
-    frontmatter = "---\n"
-    
-    order = ['topic', 'created', 'modified', 'tags']
-    
-    for key in order:
-        if key in data:
-            value = data[key]
-            
-            if key == 'tags' and isinstance(value, list):
-                frontmatter += f"{key}: [{', '.join(value)}]\n"
-            else:
-                frontmatter += f"{key}: {value}\n"
-    
-    for key, value in data.items():
-        if key not in order:
-            if isinstance(value, list):
-                frontmatter += f"{key}: [{', '.join(value)}]\n"
-            else:
-                frontmatter += f"{key}: {value}\n"
-    
-    frontmatter += "---\n\n"
-    
-    return frontmatter
-
-
-def update_or_add_frontmatter(file_path: str, content: str, force_rebuild=False) -> tuple:
-    """更新或添加 frontmatter"""
-    
-    existing_fm = parse_frontmatter(content)
-    
     if existing_fm and not force_rebuild:
+        # 已有 frontmatter，仅更新 modified 时间
         new_modified = get_modified_time(file_path)
-        old_modified = existing_fm.get('modified', '')
-        
+        old_modified = str(existing_fm.get('modified', ''))
+
         if old_modified == new_modified:
             return (content, 'unchanged')
-        
+
         print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
-        
         existing_fm['modified'] = new_modified
-        
-        match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
-        body = content[match.end():] if match else content
-        
-        new_frontmatter = build_frontmatter(existing_fm)
-        new_content = new_frontmatter + body
-        
+
+        new_content = build_frontmatter_str(existing_fm) + body
         return (new_content, 'updated')
-    
+
     else:
-        body = content
+        # 新建或强制重建
         if existing_fm:
-            match = re.match(r'^---\n.*?\n---\n\n?', content, re.DOTALL)
-            if match:
-                body = content[match.end():]
             print(f"  [REBUILD] Regenerating frontmatter")
-        
+
         topic = extract_topic(file_path)
-        
         created = existing_fm.get('created') if existing_fm else get_created_time(file_path)
         modified = get_modified_time(file_path)
-        
+
+        # 确保 created 是字符串
+        if not isinstance(created, str):
+            created = str(created)
+
         print(f"  [INFO] Topic: {topic}")
         print(f"  [INFO] Created: {created}")
         print(f"  [INFO] Modified: {modified}")
-        
+
         tags = generate_tags_by_ai(topic, body, file_path)
-        
+
         data = {
             'topic': topic,
             'created': created,
             'modified': modified,
-            'tags': tags
+            'tags': tags,
         }
-        
-        new_frontmatter = build_frontmatter(data)
-        new_content = new_frontmatter + body
-        
+
+        new_content = build_frontmatter_str(data) + body
         status = 'rebuilt' if existing_fm else 'added'
         return (new_content, status)
 
 
-def process_file(file_path: str, force_rebuild=False) -> str:
-    """处理单个文件"""
-    
+def process_file(file_path: str, force_rebuild: bool = False) -> str:
+    """处理单个文件，返回状态字符串"""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
     except Exception as e:
         print(f"  [ERROR] Read failed: {e}")
-        return None
-    
+        return 'failed'
+
+    if not content.strip():
+        print(f"  [SKIP] Empty file")
+        return 'unchanged'
+
     new_content, status = update_or_add_frontmatter(file_path, content, force_rebuild)
-    
+
     if status == 'unchanged':
         print(f"  [SKIP] No changes needed")
         return 'unchanged'
-    
+
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        
-        if status == 'added':
-            print(f"  [SUCCESS] Added frontmatter")
-        elif status == 'updated':
-            print(f"  [SUCCESS] Updated frontmatter")
-        elif status == 'rebuilt':
-            print(f"  [SUCCESS] Rebuilt frontmatter")
-        
+        print(f"  [SUCCESS] {status.capitalize()} frontmatter")
         return status
     except Exception as e:
         print(f"  [ERROR] Write failed: {e}")
-        return None
+        return 'failed'
 
 
-def get_changed_files():
-    """获取变更的文件"""
-    
+# ── 变更文件检测 ──────────────────────────────────────────────────────────────
+
+def get_changed_files() -> list:
+    """从 GitHub push event 获取变更的 .md 文件"""
+    event_path = os.environ.get('GITHUB_EVENT_PATH')
+    if not event_path or not os.path.exists(event_path):
+        print("[WARN] No GITHUB_EVENT_PATH, using HEAD~1 fallback")
+        return _git_diff_files('HEAD~1', 'HEAD')
+
     try:
-        event_path = os.environ.get('GITHUB_EVENT_PATH')
-        if event_path and os.path.exists(event_path):
-            import json
-            try:
-                with open(event_path) as f:
-                    event = json.load(f)
-                    before_sha = event.get('before')
-                    after_sha = event.get('after', 'HEAD')
-                    
-                    if before_sha and before_sha != '0000000000000000000000000000000000000000':
-                        print(f"\n[INFO] Using GitHub push event")
-                        print(f"[INFO] Range: {before_sha[:7]}...{after_sha[:7]}")
-                        
-                        cmd = ['git', 'diff', '--name-only', before_sha, after_sha, '--', '*.md']
-                        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
-                        
-                        if result:
-                            print(f"[INFO] Files from push event:")
-                            for f in result.split('\n'):
-                                print(f"  - {f}")
-                            return [f.strip() for f in result.split('\n') if f.strip()]
-            except Exception as e:
-                print(f"[WARN] Failed to parse GitHub event: {e}")
-        
-        cmd_check = ['git', 'rev-parse', '--verify', 'HEAD^2']
-        is_merge = subprocess.run(cmd_check, capture_output=True, text=True).returncode == 0
-        
-        if is_merge:
-            print(f"\n[INFO] Detected merge commit")
-            
-            cmd = ['git', 'diff', '--name-only', 'HEAD^1...HEAD^2', '--', '*.md']
-            result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
-            
-            if result:
-                print(f"[INFO] Files from merge:")
-                for f in result.split('\n'):
-                    print(f"  - {f}")
-                return [f.strip() for f in result.split('\n') if f.strip()]
-            
-            cmd = ['git', 'diff', '--name-only', 'HEAD^1', 'HEAD', '--', '*.md']
-            result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
-            
-            if result:
-                print(f"[INFO] Files from merge (fallback):")
-                for f in result.split('\n'):
-                    print(f"  - {f}")
-                return [f.strip() for f in result.split('\n') if f.strip()]
-        
-        print(f"\n[INFO] Using HEAD~2...HEAD")
-        cmd = ['git', 'diff', '--name-only', 'HEAD~2', 'HEAD', '--', '*.md']
-        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
-        
-        if result:
-            print(f"[INFO] Files from HEAD~2:")
-            for f in result.split('\n'):
-                print(f"  - {f}")
-            return [f.strip() for f in result.split('\n') if f.strip()]
-        
-        print(f"\n[INFO] Fallback to HEAD~1...HEAD")
-        cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', '*.md']
-        result = subprocess.check_output(cmd, text=True, encoding='utf-8').strip()
-        
-        if result:
-            print(f"[INFO] Files from HEAD~1:")
-            for f in result.split('\n'):
-                print(f"  - {f}")
-            return [f.strip() for f in result.split('\n') if f.strip()]
-        
-        return []
-        
+        with open(event_path) as f:
+            event = json.load(f)
+
+        before_sha = event.get('before', '')
+        after_sha = event.get('after', 'HEAD')
+
+        if before_sha and before_sha != '0' * 40:
+            print(f"\n[INFO] Push event: {before_sha[:7]}...{after_sha[:7]}")
+            files = _git_diff_files(before_sha, after_sha)
+            if files:
+                return files
+
+        # 合并提交或其他情况
+        print("[INFO] Trying HEAD~1 fallback")
+        return _git_diff_files('HEAD~1', 'HEAD')
+
     except Exception as e:
-        print(f"\n[ERROR] Git diff failed: {e}")
-        return []
+        print(f"[WARN] Failed to parse event: {e}")
+        return _git_diff_files('HEAD~1', 'HEAD')
 
 
-def test_api_connection():
+def _git_diff_files(from_ref: str, to_ref: str) -> list:
+    """执行 git diff 获取 .md 文件列表"""
+    try:
+        cmd = ['git', 'diff', '--name-only', '--diff-filter=ACMR', from_ref, to_ref, '--', '*.md']
+        result = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
+        if result:
+            files = [f.strip() for f in result.split('\n') if f.strip()]
+            print(f"[INFO] Found {len(files)} changed .md file(s):")
+            for f in files:
+                print(f"  - {f}")
+            return files
+    except subprocess.CalledProcessError as e:
+        print(f"[WARN] git diff {from_ref}..{to_ref} failed: {e}")
+    return []
+
+
+# ── API 连接测试 ──────────────────────────────────────────────────────────────
+
+def test_api_connection() -> bool:
     """测试 API 连接"""
-    print("\n[DEBUG] Testing API connection...")
-    
+    print("\n[INFO] Testing API connection...")
+
     api_key = os.environ.get('OPENAI_API_KEY')
-    
     if not api_key:
         print("[ERROR] OPENAI_API_KEY not set!")
         return False
-    
-    print(f"[DEBUG] API Key: {api_key[:8]}...{api_key[-4:] if len(api_key) > 12 else '***'}")
-    print(f"[DEBUG] API Base URL: {API_BASE_URL}")
-    print(f"[DEBUG] Model: {MODEL}")
-    
+
+    print(f"[INFO] API Key: {'*' * 8}...{'*' * 4} (present)")
+    print(f"[INFO] Endpoint: {API_BASE_URL}")
+    print(f"[INFO] Model: {MODEL}")
+
     try:
-        print("[DEBUG] Sending test request...")
         response = client.chat.completions.create(
             model=MODEL,
-            messages=[
-                {"role": "user", "content": "测试连接，请回复'OK'"}
-            ],
+            messages=[{"role": "user", "content": "测试连接，请回复OK"}],
             max_tokens=10
         )
-        
-        result = response.choices[0].message.content
-        print(f"[DEBUG] Test response: {result}")
-        print("[SUCCESS] API connection successful!")
+        print(f"[SUCCESS] API connection OK")
         return True
-        
     except Exception as e:
-        print(f"[ERROR] API connection failed: {type(e).__name__}")
-        print(f"[ERROR] Error message: {str(e)}")
+        print(f"[ERROR] API connection failed: {type(e).__name__}: {e}")
         return False
 
 
+# ── 主入口 ────────────────────────────────────────────────────────────────────
+
 def main():
     print("=" * 70)
-    print("Frontmatter AutoWired")
+    print("Frontmatter AutoWired v2.0")
     print("=" * 70)
-    
+
+    # 支持中文路��
     try:
-        subprocess.run(
-            ['git', 'config', 'core.quotepath', 'false'],
-            check=False,
-            capture_output=True
-        )
-    except:
+        subprocess.run(['git', 'config', 'core.quotepath', 'false'],
+                       check=False, capture_output=True)
+    except Exception:
         pass
-    
+
     test_api_connection()
-    
+
     force_rebuild = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
-    
-    if force_rebuild:
-        print("\n[MODE] Force rebuild: Will regenerate all frontmatter including tags")
-    else:
-        print("\n[MODE] Update: Will only update modified time for existing frontmatter")
-    
-    # 获取 PR 中已修改的文件
-    pr_modified_files = os.environ.get('PR_MODIFIED_FILES', '').strip()
-    pr_files_set = set()
-    
-    if pr_modified_files:
-        pr_files_set = set(line.strip() for line in pr_modified_files.split('\n') if line.strip())
-        if pr_files_set:
-            print(f"\n[INFO] Files already in PR: {len(pr_files_set)}")
-            for f in pr_files_set:
-                print(f"  - {f}")
-    
-    files = get_changed_files()
-    
-    if not files:
-        print("\n[INFO] No .md files changed")
+    print(f"\n[MODE] {'Force rebuild' if force_rebuild else 'Update'}")
+
+    # 获取 PR 中已恢复到工作区的文件（由 workflow 的 Restore 步骤注入）
+    # 这些文件已经在工作区中了，不需要再跳过，只需要处理本次 push 的新文件
+    pr_restored = os.environ.get('PR_RESTORED_FILES', '').strip()
+    pr_restored_set = set()
+    if pr_restored:
+        pr_restored_set = {line.strip() for line in pr_restored.split('\n') if line.strip()}
+        print(f"\n[INFO] {len(pr_restored_set)} file(s) restored from PR branch (already in working tree)")
+
+    # 获取本次 push 变更的文件
+    changed_files = get_changed_files()
+
+    if not changed_files:
+        print("\n[INFO] No .md files changed in this push")
+        if pr_restored_set:
+            print("[INFO] PR branch files are preserved in working tree")
         return
-    
-    files = [f for f in files if should_process_file(f)]
-    
-    # 过滤掉 PR 中已处理的文件
-    if pr_files_set:
-        original_count = len(files)
-        files = [f for f in files if f not in pr_files_set]
-        skipped = original_count - len(files)
-        if skipped > 0:
-            print(f"\n[INFO] Skipped {skipped} file(s) already in PR")
-    
-    if not files:
-        print("\n[INFO] No new files to process")
-        if pr_files_set:
-            print("[INFO] All changed files are already in the open PR")
-        return
-    
-    print(f"\n[INFO] Files to process: {len(files)}")
-    
-    added = 0
-    updated = 0
-    rebuilt = 0
-    unchanged = 0
-    failed = 0
-    
-    for i, file in enumerate(files, 1):
-        print(f"\n[{i}/{len(files)}] Processing: {file}")
-        result = process_file(file, force_rebuild)
-        
-        if result == 'added':
-            added += 1
-        elif result == 'updated':
-            updated += 1
-        elif result == 'rebuilt':
-            rebuilt += 1
-        elif result == 'unchanged':
-            unchanged += 1
+
+    # 过滤排除文件
+    changed_files = [f for f in changed_files if should_process_file(f)]
+
+    # 只处理本次 push 中新变更的文件（不重复处理 PR 中已有的文件）
+    # 但如果 PR 中的文件在本次 push 中也被修改了，则需要重新处理
+    files_to_process = []
+    for f in changed_files:
+        if f in pr_restored_set:
+            # 文件在 PR 中已处理过，但本次 push 又修改了它
+            # 需要用 master 上的最新内容重新处理
+            print(f"  [INFO] {f} was in PR but changed again, will re-process")
+            files_to_process.append(f)
         else:
-            failed += 1
-    
+            files_to_process.append(f)
+
+    if not files_to_process:
+        print("\n[INFO] No new files to process")
+        return
+
+    print(f"\n[INFO] Processing {len(files_to_process)} file(s):")
+
+    stats = Counter()
+
+    for i, file_path in enumerate(files_to_process, 1):
+        print(f"\n[{i}/{len(files_to_process)}] {file_path}")
+
+        if not os.path.exists(file_path):
+            print(f"  [SKIP] File not found (may have been deleted)")
+            stats['skipped'] += 1
+            continue
+
+        result = process_file(file_path, force_rebuild)
+        stats[result] += 1
+
     print("\n" + "=" * 70)
-    print(f"Summary:")
-    print(f"  Added:     {added}")
-    print(f"  Updated:   {updated}")
-    print(f"  Rebuilt:   {rebuilt}")
-    print(f"  Unchanged: {unchanged}")
-    print(f"  Failed:    {failed}")
-    print(f"  Total:     {len(files)}")
+    print("Summary:")
+    print(f"  Added:     {stats.get('added', 0)}")
+    print(f"  Updated:   {stats.get('updated', 0)}")
+    print(f"  Rebuilt:   {stats.get('rebuilt', 0)}")
+    print(f"  Unchanged: {stats.get('unchanged', 0)}")
+    print(f"  Skipped:   {stats.get('skipped', 0)}")
+    print(f"  Failed:    {stats.get('failed', 0)}")
+    print(f"  Total:     {len(files_to_process)}")
     print("=" * 70)
 
 
