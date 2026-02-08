@@ -1,11 +1,11 @@
 ---
-topic: Maven提交测试1-5
-created: 2026-02-08 17:33
-modified: 2026-02-08 17:33
+topic: Maven提交测试1-6
+created: 2026-02-08 17:38
+modified: 2026-02-08 17:38
 tags:
 - Maven
 - Java
-- 项目构建
+- 构建工具
 - 依赖管理
 - 生命周期
 ---
