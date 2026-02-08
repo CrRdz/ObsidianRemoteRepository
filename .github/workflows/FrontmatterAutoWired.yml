@@ -49,33 +49,50 @@ jobs:
             echo "Found open PR #$PR_NUMBER"
             echo "has_existing_pr=true" >> $GITHUB_OUTPUT
             
-            # 拉取 PR 分支
-            git fetch origin frontmatter-auto-update 2>/dev/null || {
+            # 拉取 PR 分支，避免使用 exit 0
+            if git fetch origin frontmatter-auto-update 2>/dev/null; then
+              echo "PR branch fetched successfully"
+              
+              # 使用 merge-base 显式确定比较基准
+              MERGE_BASE=$(git merge-base origin/master origin/frontmatter-auto-update 2>/dev/null || echo "")
+              
+              if [ -n "$MERGE_BASE" ]; then
+                echo "Merge base found: $MERGE_BASE"
+                PR_FILES=$(git diff --name-only "$MERGE_BASE" origin/frontmatter-auto-update 2>/dev/null | grep '\.md$' || true)
+              else
+                echo "No merge base, using two-dot diff"
+                PR_FILES=$(git diff --name-only origin/master origin/frontmatter-auto-update 2>/dev/null | grep '\.md$' || true)
+              fi
+              
+              if [ -n "$PR_FILES" ]; then
+                FILE_COUNT=$(echo "$PR_FILES" | wc -l | tr -d ' ')
+                echo "Files already processed in PR ($FILE_COUNT):"
+                echo "$PR_FILES" | sed 's/^/  - /'
+                
+                RESTORED_COUNT=0
+                # 将 PR 分支中已处理的文件逐个 checkout 到当前工作区
+                while IFS= read -r file; do
+                  [ -z "$file" ] && continue
+                  if git show "origin/frontmatter-auto-update:$file" > /dev/null 2>&1; then
+                    # 确保目录存在
+                    mkdir -p "$(dirname "$file")"
+                    git show "origin/frontmatter-auto-update:$file" > "$file"
+                    echo "  ✓ Restored: $file"
+                    RESTORED_COUNT=$((RESTORED_COUNT + 1))
+                  fi
+                done <<< "$PR_FILES"
+                
+                echo "Successfully restored $RESTORED_COUNT file(s)"
+                
+                echo "PR_RESTORED_FILES<<EOF" >> $GITHUB_ENV
+                echo "$PR_FILES" >> $GITHUB_ENV
+                echo "EOF" >> $GITHUB_ENV
+              else
+                echo "No .md files found in PR branch"
+              fi
+            else
               echo "PR branch not found remotely, treating as new"
               echo "has_existing_pr=false" >> $GITHUB_OUTPUT
-              exit 0
-            }
-            
-            # 获取 PR 分支中所有相对于 master 变更的 .md 文件
-            PR_FILES=$(git diff --name-only origin/master...origin/frontmatter-auto-update -- '*.md' 2>/dev/null || echo "")
-            
-            if [ -n "$PR_FILES" ]; then
-              echo "Files already processed in PR:"
-              echo "$PR_FILES" | sed 's/^/  - /'
-              
-              # 将 PR 分支中已处理的文件逐个 checkout 到当前工作区
-              while IFS= read -r file; do
-                if git show "origin/frontmatter-auto-update:$file" > /dev/null 2>&1; then
-                  # 确保目录存在
-                  mkdir -p "$(dirname "$file")"
-                  git show "origin/frontmatter-auto-update:$file" > "$file"
-                  echo "  ✓ Restored: $file"
-                fi
-              done <<< "$PR_FILES"
-              
-              echo "PR_RESTORED_FILES<<EOF" >> $GITHUB_ENV
-              echo "$PR_FILES" >> $GITHUB_ENV
-              echo "EOF" >> $GITHUB_ENV
             fi
           else
             echo "No open PR found"
@@ -83,6 +100,19 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Debug workspace state
+        run: |
+          echo "=== Files different from HEAD ==="
+          git diff --name-only HEAD 2>/dev/null | grep '\.md$' || echo "(none)"
+          echo ""
+          echo "=== Untracked .md files ==="
+          git ls-files --others --exclude-standard 2>/dev/null | grep '\.md$' || echo "(none)"
+          echo ""
+          echo "=== PR_RESTORED_FILES env ==="
+          echo "${PR_RESTORED_FILES:-(empty)}"
+        env:
+          PR_RESTORED_FILES: ${{ env.PR_RESTORED_FILES }}
       
       - name: Run Frontmatter AutoWired
         env:
@@ -94,11 +124,14 @@ jobs:
       - name: Detect all changes
         id: info
         run: |
+          echo "=== Detecting all changes ==="
+          
           # 检测工作区中所有相对于 HEAD 有变更的 .md 文件（包括 PR 恢复的 + 新处理的）
-          CHANGED_FILES=$(git diff --name-only HEAD -- '*.md' 2>/dev/null || echo "")
+          # 使用 grep 过滤而不是 git pathspec，以支持子目录
+          CHANGED_FILES=$(git diff --name-only HEAD 2>/dev/null | grep '\.md$' || true)
           
           # 也检查未追踪的新文件
-          UNTRACKED=$(git ls-files --others --exclude-standard -- '*.md' 2>/dev/null || echo "")
+          UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null | grep '\.md$' || true)
           
           if [ -n "$UNTRACKED" ]; then
             if [ -n "$CHANGED_FILES" ]; then
@@ -108,6 +141,9 @@ jobs:
             fi
           fi
           
+          echo "Changed files:"
+          echo "${CHANGED_FILES:-(none)}"
+          
           if [ -n "$CHANGED_FILES" ]; then
             FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l | tr -d ' ')
             echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
@@ -115,6 +151,7 @@ jobs:
             
             FILE_LIST=""
             while IFS= read -r file; do
+              [ -z "$file" ] && continue
               FILE_LIST="${FILE_LIST}- \`${file}\`\n"
             done <<< "$CHANGED_FILES"
             
