@@ -13,6 +13,7 @@ from openai import OpenAI
 # ── 配置 ──────────────────────────────────────────────────────────────────────
 API_BASE_URL = "https://api.deepseek.com"
 MODEL = "deepseek-chat"
+CONTEXT_LENGTH = 200  # 内容长度阈值，用于判断是否调用AI生成标签
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -68,6 +69,45 @@ def get_created_time(file_path: str) -> str:
 def get_modified_time(file_path: str) -> str:
     """获取最后修改时间（Git 最新 commit）"""
     return _git_log_time(file_path, ['-1', '--format=%aI'])
+
+
+def has_completion_marker(body: str) -> tuple:
+    """
+    检查正文结尾是否有完成标记，并移除标记。
+    
+    支持的标记（大小写不敏感）：
+    - @done
+    - @endnote
+    - //==end==
+    - ==end==
+    - [end]
+    
+    返回: (found: bool, cleaned_body: str)
+    - found: 是否找到完成标记
+    - cleaned_body: 移除标记后的正文
+    """
+    # 定义完成标记的正则模式（大小写不敏感）
+    markers = [
+        r'@done',
+        r'@endnote',
+        r'//==end==',
+        r'==end==',
+        r'\[end\]',
+    ]
+    
+    # 构建匹配模式：标记出现在结尾，且其后只有空白字符
+    for marker in markers:
+        # 使用 re.IGNORECASE 进行大小写不敏感匹配
+        pattern = r'\s*' + marker + r'\s*$'
+        match = re.search(pattern, body, re.IGNORECASE)
+        
+        if match:
+            # 找到标记，移除它
+            cleaned_body = body[:match.start()].rstrip()
+            return (True, cleaned_body)
+    
+    # 没有找到标记
+    return (False, body)
 
 
 # ── YAML 安全值包装 ────────────────────────────────────────────────────────────
@@ -306,34 +346,59 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
     更新或添加 frontmatter。
     返回 (new_content, status) ，status 为 'added' / 'updated' / 'rebuilt' / 'unchanged'
     
-    状态逻辑：
-    - 内容长度 < 200字符：设置为 draft，标签为 [待分类]
-    - 内容长度 ≥ 200字符：
-      - 如果现有状态为 draft：升级为 complete 并重新生成标签
-      - 如果现有状态为 complete 或无状态：设置为 complete，只更新 modified
+    状态逻辑（2026-02-08 最新版）：
+    - 检查正文结尾是否有完成标记（@done/@endnote//==end==/==end==/[end]，大小写忽略）
+    - 有标记：status = complete，移除标记，内容长度 >= CONTEXT_LENGTH 时用AI生成tags，否则tags为[待分类]
+    - 无标记：status = draft，tags固定为[待分类]
     """
     existing_fm, body = parse_frontmatter_safe(content)
     
+    # 检查并移除完成标记
+    has_marker, cleaned_body = has_completion_marker(body)
+    
     # 计算内容长度（去除空白字符后）
-    content_length = len(body.strip())
+    content_length = len(cleaned_body.strip())
+    
+    # 判断是否需要生成AI标签
+    is_sufficient_for_ai = content_length >= CONTEXT_LENGTH
     
     if existing_fm and not force_rebuild:
         # 已有 frontmatter
         new_modified = get_modified_time(file_path)
         old_modified = str(existing_fm.get('modified', ''))
         
-        # 根据内容长度判断默认状态（处理旧笔记没有 status 字段的情况）
-        is_sufficient = content_length >= 200
+        # 根据完成标记确定新状态
+        new_status = 'complete' if has_marker else 'draft'
         old_status = existing_fm.get('status')
         
-        # 如果没有 status 字段，根据内容长度推断
-        if old_status is None:
-            old_status = 'complete' if is_sufficient else 'draft'
-            print(f"  [INFO] No status field found, inferring as '{old_status}' based on content length ({content_length} chars)")
+        # 确定新的标签
+        if new_status == 'complete' and is_sufficient_for_ai:
+            # 完成状态且内容充足，使用AI生成标签
+            topic = existing_fm.get('topic', extract_topic(file_path))
+            print(f"  [INFO] Content sufficient ({content_length} chars), status=complete, generating AI tags")
+            new_tags = generate_tags_by_ai(topic, cleaned_body, file_path)
+        else:
+            # 其他情况使用[待分类]
+            new_tags = ['待分类']
+            if new_status == 'complete':
+                print(f"  [INFO] Content insufficient ({content_length} chars), status=complete, using fallback tags")
+            else:
+                print(f"  [INFO] No completion marker, status=draft, using fallback tags")
         
-        if is_sufficient and old_status == 'draft':
-            # 内容充足且之前是 draft，升级为 complete 并重新生成标签
-            print(f"  [UPGRADE] Content sufficient ({content_length} chars), upgrading draft to complete")
+        # 检查是否需要更新
+        status_changed = old_status != new_status
+        old_tags = existing_fm.get('tags', [])
+        tags_changed = old_tags != new_tags
+        modified_changed = old_modified != new_modified
+        
+        # 如果标记被移除，内容会变化
+        content_needs_update = has_marker
+        
+        if status_changed or tags_changed or modified_changed or content_needs_update:
+            print(f"  [UPDATE] Status: {old_status} -> {new_status}")
+            if has_marker:
+                print(f"  [INFO] Completion marker removed from content")
+            
             topic = existing_fm.get('topic', extract_topic(file_path))
             created = existing_fm.get('created', get_created_time(file_path))
             
@@ -341,57 +406,18 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             if not isinstance(created, str):
                 created = str(created)
             
-            print(f"  [INFO] Regenerating tags for upgraded note")
-            tags = generate_tags_by_ai(topic, body, file_path)
-            
             data = {
                 'topic': topic,
                 'created': created,
                 'modified': new_modified,
-                'status': 'complete',
-                'tags': tags,
+                'status': new_status,
+                'tags': new_tags,
             }
             
-            new_content = build_frontmatter_str(data) + body
+            new_content = build_frontmatter_str(data) + cleaned_body
             return (new_content, 'updated')
-        
-        elif not is_sufficient and old_status == 'draft':
-            # 内容仍然不足，保持 draft 状态
-            if old_modified == new_modified:
-                return (content, 'unchanged')
-            
-            # 只有在标签不是 [待分类] 时才更新
-            current_tags = existing_fm.get('tags', [])
-            needs_update = current_tags != ['待分类']
-            
-            if needs_update:
-                print(f"  [UPDATE] Content still insufficient ({content_length} chars), ensuring draft status")
-                existing_fm['modified'] = new_modified
-                existing_fm['status'] = 'draft'
-                existing_fm['tags'] = ['待分类']
-                
-                new_content = build_frontmatter_str(existing_fm) + body
-                return (new_content, 'updated')
-            else:
-                print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
-                existing_fm['modified'] = new_modified
-                
-                new_content = build_frontmatter_str(existing_fm) + body
-                return (new_content, 'updated')
-        
         else:
-            # 内容充足且状态为 complete（或内容不足但状态为 complete - 不强制降级）
-            if old_modified == new_modified:
-                return (content, 'unchanged')
-            
-            print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
-            existing_fm['modified'] = new_modified
-            # 确保 status 字段存在
-            if 'status' not in existing_fm:
-                existing_fm['status'] = 'complete' if is_sufficient else 'draft'
-            
-            new_content = build_frontmatter_str(existing_fm) + body
-            return (new_content, 'updated')
+            return (content, 'unchanged')
 
     else:
         # 新建或强制重建
@@ -410,19 +436,24 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
         print(f"  [INFO] Created: {created}")
         print(f"  [INFO] Modified: {modified}")
         
-        # 判断内容是否充足
-        is_sufficient = content_length >= 200
+        # 根据完成标记确定状态
+        status = 'complete' if has_marker else 'draft'
         
-        if is_sufficient:
-            # 内容充足，使用 AI 生成标签
-            print(f"  [INFO] Content sufficient ({content_length} chars), generating tags")
-            tags = generate_tags_by_ai(topic, body, file_path)
-            status = 'complete'
+        # 确定标签
+        if status == 'complete' and is_sufficient_for_ai:
+            # 完成状态且内容充足，使用AI生成标签
+            print(f"  [INFO] Content sufficient ({content_length} chars), status=complete, generating AI tags")
+            tags = generate_tags_by_ai(topic, cleaned_body, file_path)
         else:
-            # 内容不足，设为 draft
-            print(f"  [INFO] Content insufficient ({content_length} chars), setting as draft")
+            # 其他情况使用[待分类]
             tags = ['待分类']
-            status = 'draft'
+            if status == 'complete':
+                print(f"  [INFO] Content insufficient ({content_length} chars), status=complete, using fallback tags")
+            else:
+                print(f"  [INFO] No completion marker, status=draft, using fallback tags")
+        
+        if has_marker:
+            print(f"  [INFO] Completion marker removed from content")
 
         data = {
             'topic': topic,
@@ -432,7 +463,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             'tags': tags,
         }
 
-        new_content = build_frontmatter_str(data) + body
+        new_content = build_frontmatter_str(data) + cleaned_body
         result_status = 'rebuilt' if existing_fm else 'added'
         return (new_content, result_status)
 
