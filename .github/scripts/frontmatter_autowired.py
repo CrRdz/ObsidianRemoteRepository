@@ -151,7 +151,7 @@ def parse_frontmatter_safe(content: str) -> tuple:
 
 def build_frontmatter_str(data: dict) -> str:
     """从字典构建标准 YAML frontmatter"""
-    order = ['topic', 'created', 'modified', 'status', 'tags']
+    order = ['topic', 'author', 'created', 'modified', 'status', 'tags']
     ordered_data = {}
 
     for key in order:
@@ -402,6 +402,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             
             topic = existing_fm.get('topic', extract_topic(file_path))
             created = existing_fm.get('created', get_created_time(file_path))
+            author = existing_fm.get('author', 'Crzhu')
             
             # 确保 created 是字符串
             if not isinstance(created, str):
@@ -409,6 +410,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             
             data = {
                 'topic': topic,
+                'author': author,
                 'created': created,
                 'modified': new_modified,
                 'status': new_status,
@@ -428,6 +430,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
         topic = extract_topic(file_path)
         created = existing_fm.get('created') if existing_fm else get_created_time(file_path)
         modified = get_modified_time(file_path)
+        author = existing_fm.get('author', 'Crzhu') if existing_fm else 'Crzhu'
 
         # 确保 created 是字符串
         if not isinstance(created, str):
@@ -458,6 +461,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
 
         data = {
             'topic': topic,
+            'author': author,
             'created': created,
             'modified': modified,
             'status': status,
