@@ -1,3 +1,16 @@
+---
+topic: Linux短笔记提交测试
+created: 2026-02-08 22:49
+modified: 2026-02-08 22:53
+status: complete
+tags:
+- Linux
+- 虚拟化
+- VMware
+- FinalShell
+- 命令行
+---
+
 1-1
 - 本笔记主要基于CentOS 7 辅助Ubuntu系统的相关知识
 - Linux系统的组成：Linux系统内核 & 系统级应用程序
