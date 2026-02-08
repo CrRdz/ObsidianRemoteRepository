@@ -20,6 +20,7 @@ client = OpenAI(
 )
 
 # 排除规则（统一用 basename 或全路径匹配）
+# Note: Each pattern should be a valid, self-contained regex that can be safely combined with '|'
 EXCLUDE_PATTERNS = [
     r'(?:^|/)readme\.md$',          # 任意目录下的 readme.md
     r'(?:^|/)test\d*\.md$',         # 任意目录下的 test.md / test1.md
@@ -29,14 +30,16 @@ EXCLUDE_PATTERNS = [
     r'(?:^|/)Reviews/',
 ]
 
-# Pre-compiled regex for performance
+# Pre-compiled regex for performance - combines all exclude patterns with OR
 EXCLUDE_PATTERN_COMPILED = re.compile('|'.join(f'(?:{p})' for p in EXCLUDE_PATTERNS), re.IGNORECASE)
 
 
 # ── 工具函数 ──────────────────────────────────────────────────────────────────
 
 # Cache for git times to avoid redundant git commands
+# Using dict instead of lru_cache to allow tuple keys
 _git_time_cache = {}
+_GIT_CACHE_MAX_SIZE = 1000  # Limit cache size for long-running processes
 
 def should_process_file(file_path: str) -> bool:
     """判断文件是否需要处理"""
@@ -58,6 +61,13 @@ def _git_log_time(file_path: str, fmt_args: list) -> str:
     cache_key = (file_path, tuple(fmt_args))
     if cache_key in _git_time_cache:
         return _git_time_cache[cache_key]
+    
+    # Simple cache size management: clear oldest entries if cache is too large
+    if len(_git_time_cache) >= _GIT_CACHE_MAX_SIZE:
+        # Remove ~10% of oldest entries (first 100 items in dict)
+        keys_to_remove = list(_git_time_cache.keys())[:100]
+        for key in keys_to_remove:
+            del _git_time_cache[key]
     
     try:
         cmd = ['git', 'log'] + fmt_args + ['--', file_path]
@@ -233,8 +243,10 @@ CHINESE_WORD_RE = re.compile(r'[\u4e00-\u9fa5]{2,6}')
 PATH_EXTRACTION_RE = re.compile(r'[A-Z][a-z]+|[A-Z]{2,}')
 
 # Pre-compiled tech category patterns for matching
+# Note: Categories are intentionally separated to allow fine-grained tagging
+# (e.g., 'Java' for general Java content, 'Spring' specifically for Spring framework)
 TECH_CATEGORY_PATTERNS = {
-    'Java': re.compile(r'\b(?:java|jvm|spring|maven|mybatis)\b', re.IGNORECASE),
+    'Java': re.compile(r'\b(?:java|jvm|maven|mybatis)\b', re.IGNORECASE),  # Removed 'spring' to avoid overlap
     'Python': re.compile(r'\b(?:python|django|flask|numpy|pandas)\b', re.IGNORECASE),
     'JavaScript': re.compile(r'\b(?:javascript|js|node|vue|react|typescript)\b', re.IGNORECASE),
     'Spring': re.compile(r'\b(?:spring|springboot|ioc|aop|mvc)\b', re.IGNORECASE),
