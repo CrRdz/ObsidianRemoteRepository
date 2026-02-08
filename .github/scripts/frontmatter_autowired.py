@@ -321,10 +321,15 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
         # 已有 frontmatter
         new_modified = get_modified_time(file_path)
         old_modified = str(existing_fm.get('modified', ''))
-        old_status = existing_fm.get('status', 'complete')  # 默认为 complete
         
-        # 判断内容是否充足
+        # 根据内容长度判断默认状态（处理旧笔记没有 status 字段的情况）
         is_sufficient = content_length >= 200
+        old_status = existing_fm.get('status')
+        
+        # 如果没有 status 字段，根据内容长度推断
+        if old_status is None:
+            old_status = 'complete' if is_sufficient else 'draft'
+            print(f"  [INFO] No status field found, inferring as '{old_status}' based on content length ({content_length} chars)")
         
         if is_sufficient and old_status == 'draft':
             # 内容充足且之前是 draft，升级为 complete 并重新生成标签
@@ -350,31 +355,32 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             new_content = build_frontmatter_str(data) + body
             return (new_content, 'updated')
         
-        elif not is_sufficient and old_status != 'draft':
-            # 内容不足但状态不是 draft，降级为 draft
-            print(f"  [DOWNGRADE] Content insufficient ({content_length} chars), setting to draft")
-            existing_fm['modified'] = new_modified
-            existing_fm['status'] = 'draft'
-            existing_fm['tags'] = ['待分类']
-            
-            new_content = build_frontmatter_str(existing_fm) + body
-            return (new_content, 'updated')
-        
         elif not is_sufficient and old_status == 'draft':
             # 内容仍然不足，保持 draft 状态
             if old_modified == new_modified:
                 return (content, 'unchanged')
             
-            print(f"  [UPDATE] Content still insufficient ({content_length} chars), keeping draft status")
-            existing_fm['modified'] = new_modified
-            existing_fm['status'] = 'draft'
-            existing_fm['tags'] = ['待分类']
+            # 只有在标签不是 [待分类] 时才更新
+            current_tags = existing_fm.get('tags', [])
+            needs_update = current_tags != ['待分类']
             
-            new_content = build_frontmatter_str(existing_fm) + body
-            return (new_content, 'updated')
+            if needs_update:
+                print(f"  [UPDATE] Content still insufficient ({content_length} chars), ensuring draft status")
+                existing_fm['modified'] = new_modified
+                existing_fm['status'] = 'draft'
+                existing_fm['tags'] = ['待分类']
+                
+                new_content = build_frontmatter_str(existing_fm) + body
+                return (new_content, 'updated')
+            else:
+                print(f"  [UPDATE] Modified: {old_modified} -> {new_modified}")
+                existing_fm['modified'] = new_modified
+                
+                new_content = build_frontmatter_str(existing_fm) + body
+                return (new_content, 'updated')
         
         else:
-            # 内容充足且状态为 complete，只更新 modified
+            # 内容充足且状态为 complete（或内容不足但状态为 complete - 不强制降级）
             if old_modified == new_modified:
                 return (content, 'unchanged')
             
@@ -382,7 +388,7 @@ def update_or_add_frontmatter(file_path: str, content: str, force_rebuild: bool 
             existing_fm['modified'] = new_modified
             # 确保 status 字段存在
             if 'status' not in existing_fm:
-                existing_fm['status'] = 'complete'
+                existing_fm['status'] = 'complete' if is_sufficient else 'draft'
             
             new_content = build_frontmatter_str(existing_fm) + body
             return (new_content, 'updated')
